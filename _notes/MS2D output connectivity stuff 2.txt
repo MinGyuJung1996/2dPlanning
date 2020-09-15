@@ -1,0 +1,3064 @@
+all from model 0,0 , frame 0
+
+////////////////////////////////
+page1
+
+minkowski_id
+rs 717
+ERROR : sth is not cont. @ 1 with 0.019825, -0.0067585
+ERROR : sth is not cont. @ 2 with 0.0283237, -0.0109665
+ERROR : sth is not cont. @ 5 with 0.0141309, -0.00729978
+ERROR : sth is not cont. @ 6 with 0.0156276, -0.00820607
+ERROR : sth is not cont. @ 9 with 0.0125922, -0.00771847
+ERROR : sth is not cont. @ 10 with 0.0151667, -0.00978951
+ERROR : sth is not cont. @ 13 with 0.0127239, -0.00916569
+ERROR : sth is not cont. @ 14 with 0.013306, -0.0102855
+ERROR : sth is not cont. @ 15 with 0.134237, -0.0722423
+ERROR : sth is not cont. @ 16 with 0.134482, -0.078009
+ERROR : sth is not cont. @ 17 with 0.147095, -0.0831422
+ERROR : sth is not cont. @ 18 with 0.14621, -0.0886495
+ERROR : sth is not cont. @ 19 with 0.102576, -0.0720042
+ERROR : sth is not cont. @ 20 with 0.109083, -0.0792417
+ERROR : sth is not cont. @ 21 with 0.119365, -0.0890762
+ERROR : sth is not cont. @ 22 with 0.119734, -0.090446
+ERROR : sth is not cont. @ 23 with 0.109051, -0.0931891
+ERROR : sth is not cont. @ 24 with 0.108046, -0.096162
+ERROR : sth is not cont. @ 25 with 0.124022, -0.112215
+ERROR : sth is not cont. @ 26 with 0.126582, -0.121084
+ERROR : sth is not cont. @ 27 with 0.112998, -0.116163
+ERROR : sth is not cont. @ 28 with 0.114132, -0.127282
+ERROR : sth is not cont. @ 29 with 0.125756, -0.136406
+ERROR : sth is not cont. @ 30 with 0.126612, -0.149402
+ERROR : sth is not cont. @ 31 with 0.248971, -0.215546
+ERROR : sth is not cont. @ 32 with 0.245144, -0.22614
+ERROR : sth is not cont. @ 33 with 0.256285, -0.230419
+ERROR : sth is not cont. @ 34 with 0.24756, -0.224915
+ERROR : sth is not cont. @ 35 with 0.210767, -0.19712
+ERROR : sth is not cont. @ 36 with 0.219806, -0.18833
+ERROR : sth is not cont. @ 37 with 0.232736, -0.182043
+ERROR : sth is not cont. @ 38 with 0.237665, -0.177626
+ERROR : sth is not cont. @ 39 with 0.219825, -0.160725
+ERROR : sth is not cont. @ 40 with 0.220167, -0.153559
+ERROR : sth is not cont. @ 41 with 0.234334, -0.154631
+ERROR : sth is not cont. @ 42 with 0.235117, -0.147933
+ERROR : sth is not cont. @ 43 with 0.224605, -0.133452
+ERROR : sth is not cont. @ 44 with 0.221723, -0.123537
+ERROR : sth is not cont. @ 45 with 0.240774, -0.129252
+ERROR : sth is not cont. @ 46 with 0.246547, -0.118326
+ERROR : sth is not cont. @ 47 with 0.384028, -0.176848
+ERROR : sth is not cont. @ 48 with 0.391062, -0.171941
+ERROR : sth is not cont. @ 49 with 0.420708, -0.174995
+ERROR : sth is not cont. @ 50 with 0.430674, -0.172013
+ERROR : sth is not cont. @ 51 with 0.405831, -0.154364
+ERROR : sth is not cont. @ 52 with 0.425761, -0.156323
+ERROR : sth is not cont. @ 53 with 0.449424, -0.16106
+ERROR : sth is not cont. @ 54 with 0.509044, -0.1769
+ERROR : sth is not cont. @ 55 with 0.542679, -0.187905
+ERROR : sth is not cont. @ 56 with 0.550412, -0.191373
+ERROR : sth is not cont. @ 57 with 0.571103, -0.203302
+ERROR : sth is not cont. @ 58 with 0.578317, -0.2078
+ERROR : sth is not cont. @ 59 with 0.573289, -0.204682
+ERROR : sth is not cont. @ 60 with 0.575772, -0.206518
+ERROR : sth is not cont. @ 61 with 0.599183, -0.224099
+ERROR : sth is not cont. @ 62 with 0.600866, -0.226946
+ERROR : sth is not cont. @ 65 with 0.0297399, -0.0319912
+ERROR : sth is not cont. @ 66 with 0.0279714, -0.0335973
+ERROR : sth is not cont. @ 69 with 0.0223812, -0.0375962
+ERROR : sth is not cont. @ 70 with 0.0205113, -0.0387008
+ERROR : sth is not cont. @ 73 with 0.0251674, -0.0830378
+ERROR : sth is not cont. @ 74 with 0.014317, -0.0632838
+ERROR : sth is not cont. @ 77 with 0.00216096, -0.0422242
+ERROR : sth is not cont. @ 78 with -9.92114e-06, -0.0417746
+ERROR : sth is not cont. @ 79 with 0.128372, -0.352982
+ERROR : sth is not cont. @ 80 with 0.110461, -0.357922
+ERROR : sth is not cont. @ 81 with 0.121857, -0.392899
+ERROR : sth is not cont. @ 82 with 0.101695, -0.397063
+ERROR : sth is not cont. @ 83 with 0.055024, -0.364055
+ERROR : sth is not cont. @ 84 with 0.0361458, -0.364198
+ERROR : sth is not cont. @ 85 with 0.0394758, -0.400038
+ERROR : sth is not cont. @ 86 with 0.0192599, -0.397213
+ERROR : sth is not cont. @ 87 with -0.0201056, -0.354145
+ERROR : sth is not cont. @ 88 with -0.0450404, -0.327525
+ERROR : sth is not cont. @ 89 with -0.0422306, -0.383266
+ERROR : sth is not cont. @ 90 with -0.0685604, -0.3556
+ERROR : sth is not cont. @ 91 with -0.0987915, -0.285031
+ERROR : sth is not cont. @ 92 with -0.113224, -0.276127
+ERROR : sth is not cont. @ 93 with -0.126011, -0.310486
+ERROR : sth is not cont. @ 94 with -0.141163, -0.300726
+ERROR : sth is not cont. @ 95 with -0.0264953, -0.604103
+ERROR : sth is not cont. @ 96 with -0.0554886, -0.599404
+ERROR : sth is not cont. @ 97 with -0.0563482, -0.626803
+ERROR : sth is not cont. @ 98 with -0.0849611, -0.621134
+ERROR : sth is not cont. @ 99 with -0.131229, -0.573489
+ERROR : sth is not cont. @ 100 with -0.142674, -0.556024
+ERROR : sth is not cont. @ 101 with -0.13062, -0.577588
+ERROR : sth is not cont. @ 102 with -0.141233, -0.566411
+ERROR : sth is not cont. @ 103 with -0.169727, -0.514908
+ERROR : sth is not cont. @ 104 with -0.184155, -0.475504
+ERROR : sth is not cont. @ 105 with -0.16899, -0.522665
+ERROR : sth is not cont. @ 106 with -0.183012, -0.489652
+ERROR : sth is not cont. @ 107 with -0.199861, -0.407742
+ERROR : sth is not cont. @ 108 with -0.20124, -0.39243
+ERROR : sth is not cont. @ 109 with -0.199475, -0.422586
+ERROR : sth is not cont. @ 110 with -0.201304, -0.411702
+ERROR : sth is not cont. @ 111 with -0.0714692, -0.705983
+ERROR : sth is not cont. @ 112 with -0.0871564, -0.698152
+ERROR : sth is not cont. @ 113 with -0.072473, -0.718683
+ERROR : sth is not cont. @ 114 with -0.0884578, -0.709981
+ERROR : sth is not cont. @ 115 with -0.129981, -0.663961
+ERROR : sth is not cont. @ 116 with -0.142797, -0.652396
+ERROR : sth is not cont. @ 117 with -0.132204, -0.675492
+ERROR : sth is not cont. @ 118 with -0.145898, -0.665656
+ERROR : sth is not cont. @ 119 with -0.176021, -0.609646
+ERROR : sth is not cont. @ 120 with -0.194014, -0.579212
+ERROR : sth is not cont. @ 121 with -0.17953, -0.620527
+ERROR : sth is not cont. @ 122 with -0.198105, -0.589604
+ERROR : sth is not cont. @ 123 with -0.216884, -0.5092
+ERROR : sth is not cont. @ 124 with -0.221304, -0.4936
+ERROR : sth is not cont. @ 125 with -0.224423, -0.523459
+ERROR : sth is not cont. @ 126 with -0.226119, -0.502271
+ERROR : sth is not cont. @ 129 with -0.00589885, -0.00818129
+ERROR : sth is not cont. @ 130 with -0.00623165, -0.00779148
+ERROR : sth is not cont. @ 133 with -0.00692282, -0.00723047
+ERROR : sth is not cont. @ 134 with -0.0079315, -0.00773422
+ERROR : sth is not cont. @ 137 with -0.0148203, -0.0123137
+ERROR : sth is not cont. @ 138 with -0.00950893, -0.00766995
+ERROR : sth is not cont. @ 141 with -0.0149634, -0.0110329
+ERROR : sth is not cont. @ 142 with -0.0152956, -0.0109568
+ERROR : sth is not cont. @ 143 with -0.0877187, -0.0801913
+ERROR : sth is not cont. @ 144 with -0.0863505, -0.0753671
+ERROR : sth is not cont. @ 145 with -0.0944314, -0.084854
+ERROR : sth is not cont. @ 146 with -0.0938384, -0.0805489
+ERROR : sth is not cont. @ 147 with -0.0874794, -0.0699194
+ERROR : sth is not cont. @ 148 with -0.0847946, -0.0660322
+ERROR : sth is not cont. @ 149 with -0.095361, -0.0754099
+ERROR : sth is not cont. @ 150 with -0.0935342, -0.0721601
+ERROR : sth is not cont. @ 151 with -0.0827007, -0.0609263
+ERROR : sth is not cont. @ 152 with -0.0795694, -0.0577624
+ERROR : sth is not cont. @ 153 with -0.0907957, -0.0668632
+ERROR : sth is not cont. @ 154 with -0.0875264, -0.0637193
+ERROR : sth is not cont. @ 155 with -0.0752926, -0.0539556
+ERROR : sth is not cont. @ 156 with -0.0684309, -0.0488792
+ERROR : sth is not cont. @ 157 with -0.0800605, -0.057771
+ERROR : sth is not cont. @ 158 with -0.0755597, -0.0547266
+ERROR : sth is not cont. @ 159 with -0.14781, -0.124389
+ERROR : sth is not cont. @ 160 with -0.145546, -0.119655
+ERROR : sth is not cont. @ 161 with -0.15401, -0.130184
+ERROR : sth is not cont. @ 162 with -0.149851, -0.123851
+ERROR : sth is not cont. @ 163 with -0.138951, -0.110598
+ERROR : sth is not cont. @ 164 with -0.135832, -0.107408
+ERROR : sth is not cont. @ 165 with -0.144798, -0.117283
+ERROR : sth is not cont. @ 166 with -0.14051, -0.113079
+ERROR : sth is not cont. @ 167 with -0.12673, -0.100758
+ERROR : sth is not cont. @ 168 with -0.122394, -0.0986746
+ERROR : sth is not cont. @ 169 with -0.13093, -0.107148
+ERROR : sth is not cont. @ 170 with -0.124754, -0.102556
+ERROR : sth is not cont. @ 171 with -0.113123, -0.0970559
+ERROR : sth is not cont. @ 172 with -0.105494, -0.0921044
+ERROR : sth is not cont. @ 173 with -0.115881, -0.103773
+ERROR : sth is not cont. @ 174 with -0.10837, -0.0995306
+ERROR : sth is not cont. @ 175 with -0.178478, -0.169914
+ERROR : sth is not cont. @ 176 with -0.173083, -0.162789
+ERROR : sth is not cont. @ 177 with -0.179343, -0.173305
+ERROR : sth is not cont. @ 178 with -0.174278, -0.167902
+ERROR : sth is not cont. @ 179 with -0.162031, -0.153939
+ERROR : sth is not cont. @ 180 with -0.156911, -0.15123
+ERROR : sth is not cont. @ 181 with -0.162632, -0.15768
+ERROR : sth is not cont. @ 182 with -0.157254, -0.154003
+ERROR : sth is not cont. @ 183 with -0.142016, -0.14105
+ERROR : sth is not cont. @ 184 with -0.135142, -0.136376
+ERROR : sth is not cont. @ 185 with -0.142222, -0.144414
+ERROR : sth is not cont. @ 186 with -0.135266, -0.138861
+ERROR : sth is not cont. @ 187 with -0.120392, -0.129333
+ERROR : sth is not cont. @ 188 with -0.11221, -0.125433
+ERROR : sth is not cont. @ 189 with -0.12034, -0.13199
+ERROR : sth is not cont. @ 190 with -0.112128, -0.127204
+ERROR : sth is not cont. @ 193 with 0.000123337, -0.0013457
+ERROR : sth is not cont. @ 194 with 0.000108958, -0.0011294
+ERROR : sth is not cont. @ 197 with 0.000102338, -0.000751485
+ERROR : sth is not cont. @ 198 with 0.000140527, -0.000950392
+ERROR : sth is not cont. @ 201 with 0.00026554, -0.0015821
+ERROR : sth is not cont. @ 202 with 0.000141747, -0.000795044
+ERROR : sth is not cont. @ 205 with 5.36732e-05, -0.000285908
+ERROR : sth is not cont. @ 206 with 5.94818e-05, -0.000316634
+ERROR : sth is not cont. @ 207 with 0.00106835, -0.00740016
+ERROR : sth is not cont. @ 208 with 0.00227806, -0.0135894
+ERROR : sth is not cont. @ 209 with 0.00289666, -0.0170775
+ERROR : sth is not cont. @ 210 with 0.00382827, -0.0219553
+ERROR : sth is not cont. @ 211 with 0.00429668, -0.0236966
+ERROR : sth is not cont. @ 212 with 0.00550759, -0.0308488
+ERROR : sth is not cont. @ 213 with 0.00660156, -0.0381055
+ERROR : sth is not cont. @ 214 with 0.00747089, -0.0445421
+ERROR : sth is not cont. @ 215 with 0.00802375, -0.0496167
+ERROR : sth is not cont. @ 216 with 0.00836366, -0.0543105
+ERROR : sth is not cont. @ 217 with 0.00900261, -0.0612743
+ERROR : sth is not cont. @ 218 with 0.0090056, -0.0652971
+ERROR : sth is not cont. @ 219 with 0.00882881, -0.0687564
+ERROR : sth is not cont. @ 220 with 0.00872561, -0.074035
+ERROR : sth is not cont. @ 221 with 0.00844461, -0.0786097
+ERROR : sth is not cont. @ 222 with 0.00794517, -0.0831385
+ERROR : sth is not cont. @ 223 with 0.00828119, -0.0939721
+ERROR : sth is not cont. @ 224 with 0.0073631, -0.0974353
+ERROR : sth is not cont. @ 225 with 0.00637858, -0.100999
+ERROR : sth is not cont. @ 226 with 0.00507921, -0.103756
+ERROR : sth is not cont. @ 227 with 0.00346006, -0.104116
+ERROR : sth is not cont. @ 228 with 0.00177008, -0.10611
+ERROR : sth is not cont. @ 229 with 7.05362e-05, -0.108553
+ERROR : sth is not cont. @ 230 with -0.00195713, -0.109896
+ERROR : sth is not cont. @ 231 with -0.00426729, -0.110283
+ERROR : sth is not cont. @ 232 with -0.00680338, -0.109976
+ERROR : sth is not cont. @ 233 with -0.00911224, -0.112365
+ERROR : sth is not cont. @ 234 with -0.0119634, -0.111509
+ERROR : sth is not cont. @ 235 with -0.0151718, -0.11049
+ERROR : sth is not cont. @ 236 with -0.0165208, -0.110568
+ERROR : sth is not cont. @ 237 with -0.0179404, -0.110597
+ERROR : sth is not cont. @ 238 with -0.0201221, -0.110535
+ERROR : sth is not cont. @ 239 with -0.0214914, -0.117297
+ERROR : sth is not cont. @ 240 with -0.023862, -0.116649
+ERROR : sth is not cont. @ 241 with -0.0263497, -0.11654
+ERROR : sth is not cont. @ 242 with -0.0313569, -0.114994
+ERROR : sth is not cont. @ 243 with -0.0372464, -0.110935
+ERROR : sth is not cont. @ 244 with -0.0428674, -0.108328
+ERROR : sth is not cont. @ 245 with -0.0489922, -0.105909
+ERROR : sth is not cont. @ 246 with -0.0551487, -0.102313
+ERROR : sth is not cont. @ 247 with -0.0619548, -0.0973864
+ERROR : sth is not cont. @ 248 with -0.0687813, -0.0917451
+ERROR : sth is not cont. @ 249 with -0.0755836, -0.0883723
+ERROR : sth is not cont. @ 250 with -0.0828315, -0.0817335
+ERROR : sth is not cont. @ 251 with -0.0904766, -0.0745068
+ERROR : sth is not cont. @ 252 with -0.0978406, -0.0683374
+ERROR : sth is not cont. @ 253 with -0.105519, -0.0615332
+ERROR : sth is not cont. @ 254 with -0.113184, -0.0543667
+ERROR : sth is not cont. @ 255 with 0.329583, -1.34912
+ERROR : sth is not cont. @ 256 with 0.310238, -1.33674
+ERROR : sth is not cont. @ 257 with 0.311913, -1.33038
+ERROR : sth is not cont. @ 258 with 0.292369, -1.31692
+ERROR : sth is not cont. @ 259 with 0.23682, -1.28683
+ERROR : sth is not cont. @ 260 with 0.22307, -1.27102
+ERROR : sth is not cont. @ 261 with 0.212529, -1.25592
+ERROR : sth is not cont. @ 262 with 0.199098, -1.23891
+ERROR : sth is not cont. @ 263 with 0.16299, -1.20912
+ERROR : sth is not cont. @ 264 with 0.145291, -1.18829
+ERROR : sth is not cont. @ 265 with 0.145171, -1.18136
+ERROR : sth is not cont. @ 266 with 0.132033, -1.18349
+ERROR : sth is not cont. @ 267 with 0.104942, -1.17938
+ERROR : sth is not cont. @ 268 with 0.0937061, -1.17206
+ERROR : sth is not cont. @ 269 with 0.0959903, -1.18703
+ERROR : sth is not cont. @ 270 with 0.0817765, -1.18214
+ERROR : sth is not cont. @ 271 with 0.195461, -1.24781
+ERROR : sth is not cont. @ 272 with 0.176331, -1.25075
+ERROR : sth is not cont. @ 273 with 0.18648, -1.25476
+ERROR : sth is not cont. @ 274 with 0.166987, -1.25773
+ERROR : sth is not cont. @ 275 with 0.112835, -1.24396
+ERROR : sth is not cont. @ 276 with 0.105608, -1.24711
+ERROR : sth is not cont. @ 277 with 0.10362, -1.25049
+ERROR : sth is not cont. @ 278 with 0.0983364, -1.25222
+ERROR : sth is not cont. @ 279 with 0.0691123, -1.24182
+ERROR : sth is not cont. @ 280 with 0.0597831, -1.2396
+ERROR : sth is not cont. @ 281 with 0.0614726, -1.24711
+ERROR : sth is not cont. @ 282 with 0.0487855, -1.24721
+ERROR : sth is not cont. @ 283 with 0.0275859, -1.23716
+ERROR : sth is not cont. @ 284 with 0.0122071, -1.23264
+ERROR : sth is not cont. @ 285 with 0.0200717, -1.24242
+ERROR : sth is not cont. @ 286 with 0.00878615, -1.23506
+ERROR : sth is not cont. @ 287 with 0.124384, -1.29883
+ERROR : sth is not cont. @ 288 with 0.110365, -1.29764
+ERROR : sth is not cont. @ 289 with 0.11767, -1.30375
+ERROR : sth is not cont. @ 290 with 0.105395, -1.30134
+ERROR : sth is not cont. @ 291 with 0.0575589, -1.28304
+ERROR : sth is not cont. @ 292 with 0.0529343, -1.28455
+ERROR : sth is not cont. @ 293 with 0.052428, -1.28709
+ERROR : sth is not cont. @ 294 with 0.0505251, -1.28648
+ERROR : sth is not cont. @ 295 with 0.0231789, -1.27513
+ERROR : sth is not cont. @ 296 with 0.0149737, -1.27239
+ERROR : sth is not cont. @ 297 with 0.0211722, -1.27688
+ERROR : sth is not cont. @ 298 with 0.0124748, -1.27465
+ERROR : sth is not cont. @ 299 with -0.00740394, -1.26408
+ERROR : sth is not cont. @ 300 with -0.0184749, -1.25665
+ERROR : sth is not cont. @ 301 with -0.00884757, -1.26556
+ERROR : sth is not cont. @ 302 with -0.0206383, -1.25893
+ERROR : sth is not cont. @ 303 with 0.098809, -1.32003
+ERROR : sth is not cont. @ 304 with 0.0869677, -1.31776
+ERROR : sth is not cont. @ 305 with 0.0973063, -1.32186
+ERROR : sth is not cont. @ 306 with 0.0859475, -1.3191
+ERROR : sth is not cont. @ 307 with 0.0388125, -1.30072
+ERROR : sth is not cont. @ 308 with 0.0369384, -1.30025
+ERROR : sth is not cont. @ 309 with 0.0381086, -1.30184
+ERROR : sth is not cont. @ 310 with 0.0381641, -1.31555
+ERROR : sth is not cont. @ 311 with 0.0129452, -1.29896
+ERROR : sth is not cont. @ 312 with 0.00580581, -1.29145
+ERROR : sth is not cont. @ 313 with 0.011884, -1.28995
+ERROR : sth is not cont. @ 314 with 0.00506259, -1.28491
+ERROR : sth is not cont. @ 315 with -0.0134733, -1.27153
+ERROR : sth is not cont. @ 316 with -0.0212128, -1.28891
+ERROR : sth is not cont. @ 317 with -0.00999983, -1.30004
+ERROR : sth is not cont. @ 318 with -0.0201666, -1.29737
+ERROR : sth is not cont. @ 319 with -0.631799, -1.06827
+ERROR : sth is not cont. @ 320 with -0.64674, -1.05498
+ERROR : sth is not cont. @ 321 with -0.631027, -1.07575
+ERROR : sth is not cont. @ 322 with -0.645606, -1.06687
+ERROR : sth is not cont. @ 323 with -0.686076, -1.01785
+ERROR : sth is not cont. @ 324 with -0.697148, -1.00692
+ERROR : sth is not cont. @ 325 with -0.685523, -1.026
+ERROR : sth is not cont. @ 326 with -0.696715, -1.01646
+ERROR : sth is not cont. @ 327 with -0.726047, -0.957988
+ERROR : sth is not cont. @ 328 with -0.740518, -0.92514
+ERROR : sth is not cont. @ 329 with -0.72603, -0.973317
+ERROR : sth is not cont. @ 330 with -0.740693, -0.934315
+ERROR : sth is not cont. @ 331 with -0.757908, -0.854452
+ERROR : sth is not cont. @ 332 with -0.759835, -0.837264
+ERROR : sth is not cont. @ 333 with -0.758453, -0.861238
+ERROR : sth is not cont. @ 334 with -0.760778, -0.845869
+ERROR : sth is not cont. @ 335 with -0.630849, -1.13724
+ERROR : sth is not cont. @ 336 with -0.647037, -1.12811
+ERROR : sth is not cont. @ 337 with -0.632179, -1.14516
+ERROR : sth is not cont. @ 338 with -0.64827, -1.134
+ERROR : sth is not cont. @ 339 with -0.68997, -1.0864
+ERROR : sth is not cont. @ 340 with -0.702098, -1.06995
+ERROR : sth is not cont. @ 341 with -0.692266, -1.09382
+ERROR : sth is not cont. @ 342 with -0.704104, -1.07615
+ERROR : sth is not cont. @ 343 with -0.735297, -1.02212
+ERROR : sth is not cont. @ 344 with -0.751393, -0.984515
+ERROR : sth is not cont. @ 345 with -0.737635, -1.02727
+ERROR : sth is not cont. @ 346 with -0.754908, -0.991303
+ERROR : sth is not cont. @ 347 with -0.772669, -0.908225
+ERROR : sth is not cont. @ 348 with -0.776458, -0.890354
+ERROR : sth is not cont. @ 349 with -0.778159, -0.916331
+ERROR : sth is not cont. @ 350 with -0.779788, -0.895028
+ERROR : sth is not cont. @ 351 with -0.653382, -1.19036
+ERROR : sth is not cont. @ 352 with -0.671996, -1.17866
+ERROR : sth is not cont. @ 353 with -0.65734, -1.1946
+ERROR : sth is not cont. @ 354 with -0.676821, -1.18322
+ERROR : sth is not cont. @ 355 with -0.720223, -1.13389
+ERROR : sth is not cont. @ 356 with -0.733417, -1.1168
+ERROR : sth is not cont. @ 357 with -0.723137, -1.13619
+ERROR : sth is not cont. @ 358 with -0.737664, -1.11996
+ERROR : sth is not cont. @ 359 with -0.770144, -1.0633
+ERROR : sth is not cont. @ 360 with -0.787899, -1.02431
+ERROR : sth is not cont. @ 361 with -0.775803, -1.06683
+ERROR : sth is not cont. @ 362 with -0.79125, -1.02632
+ERROR : sth is not cont. @ 363 with -0.811606, -0.943816
+ERROR : sth is not cont. @ 364 with -0.816784, -0.924387
+ERROR : sth is not cont. @ 365 with -0.82229, -0.949131
+ERROR : sth is not cont. @ 366 with -0.827319, -0.929327
+ERROR : sth is not cont. @ 367 with -0.701762, -1.22212
+ERROR : sth is not cont. @ 368 with -0.724798, -1.20967
+ERROR : sth is not cont. @ 369 with -0.718069, -1.2279
+ERROR : sth is not cont. @ 370 with -0.737076, -1.21364
+ERROR : sth is not cont. @ 371 with -0.782394, -1.16332
+ERROR : sth is not cont. @ 372 with -0.802928, -1.14721
+ERROR : sth is not cont. @ 373 with -0.800318, -1.16755
+ERROR : sth is not cont. @ 374 with -0.818382, -1.1504
+ERROR : sth is not cont. @ 375 with -0.85058, -1.09209
+ERROR : sth is not cont. @ 376 with -0.874623, -1.05253
+ERROR : sth is not cont. @ 377 with -0.869672, -1.09471
+ERROR : sth is not cont. @ 378 with -0.892822, -1.05449
+ERROR : sth is not cont. @ 379 with -0.910982, -0.970181
+ERROR : sth is not cont. @ 380 with -0.922432, -0.949469
+ERROR : sth is not cont. @ 381 with -0.922997, -0.970867
+ERROR : sth is not cont. @ 382 with -0.929808, -0.94972
+ERROR : sth is not cont. @ 383 with -0.705696, -0.439143
+ERROR : sth is not cont. @ 384 with -0.715913, -0.43101
+ERROR : sth is not cont. @ 385 with -0.723384, -0.438655
+ERROR : sth is not cont. @ 386 with -0.731343, -0.429855
+ERROR : sth is not cont. @ 387 with -0.720913, -0.414833
+ERROR : sth is not cont. @ 388 with -0.721181, -0.408192
+ERROR : sth is not cont. @ 389 with -0.734467, -0.413055
+ERROR : sth is not cont. @ 390 with -0.72889, -0.407099
+ERROR : sth is not cont. @ 391 with -0.721445, -0.391263
+ERROR : sth is not cont. @ 392 with -0.718263, -0.384581
+ERROR : sth is not cont. @ 393 with -0.729186, -0.389705
+ERROR : sth is not cont. @ 394 with -0.730123, -0.381909
+ERROR : sth is not cont. @ 395 with -0.72261, -0.368092
+ERROR : sth is not cont. @ 396 with -0.714698, -0.361937
+ERROR : sth is not cont. @ 397 with -0.730946, -0.365561
+ERROR : sth is not cont. @ 398 with -0.729683, -0.357125
+ERROR : sth is not cont. @ 399 with -0.799657, -0.423651
+ERROR : sth is not cont. @ 400 with -0.802233, -0.412764
+ERROR : sth is not cont. @ 401 with -0.81099, -0.419174
+ERROR : sth is not cont. @ 402 with -0.810371, -0.409242
+ERROR : sth is not cont. @ 403 with -0.803496, -0.391802
+ERROR : sth is not cont. @ 404 with -0.800905, -0.384325
+ERROR : sth is not cont. @ 405 with -0.812491, -0.387122
+ERROR : sth is not cont. @ 406 with -0.809596, -0.379633
+ERROR : sth is not cont. @ 407 with -0.799717, -0.361917
+ERROR : sth is not cont. @ 408 with -0.800411, -0.351108
+ERROR : sth is not cont. @ 409 with -0.814488, -0.352183
+ERROR : sth is not cont. @ 410 with -0.807827, -0.346013
+ERROR : sth is not cont. @ 411 with -0.80001, -0.328934
+ERROR : sth is not cont. @ 412 with -0.798803, -0.317375
+ERROR : sth is not cont. @ 413 with -0.813638, -0.317861
+ERROR : sth is not cont. @ 414 with -0.807059, -0.310411
+ERROR : sth is not cont. @ 415 with -0.881153, -0.372767
+ERROR : sth is not cont. @ 416 with -0.87928, -0.361609
+ERROR : sth is not cont. @ 417 with -0.885452, -0.376405
+ERROR : sth is not cont. @ 418 with -0.880993, -0.377954
+ERROR : sth is not cont. @ 419 with -0.870153, -0.372836
+ERROR : sth is not cont. @ 420 with -0.866396, -0.375938
+ERROR : sth is not cont. @ 421 with -0.874489, -0.391211
+ERROR : sth is not cont. @ 422 with -0.871639, -0.394024
+ERROR : sth is not cont. @ 423 with -0.859676, -0.388456
+ERROR : sth is not cont. @ 424 with -0.856533, -0.390937
+ERROR : sth is not cont. @ 425 with -0.867998, -0.405341
+ERROR : sth is not cont. @ 426 with -0.866006, -0.407454
+ERROR : sth is not cont. @ 427 with -0.856763, -0.403571
+ERROR : sth is not cont. @ 428 with -0.854874, -0.405133
+ERROR : sth is not cont. @ 429 with -0.869964, -0.418648
+ERROR : sth is not cont. @ 430 with -0.869481, -0.41975
+ERROR : sth is not cont. @ 431 with -0.943377, -0.490732
+ERROR : sth is not cont. @ 432 with -0.94308, -0.487134
+ERROR : sth is not cont. @ 433 with -0.954001, -0.498802
+ERROR : sth is not cont. @ 434 with -0.954194, -0.494997
+ERROR : sth is not cont. @ 435 with -0.947607, -0.483907
+ERROR : sth is not cont. @ 436 with -0.948174, -0.48169
+ERROR : sth is not cont. @ 437 with -0.960089, -0.491159
+ERROR : sth is not cont. @ 438 with -0.961082, -0.488724
+ERROR : sth is not cont. @ 439 with -0.959094, -0.4807
+ERROR : sth is not cont. @ 440 with -0.96691, -0.481057
+ERROR : sth is not cont. @ 441 with -0.988751, -0.492614
+ERROR : sth is not cont. @ 442 with -0.997843, -0.492006
+ERROR : sth is not cont. @ 443 with -0.999059, -0.484872
+ERROR : sth is not cont. @ 444 with -1.00799, -0.483124
+ERROR : sth is not cont. @ 445 with -1.0333, -0.492965
+ERROR : sth is not cont. @ 446 with -1.043, -0.49018
+ERROR : sth is not cont. @ 447 with -0.948916, -0.364517
+ERROR : sth is not cont. @ 448 with -0.967309, -0.366409
+ERROR : sth is not cont. @ 449 with -0.985809, -0.368432
+ERROR : sth is not cont. @ 450 with -1.00448, -0.369219
+ERROR : sth is not cont. @ 451 with -1.01867, -0.367449
+ERROR : sth is not cont. @ 452 with -1.03259, -0.367187
+ERROR : sth is not cont. @ 453 with -1.06217, -0.366877
+ERROR : sth is not cont. @ 454 with -1.0908, -0.364319
+ERROR : sth is not cont. @ 455 with -1.10545, -0.361586
+ERROR : sth is not cont. @ 456 with -1.11975, -0.358123
+ERROR : sth is not cont. @ 457 with -1.13372, -0.357165
+ERROR : sth is not cont. @ 458 with -1.14764, -0.352945
+ERROR : sth is not cont. @ 459 with -1.1617, -0.348323
+ERROR : sth is not cont. @ 460 with -1.17488, -0.344794
+ERROR : sth is not cont. @ 461 with -1.18817, -0.340753
+ERROR : sth is not cont. @ 462 with -1.20075, -0.336429
+ERROR : sth is not cont. @ 463 with -1.21242, -0.338499
+ERROR : sth is not cont. @ 464 with -1.22433, -0.333021
+ERROR : sth is not cont. @ 465 with -1.23619, -0.327617
+ERROR : sth is not cont. @ 466 with -1.24729, -0.321302
+ERROR : sth is not cont. @ 467 with -1.27029, -0.304544
+ERROR : sth is not cont. @ 468 with -1.29167, -0.287299
+ERROR : sth is not cont. @ 469 with -1.30128, -0.278864
+ERROR : sth is not cont. @ 470 with -1.3107, -0.269007
+ERROR : sth is not cont. @ 471 with -1.31957, -0.258327
+ERROR : sth is not cont. @ 472 with -1.32825, -0.246677
+ERROR : sth is not cont. @ 473 with -1.33578, -0.237895
+ERROR : sth is not cont. @ 474 with -1.34356, -0.2256
+ERROR : sth is not cont. @ 475 with -1.35072, -0.213391
+ERROR : sth is not cont. @ 476 with -1.35739, -0.202021
+ERROR : sth is not cont. @ 477 with -1.36346, -0.190746
+ERROR : sth is not cont. @ 478 with -1.3693, -0.178934
+ERROR : sth is not cont. @ 479 with -1.3736, -0.174236
+ERROR : sth is not cont. @ 480 with -1.37867, -0.161746
+ERROR : sth is not cont. @ 481 with -1.38317, -0.150152
+ERROR : sth is not cont. @ 482 with -1.38749, -0.137424
+ERROR : sth is not cont. @ 483 with -1.39154, -0.123055
+ERROR : sth is not cont. @ 484 with -1.39517, -0.110112
+ERROR : sth is not cont. @ 485 with -1.40101, -0.0863768
+ERROR : sth is not cont. @ 486 with -1.40597, -0.0606101
+ERROR : sth is not cont. @ 487 with -1.41204, -0.0125872
+ERROR : sth is not cont. @ 488 with -1.41426, 0.0363374
+ERROR : sth is not cont. @ 489 with -1.41373, 0.0524322
+ERROR : sth is not cont. @ 490 with -1.41315, 0.0706932
+ERROR : sth is not cont. @ 491 with -1.41255, 0.0830851
+ERROR : sth is not cont. @ 492 with -1.41149, 0.0934649
+ERROR : sth is not cont. @ 493 with -1.41019, 0.103657
+ERROR : sth is not cont. @ 494 with -1.4087, 0.113297
+ERROR : sth is not cont. @ 495 with -1.40598, 0.115784
+ERROR : sth is not cont. @ 496 with -1.4041, 0.125071
+ERROR : sth is not cont. @ 497 with -1.40194, 0.133463
+ERROR : sth is not cont. @ 498 with -1.39966, 0.142104
+ERROR : sth is not cont. @ 499 with -1.39738, 0.152419
+ERROR : sth is not cont. @ 500 with -1.39474, 0.160543
+ERROR : sth is not cont. @ 501 with -1.3918, 0.167578
+ERROR : sth is not cont. @ 502 with -1.3888, 0.17515
+ERROR : sth is not cont. @ 503 with -1.38236, 0.18969
+ERROR : sth is not cont. @ 504 with -1.37527, 0.203788
+ERROR : sth is not cont. @ 505 with -1.37169, 0.207442
+ERROR : sth is not cont. @ 506 with -1.37424, 0.210529
+ERROR : sth is not cont. @ 507 with -1.37492, 0.212233
+ERROR : sth is not cont. @ 508 with -1.38935, 0.223399
+ERROR : sth is not cont. @ 509 with -1.39316, 0.226656
+ERROR : sth is not cont. @ 510 with -1.40144, 0.234242
+ERROR : sth is not cont. @ 513 with -0.0134086, 0.0142349
+ERROR : sth is not cont. @ 514 with -0.00730543, 0.00806159
+ERROR : sth is not cont. @ 517 with -0.00646796, 0.00852211
+ERROR : sth is not cont. @ 518 with -0.00606395, 0.00856752
+ERROR : sth is not cont. @ 521 with -0.00573627, 0.00898014
+ERROR : sth is not cont. @ 522 with -0.00559382, 0.00936599
+ERROR : sth is not cont. @ 525 with -0.00505784, 0.00939295
+ERROR : sth is not cont. @ 526 with -0.00506707, 0.0101175
+ERROR : sth is not cont. @ 527 with -0.0544923, 0.0779785
+ERROR : sth is not cont. @ 528 with -0.05231, 0.0806557
+ERROR : sth is not cont. @ 529 with -0.0589308, 0.0877721
+ERROR : sth is not cont. @ 530 with -0.0568042, 0.0914474
+ERROR : sth is not cont. @ 531 with -0.0424523, 0.0749055
+ERROR : sth is not cont. @ 532 with -0.0409888, 0.0781349
+ERROR : sth is not cont. @ 533 with -0.0466225, 0.0859343
+ERROR : sth is not cont. @ 534 with -0.0446397, 0.0886835
+ERROR : sth is not cont. @ 535 with -0.0378223, 0.0798327
+ERROR : sth is not cont. @ 536 with -0.0361077, 0.081791
+ERROR : sth is not cont. @ 537 with -0.0414033, 0.0914358
+ERROR : sth is not cont. @ 538 with -0.0392316, 0.0927491
+ERROR : sth is not cont. @ 539 with -0.0334398, 0.0848794
+ERROR : sth is not cont. @ 540 with -0.0322116, 0.0891226
+ERROR : sth is not cont. @ 541 with -0.0378584, 0.103309
+ERROR : sth is not cont. @ 542 with -0.035364, 0.103682
+ERROR : sth is not cont. @ 543 with -0.0869075, 0.185075
+ERROR : sth is not cont. @ 544 with -0.0806764, 0.17917
+ERROR : sth is not cont. @ 545 with -0.0892694, 0.200342
+ERROR : sth is not cont. @ 546 with -0.084873, 0.209235
+ERROR : sth is not cont. @ 547 with -0.0719781, 0.207792
+ERROR : sth is not cont. @ 548 with -0.0666729, 0.201194
+ERROR : sth is not cont. @ 549 with -0.073088, 0.223786
+ERROR : sth is not cont. @ 550 with -0.0684099, 0.23274
+ERROR : sth is not cont. @ 551 with -0.0612769, 0.238203
+ERROR : sth is not cont. @ 552 with -0.0564673, 0.249653
+ERROR : sth is not cont. @ 553 with -0.0600704, 0.275136
+ERROR : sth is not cont. @ 554 with -0.0555339, 0.268508
+ERROR : sth is not cont. @ 555 with -0.0478687, 0.269258
+ERROR : sth is not cont. @ 556 with -0.042399, 0.274083
+ERROR : sth is not cont. @ 557 with -0.0454023, 0.291312
+ERROR : sth is not cont. @ 558 with -0.0407764, 0.286778
+ERROR : sth is not cont. @ 559 with -0.0876027, 0.366026
+ERROR : sth is not cont. @ 560 with -0.0811313, 0.360505
+ERROR : sth is not cont. @ 561 with -0.0852804, 0.378697
+ERROR : sth is not cont. @ 562 with -0.0780883, 0.376579
+ERROR : sth is not cont. @ 563 with -0.0618901, 0.368366
+ERROR : sth is not cont. @ 564 with -0.0547168, 0.369092
+ERROR : sth is not cont. @ 565 with -0.058808, 0.380964
+ERROR : sth is not cont. @ 566 with -0.0505791, 0.384499
+ERROR : sth is not cont. @ 567 with -0.0426517, 0.375986
+ERROR : sth is not cont. @ 568 with -0.0342843, 0.381322
+ERROR : sth is not cont. @ 569 with -0.0383901, 0.389543
+ERROR : sth is not cont. @ 570 with -0.0300666, 0.393406
+ERROR : sth is not cont. @ 571 with -0.0218614, 0.386026
+ERROR : sth is not cont. @ 572 with -0.0145837, 0.386155
+ERROR : sth is not cont. @ 573 with -0.0157853, 0.400996
+ERROR : sth is not cont. @ 574 with -0.00962352, 0.397766
+ERROR : sth is not cont. @ 577 with -0.001908, 0.00187291
+ERROR : sth is not cont. @ 578 with -0.00884925, 0.00514381
+ERROR : sth is not cont. @ 581 with -0.0187575, 0.0139657
+ERROR : sth is not cont. @ 582 with -0.023848, 0.0199516
+ERROR : sth is not cont. @ 585 with -0.0148922, 0.019373
+ERROR : sth is not cont. @ 586 with -0.00939966, 0.0138509
+ERROR : sth is not cont. @ 589 with -0.00825275, 0.0157534
+ERROR : sth is not cont. @ 590 with -0.00787073, 0.0164479
+ERROR : sth is not cont. @ 591 with -0.0958716, 0.112558
+ERROR : sth is not cont. @ 592 with -0.0996514, 0.121103
+ERROR : sth is not cont. @ 593 with -0.102554, 0.131115
+ERROR : sth is not cont. @ 594 with -0.105931, 0.140423
+ERROR : sth is not cont. @ 595 with -0.0932559, 0.141183
+ERROR : sth is not cont. @ 596 with -0.0895924, 0.147577
+ERROR : sth is not cont. @ 597 with -0.0987653, 0.165086
+ERROR : sth is not cont. @ 598 with -0.095018, 0.174648
+ERROR : sth is not cont. @ 599 with -0.0624811, 0.157404
+ERROR : sth is not cont. @ 600 with -0.0542318, 0.159613
+ERROR : sth is not cont. @ 601 with -0.0658203, 0.187468
+ERROR : sth is not cont. @ 602 with -0.0567882, 0.190459
+ERROR : sth is not cont. @ 603 with -0.0436556, 0.185303
+ERROR : sth is not cont. @ 604 with -0.0396325, 0.193802
+ERROR : sth is not cont. @ 605 with -0.0425471, 0.241481
+ERROR : sth is not cont. @ 606 with -0.0343192, 0.27337
+ERROR : sth is not cont. @ 607 with -0.115548, 0.38153
+ERROR : sth is not cont. @ 608 with -0.112001, 0.401248
+ERROR : sth is not cont. @ 609 with -0.10692, 0.42281
+ERROR : sth is not cont. @ 610 with -0.101747, 0.442577
+ERROR : sth is not cont. @ 611 with -0.0797554, 0.454114
+ERROR : sth is not cont. @ 612 with -0.0662051, 0.470009
+ERROR : sth is not cont. @ 613 with -0.0641518, 0.494977
+ERROR : sth is not cont. @ 614 with -0.0487256, 0.510502
+ERROR : sth is not cont. @ 615 with -0.00362613, 0.499095
+ERROR : sth is not cont. @ 616 with 0.017596, 0.505765
+ERROR : sth is not cont. @ 617 with 0.0199368, 0.537743
+ERROR : sth is not cont. @ 618 with 0.0432984, 0.543618
+ERROR : sth is not cont. @ 619 with 0.0691514, 0.537675
+ERROR : sth is not cont. @ 620 with 0.0864471, 0.545084
+ERROR : sth is not cont. @ 621 with 0.0957543, 0.567344
+ERROR : sth is not cont. @ 622 with 0.11442, 0.573838
+ERROR : sth is not cont. @ 623 with 0.0449263, 0.674891
+ERROR : sth is not cont. @ 624 with 0.0602306, 0.687466
+ERROR : sth is not cont. @ 625 with 0.0766199, 0.700692
+ERROR : sth is not cont. @ 626 with 0.0929429, 0.712103
+ERROR : sth is not cont. @ 627 with 0.143216, 0.725065
+ERROR : sth is not cont. @ 628 with 0.185453, 0.740095
+ERROR : sth is not cont. @ 629 with 0.197798, 0.753156
+ERROR : sth is not cont. @ 630 with 0.222788, 0.756646
+ERROR : sth is not cont. @ 631 with 0.276725, 0.732279
+ERROR : sth is not cont. @ 632 with 0.305857, 0.725858
+ERROR : sth is not cont. @ 633 with 0.310515, 0.742677
+ERROR : sth is not cont. @ 634 with 0.335215, 0.733686
+ERROR : sth is not cont. @ 635 with 0.363896, 0.715635
+ERROR : sth is not cont. @ 636 with 0.382786, 0.71045
+ERROR : sth is not cont. @ 637 with 0.393463, 0.720264
+ERROR : sth is not cont. @ 638 with 0.412339, 0.713969
+ERROR : sth is not cont. @ 641 with 0.0389706, -0.000566115
+ERROR : sth is not cont. @ 642 with 0.0478258, -0.00338021
+ERROR : sth is not cont. @ 645 with 0.0376696, -0.011183
+ERROR : sth is not cont. @ 646 with 0.030076, -0.0111643
+ERROR : sth is not cont. @ 649 with 0.0284988, -0.0157388
+ERROR : sth is not cont. @ 650 with 0.0278955, -0.017146
+ERROR : sth is not cont. @ 653 with 0.0259541, -0.0209013
+ERROR : sth is not cont. @ 654 with 0.025211, -0.0220128
+ERROR : sth is not cont. @ 655 with 0.259622, -0.109565
+ERROR : sth is not cont. @ 656 with 0.256818, -0.122215
+ERROR : sth is not cont. @ 657 with 0.293152, -0.147384
+ERROR : sth is not cont. @ 658 with 0.29908, -0.175203
+ERROR : sth is not cont. @ 659 with 0.245798, -0.195796
+ERROR : sth is not cont. @ 660 with 0.239414, -0.219056
+ERROR : sth is not cont. @ 661 with 0.269482, -0.240089
+ERROR : sth is not cont. @ 662 with 0.247437, -0.235398
+ERROR : sth is not cont. @ 663 with 0.215135, -0.209995
+ERROR : sth is not cont. @ 664 with 0.203705, -0.20055
+ERROR : sth is not cont. @ 665 with 0.231745, -0.200793
+ERROR : sth is not cont. @ 666 with 0.224442, -0.189506
+ERROR : sth is not cont. @ 667 with 0.189369, -0.159977
+ERROR : sth is not cont. @ 668 with 0.182654, -0.1467
+ERROR : sth is not cont. @ 669 with 0.202266, -0.154254
+ERROR : sth is not cont. @ 670 with 0.195712, -0.141222
+ERROR : sth is not cont. @ 671 with 0.424089, -0.214823
+ERROR : sth is not cont. @ 672 with 0.41738, -0.212278
+ERROR : sth is not cont. @ 673 with 0.436231, -0.210511
+ERROR : sth is not cont. @ 674 with 0.431507, -0.207678
+ERROR : sth is not cont. @ 675 with 0.361935, -0.199301
+ERROR : sth is not cont. @ 676 with 0.348469, -0.190625
+ERROR : sth is not cont. @ 677 with 0.373318, -0.196138
+ERROR : sth is not cont. @ 678 with 0.360023, -0.187754
+ERROR : sth is not cont. @ 679 with 0.317164, -0.169522
+ERROR : sth is not cont. @ 680 with 0.313053, -0.159715
+ERROR : sth is not cont. @ 681 with 0.338122, -0.16546
+ERROR : sth is not cont. @ 682 with 0.325364, -0.157556
+ERROR : sth is not cont. @ 683 with 0.297438, -0.129138
+ERROR : sth is not cont. @ 684 with 0.289282, -0.118284
+ERROR : sth is not cont. @ 685 with 0.31098, -0.127789
+ERROR : sth is not cont. @ 686 with 0.308283, -0.116814
+ERROR : sth is not cont. @ 687 with 0.534433, -0.192525
+ERROR : sth is not cont. @ 688 with 0.534756, -0.192519
+ERROR : sth is not cont. @ 689 with 0.568833, -0.192739
+ERROR : sth is not cont. @ 690 with 0.561133, -0.193458
+ERROR : sth is not cont. @ 691 with 0.501829, -0.186758
+ERROR : sth is not cont. @ 692 with 0.494468, -0.182585
+ERROR : sth is not cont. @ 693 with 0.520378, -0.189143
+ERROR : sth is not cont. @ 694 with 0.515972, -0.186322
+ERROR : sth is not cont. @ 695 with 0.479825, -0.170275
+ERROR : sth is not cont. @ 696 with 0.495389, -0.170733
+ERROR : sth is not cont. @ 697 with 0.520751, -0.181876
+ERROR : sth is not cont. @ 698 with 0.515214, -0.177492
+ERROR : sth is not cont. @ 699 with 0.493286, -0.158645
+ERROR : sth is not cont. @ 700 with 0.498134, -0.156741
+ERROR : sth is not cont. @ 701 with 0.513081, -0.167838
+ERROR : sth is not cont. @ 702 with 0.512265, -0.164041
+ERROR : sth is not cont. @ 705 with 0.0159119, -0.00928494
+ERROR : sth is not cont. @ 706 with 0.0125922, -0.00771847
+ERROR : sth is not cont. @ 709 with 0.0140104, -0.00992804
+ERROR : sth is not cont. @ 710 with 0.0127239, -0.00916569
+ERROR : sth is not cont. @ 713 with 0.0123403, -0.0103555
+ERROR : sth is not cont. @ 714 with 0.0128582, -0.0108999
+ERROR : sth is not cont. @ 716 with 0.292967, 0.240693
+
+//////////////////////
+page2
+x values at 2 endpoints of arc
+
+minkowski_id
+rs 717
+x values at i = 0   0.133134, 0.143922
+x values at i = 1   0.143922, 0.152959
+x values at i = 2   0.152959, 0.172246
+x values at i = 3   0.172246, 0.190391
+x values at i = 4   0.190391, 0.192041
+x values at i = 5   0.192041, 0.204522
+x values at i = 6   0.204522, 0.207669
+x values at i = 7   0.207669, 0.216868
+x values at i = 8   0.216868, 0.223581
+x values at i = 9   0.223581, 0.22946
+x values at i = 10   0.22946, 0.238748
+x values at i = 11   0.238748, 0.241973
+x values at i = 12   0.241973, 0.252758
+x values at i = 13   0.252758, 0.254697
+x values at i = 14   0.254697, 0.266064
+x values at i = 15   0.266064, 0.267372
+x values at i = 16   0.267372, 0.278404
+x values at i = 17   0.278404, 0.28023
+x values at i = 18   0.28023, 0.290132
+x values at i = 19   0.290132, 0.292967
+x values at i = 20   0.292967, 0.301125
+x values at i = 21   0.301125, 0.309756
+x values at i = 22   0.309756, 0.311775
+x values at i = 23   0.311775, 0.325919
+x values at i = 24   0.325919, 0.331627
+x values at i = 25   0.331627, 0.34089
+x values at i = 26   0.34089, 0.350163
+x values at i = 27   0.350163, 0.354972
+x values at i = 28   0.354972, 0.36689
+x values at i = 29   0.36689, 0.367729
+x values at i = 30   0.367729, 0.37937
+x values at i = 31   0.37937, 0.382105
+x values at i = 32   0.382105, 0.389066
+x values at i = 33   0.389066, 0.389419
+x values at i = 34   0.389419, 0.391483
+x values at i = 35   0.391483, 0.401159
+x values at i = 36   0.401159, 0.411847
+x values at i = 37   0.411847, 0.423128
+x values at i = 38   0.423128, 0.429707
+x values at i = 39   0.429707, 0.436693
+x values at i = 40   0.436693, 0.443748
+x values at i = 41   0.443748, 0.451202
+x values at i = 42   0.451202, 0.458698
+x values at i = 43   0.458698, 0.466578
+x values at i = 44   0.466578, 0.474481
+x values at i = 45   0.474481, 0.482748
+x values at i = 46   0.482748, 0.499305
+x values at i = 47   0.499305, 0.517162
+x values at i = 48   0.517162, 0.534984
+x values at i = 49   0.534984, 0.553843
+x values at i = 50   0.553843, 0.574597
+x values at i = 51   0.574597, 0.596222
+x values at i = 52   0.596222, 0.617803
+x values at i = 53   0.617803, 0.639816
+x values at i = 54   0.639816, 0.701086
+x values at i = 55   0.701086, 0.759546
+x values at i = 56   0.759546, 0.773993
+x values at i = 57   0.773993, 0.787971
+x values at i = 58   0.787971, 0.801898
+x values at i = 59   0.801898, 0.815263
+x values at i = 60   0.815263, 0.82853
+x values at i = 61   0.82853, 0.841157
+x values at i = 62   0.841157, 0.853624
+x values at i = 63   0.853624, 0.865388
+x values at i = 64   0.865388, 0.880558
+x values at i = 65   0.880558, 0.895128
+x values at i = 66   0.895128, 0.90853
+x values at i = 67   0.90853, 0.921241
+x values at i = 68   0.921241, 0.932826
+x values at i = 69   0.932826, 0.943622
+x values at i = 70   0.943622, 0.953337
+x values at i = 71   0.953337, 0.962168
+x values at i = 72   0.962168, 0.976763
+x values at i = 73   0.976763, 0.987335
+x values at i = 74   0.987335, 0.99108
+x values at i = 75   0.99108, 0.993749
+x values at i = 76   0.993749, 0.995375
+x values at i = 77   0.995375, 0.995909
+x values at i = 78   0.995909, 0.995365
+x values at i = 79   0.995365, 0.99376
+x values at i = 80   0.99376, 0.991019
+x values at i = 81   0.991019, 0.987246
+x values at i = 82   0.987246, 0.982253
+x values at i = 83   0.982253, 0.976265
+x values at i = 84   0.976265, 0.968972
+x values at i = 85   0.968972, 0.960717
+x values at i = 86   0.960717, 0.952086
+x values at i = 87   0.952086, 0.942062
+x values at i = 88   0.942062, 0.931722
+x values at i = 89   0.931722, 0.919937
+x values at i = 90   0.919937, 0.908202
+x values at i = 91   0.908202, 0.894957
+x values at i = 92   0.894957, 0.882151
+x values at i = 93   0.882151, 0.867737
+x values at i = 94   0.867737, 0.854211
+x values at i = 95   0.854211, 0.838893
+x values at i = 96   0.838893, 0.82507
+x values at i = 97   0.82507, 0.80904
+x values at i = 98   0.80904, 0.795597
+x values at i = 99   0.795597, 0.790012
+x values at i = 100   0.790012, 0.790152
+x values at i = 101   0.790152, 0.790621
+x values at i = 102   0.790621, 0.791593
+x values at i = 103   0.791593, 0.792441
+x values at i = 104   0.792441, 0.792607
+x values at i = 105   0.792607, 0.793178
+x values at i = 106   0.793178, 0.79375
+x values at i = 107   0.79375, 0.793888
+x values at i = 108   0.793888, 0.794135
+x values at i = 109   0.794135, 0.794274
+x values at i = 110   0.794274, 0.794071
+x values at i = 111   0.794071, 0.793919
+x values at i = 112   0.793919, 0.793402
+x values at i = 113   0.793402, 0.792915
+x values at i = 114   0.792915, 0.7921
+x values at i = 115   0.7921, 0.79126
+x values at i = 116   0.79126, 0.790029
+x values at i = 117   0.790029, 0.789037
+x values at i = 118   0.789037, 0.786928
+x values at i = 119   0.786928, 0.786147
+x values at i = 120   0.786147, 0.782748
+x values at i = 121   0.782748, 0.782638
+x values at i = 122   0.782638, 0.778657
+x values at i = 123   0.778657, 0.776864
+x values at i = 124   0.776864, 0.774071
+x values at i = 125   0.774071, 0.769326
+x values at i = 126   0.769326, 0.769255
+x values at i = 127   0.769255, 0.763908
+x values at i = 128   0.763908, 0.758342
+x values at i = 129   0.758342, 0.758009
+x values at i = 130   0.758009, 0.75211
+x values at i = 131   0.75211, 0.745931
+x values at i = 132   0.745931, 0.74028
+x values at i = 133   0.74028, 0.739008
+x values at i = 134   0.739008, 0.732349
+x values at i = 135   0.732349, 0.724899
+x values at i = 136   0.724899, 0.717929
+x values at i = 137   0.717929, 0.710079
+x values at i = 138   0.710079, 0.70842
+x values at i = 139   0.70842, 0.703017
+x values at i = 140   0.703017, 0.69487
+x values at i = 141   0.69487, 0.688054
+x values at i = 142   0.688054, 0.679575
+x values at i = 143   0.679575, 0.676189
+x values at i = 144   0.676189, 0.671992
+x values at i = 145   0.671992, 0.669476
+x values at i = 146   0.669476, 0.664504
+x values at i = 147   0.664504, 0.658451
+x values at i = 148   0.658451, 0.655486
+x values at i = 149   0.655486, 0.65057
+x values at i = 150   0.65057, 0.646746
+x values at i = 151   0.646746, 0.642199
+x values at i = 152   0.642199, 0.63836
+x values at i = 153   0.63836, 0.634104
+x values at i = 154   0.634104, 0.630403
+x values at i = 155   0.630403, 0.627725
+x values at i = 156   0.627725, 0.626439
+x values at i = 157   0.626439, 0.622957
+x values at i = 158   0.622957, 0.619311
+x values at i = 159   0.619311, 0.616097
+x values at i = 160   0.616097, 0.612796
+x values at i = 161   0.612796, 0.609898
+x values at i = 162   0.609898, 0.608491
+x values at i = 163   0.608491, 0.606979
+x values at i = 164   0.606979, 0.604448
+x values at i = 165   0.604448, 0.601133
+x values at i = 166   0.601133, 0.59977
+x values at i = 167   0.59977, 0.598169
+x values at i = 168   0.598169, 0.595535
+x values at i = 169   0.595535, 0.593969
+x values at i = 170   0.593969, 0.593175
+x values at i = 171   0.593175, 0.589894
+x values at i = 172   0.589894, 0.589376
+x values at i = 173   0.589376, 0.587136
+x values at i = 174   0.587136, 0.586501
+x values at i = 175   0.586501, 0.58543
+x values at i = 176   0.58543, 0.585259
+x values at i = 177   0.585259, 0.584565
+x values at i = 178   0.584565, 0.584064
+x values at i = 179   0.584064, 0.5839
+x values at i = 180   0.5839, 0.583369
+x values at i = 181   0.583369, 0.583298
+x values at i = 182   0.583298, 0.583026
+x values at i = 183   0.583026, 0.582883
+x values at i = 184   0.582883, 0.582787
+x values at i = 185   0.582787, 0.582677
+x values at i = 186   0.582677, 0.582663
+x values at i = 187   0.582663, 0.582626
+x values at i = 188   0.582626, 0.58266
+x values at i = 189   0.58266, 0.582677
+x values at i = 190   0.582677, 0.582742
+x values at i = 191   0.582742, 0.582826
+x values at i = 192   0.582826, 0.582853
+x values at i = 193   0.582853, 0.582949
+x values at i = 194   0.582949, 0.582962
+x values at i = 195   0.582962, 0.583094
+x values at i = 196   0.583094, 0.58315
+x values at i = 197   0.58315, 0.583197
+x values at i = 198   0.583197, 0.58329
+x values at i = 199   0.58329, 0.583311
+x values at i = 200   0.583311, 0.583557
+x values at i = 201   0.583557, 0.583576
+x values at i = 202   0.583576, 0.583698
+x values at i = 203   0.583698, 0.58381
+x values at i = 204   0.58381, 0.58381
+x values at i = 205   0.58381, 0.583863
+x values at i = 206   0.583863, 0.583869
+x values at i = 207   0.583869, 0.583894
+x values at i = 208   0.583894, 0.585132
+x values at i = 209   0.585132, 0.585722
+x values at i = 210   0.585722, 0.586682
+x values at i = 211   0.586682, 0.587391
+x values at i = 212   0.587391, 0.588657
+x values at i = 213   0.588657, 0.589696
+x values at i = 214   0.589696, 0.590621
+x values at i = 215   0.590621, 0.591335
+x values at i = 216   0.591335, 0.59192
+x values at i = 217   0.59192, 0.592313
+x values at i = 218   0.592313, 0.592562
+x values at i = 219   0.592562, 0.592638
+x values at i = 220   0.592638, 0.592535
+x values at i = 221   0.592535, 0.592254
+x values at i = 222   0.592254, 0.591755
+x values at i = 223   0.591755, 0.591107
+x values at i = 224   0.591107, 0.590217
+x values at i = 225   0.590217, 0.589204
+x values at i = 226   0.589204, 0.587933
+x values at i = 227   0.587933, 0.586554
+x values at i = 228   0.586554, 0.58492
+x values at i = 229   0.58492, 0.583165
+x values at i = 230   0.583165, 0.581193
+x values at i = 231   0.581193, 0.579044
+x values at i = 232   0.579044, 0.576753
+x values at i = 233   0.576753, 0.574199
+x values at i = 234   0.574199, 0.571593
+x values at i = 235   0.571593, 0.568638
+x values at i = 236   0.568638, 0.567289
+x values at i = 237   0.567289, 0.565869
+x values at i = 238   0.565869, 0.563688
+x values at i = 239   0.563688, 0.561334
+x values at i = 240   0.561334, 0.558991
+x values at i = 241   0.558991, 0.556476
+x values at i = 242   0.556476, 0.551497
+x values at i = 243   0.551497, 0.545848
+x values at i = 244   0.545848, 0.540282
+x values at i = 245   0.540282, 0.534102
+x values at i = 246   0.534102, 0.528001
+x values at i = 247   0.528001, 0.521356
+x values at i = 248   0.521356, 0.514775
+x values at i = 249   0.514775, 0.507727
+x values at i = 250   0.507727, 0.500725
+x values at i = 251   0.500725, 0.493333
+x values at i = 252   0.493333, 0.485969
+x values at i = 253   0.485969, 0.478291
+x values at i = 254   0.478291, 0.470626
+x values at i = 255   0.470626, 0.462717
+x values at i = 256   0.462717, 0.45416
+x values at i = 257   0.45416, 0.445047
+x values at i = 258   0.445047, 0.436291
+x values at i = 259   0.436291, 0.427211
+x values at i = 260   0.427211, 0.415111
+x values at i = 261   0.415111, 0.402921
+x values at i = 262   0.402921, 0.391139
+x values at i = 263   0.391139, 0.379858
+x values at i = 264   0.379858, 0.368871
+x values at i = 265   0.368871, 0.362039
+x values at i = 266   0.362039, 0.355614
+x values at i = 267   0.355614, 0.346915
+x values at i = 268   0.346915, 0.346464
+x values at i = 269   0.346464, 0.337964
+x values at i = 270   0.337964, 0.334535
+x values at i = 271   0.334535, 0.328595
+x values at i = 272   0.328595, 0.320253
+x values at i = 273   0.320253, 0.319614
+x values at i = 274   0.319614, 0.310909
+x values at i = 275   0.310909, 0.303226
+x values at i = 276   0.303226, 0.297649
+x values at i = 277   0.297649, 0.294012
+x values at i = 278   0.294012, 0.290378
+x values at i = 279   0.290378, 0.28598
+x values at i = 280   0.28598, 0.283364
+x values at i = 281   0.283364, 0.27834
+x values at i = 282   0.27834, 0.272366
+x values at i = 283   0.272366, 0.269559
+x values at i = 284   0.269559, 0.264965
+x values at i = 285   0.264965, 0.262045
+x values at i = 286   0.262045, 0.261544
+x values at i = 287   0.261544, 0.257518
+x values at i = 288   0.257518, 0.254287
+x values at i = 289   0.254287, 0.250805
+x values at i = 290   0.250805, 0.249318
+x values at i = 291   0.249318, 0.24795
+x values at i = 292   0.24795, 0.244976
+x values at i = 293   0.244976, 0.242819
+x values at i = 294   0.242819, 0.242567
+x values at i = 295   0.242567, 0.240047
+x values at i = 296   0.240047, 0.238555
+x values at i = 297   0.238555, 0.23804
+x values at i = 298   0.23804, 0.236056
+x values at i = 299   0.236056, 0.234569
+x values at i = 300   0.234569, 0.234283
+x values at i = 301   0.234283, 0.233126
+x values at i = 302   0.233126, 0.23212
+x values at i = 303   0.23212, 0.231943
+x values at i = 304   0.231943, 0.23089
+x values at i = 305   0.23089, 0.230441
+x values at i = 306   0.230441, 0.22987
+x values at i = 307   0.22987, 0.229204
+x values at i = 308   0.229204, 0.22898
+x values at i = 309   0.22898, 0.2285
+x values at i = 310   0.230837, 0.230206
+x values at i = 311   0.230206, 0.229813
+x values at i = 312   0.229813, 0.229387
+x values at i = 313   0.229387, 0.228752
+x values at i = 314   0.228752, 0.228643
+x values at i = 315   0.228643, 0.2285
+x values at i = 316   0.230837, 0.231545
+x values at i = 317   0.231545, 0.231974
+x values at i = 318   0.231974, 0.232591
+x values at i = 319   0.232591, 0.233589
+x values at i = 320   0.233589, 0.233818
+x values at i = 321   0.233818, 0.234361
+x values at i = 322   0.234361, 0.234952
+x values at i = 323   0.234952, 0.235165
+x values at i = 324   0.235165, 0.235678
+x values at i = 325   0.235678, 0.235718
+x values at i = 326   0.235718, 0.23611
+x values at i = 327   0.23611, 0.236121
+x values at i = 328   0.236121, 0.236245
+x values at i = 329   0.236245, 0.236138
+x values at i = 330   0.236138, 0.236069
+x values at i = 331   0.236069, 0.23584
+x values at i = 332   0.23584, 0.23554
+x values at i = 333   0.23554, 0.235295
+x values at i = 334   0.235295, 0.234597
+x values at i = 335   0.234597, 0.23454
+x values at i = 336   0.23454, 0.233521
+x values at i = 337   0.233521, 0.23321
+x values at i = 338   0.23321, 0.232288
+x values at i = 339   0.232288, 0.231271
+x values at i = 340   0.231271, 0.230728
+x values at i = 341   0.230728, 0.228975
+x values at i = 342   0.228975, 0.228722
+x values at i = 343   0.228722, 0.22687
+x values at i = 344   0.22687, 0.225369
+x values at i = 345   0.225369, 0.224532
+x values at i = 346   0.224532, 0.221855
+x values at i = 347   0.221855, 0.221079
+x values at i = 348   0.221079, 0.218917
+x values at i = 349   0.218917, 0.215589
+x values at i = 350   0.215589, 0.215586
+x values at i = 351   0.215586, 0.212006
+x values at i = 352   0.212006, 0.208562
+x values at i = 353   0.208562, 0.208048
+x values at i = 354   0.208048, 0.203737
+x values at i = 355   0.203737, 0.201018
+x values at i = 356   0.201018, 0.199409
+x values at i = 357   0.199409, 0.198104
+x values at i = 358   0.198104, 0.195162
+x values at i = 359   0.195162, 0.192024
+x values at i = 360   0.192024, 0.188864
+x values at i = 361   0.188864, 0.186364
+x values at i = 362   0.186364, 0.185512
+x values at i = 363   0.185512, 0.182143
+x values at i = 364   0.182143, 0.178591
+x values at i = 365   0.178591, 0.171459
+x values at i = 366   0.171459, 0.168055
+x values at i = 367   0.168055, 0.163627
+x values at i = 368   0.163627, 0.155761
+x values at i = 369   0.155761, 0.147319
+x values at i = 370   0.147319, 0.143482
+x values at i = 371   0.143482, 0.138847
+x values at i = 372   0.138847, 0.129898
+x values at i = 373   0.129898, 0.120923
+x values at i = 374   0.120923, 0.114444
+x values at i = 375   0.114444, 0.111588
+x values at i = 376   0.111588, 0.102139
+x values at i = 377   0.102139, 0.0924955
+x values at i = 378   0.0924955, 0.0839409
+x values at i = 379   0.0839409, 0.0827668
+x values at i = 380   0.0827668, 0.0729429
+x values at i = 381   0.0729429, 0.0707518
+x values at i = 382   0.0707518, 0.0655669
+x values at i = 383   0.0655669, 0.0582121
+x values at i = 384   0.0582121, 0.0424295
+x values at i = 385   0.0424295, 0.0405236
+x values at i = 386   0.0405236, 0.0269987
+x values at i = 387   0.0269987, 0.0250181
+x values at i = 388   0.0250181, 0.0190995
+x values at i = 389   0.0190995, 0.0114642
+x values at i = 390   0.0114642, 0.0113901
+x values at i = 391   0.0113901, 0.00345412
+x values at i = 392   0.00345412, -0.000334536
+x values at i = 393   -0.000334536, -0.00428654
+x values at i = 394   -0.00428654, -0.0121942
+x values at i = 395   -0.0121942, -0.0195932
+x values at i = 396   -0.0195932, -0.0198273
+x values at i = 397   -0.0198273, -0.027929
+x values at i = 398   -0.027929, -0.0348127
+x values at i = 399   -0.0348127, -0.0357496
+x values at i = 400   -0.0357496, -0.0438911
+x values at i = 401   -0.0438911, -0.0470823
+x values at i = 402   -0.0470823, -0.0520287
+x values at i = 403   -0.0520287, -0.0575657
+x values at i = 404   -0.0575657, -0.0606251
+x values at i = 405   -0.0606251, -0.0665599
+x values at i = 406   -0.0665599, -0.0693154
+x values at i = 407   -0.0693154, -0.0748174
+x values at i = 408   -0.0748174, -0.0824821
+x values at i = 409   -0.0824821, -0.0895888
+x values at i = 410   -0.0895888, -0.0898981
+x values at i = 411   -0.0898981, -0.0969928
+x values at i = 412   -0.0969928, -0.103932
+x values at i = 413   -0.103932, -0.110621
+x values at i = 414   -0.110621, -0.112189
+x values at i = 415   -0.112189, -0.117245
+x values at i = 416   -0.117245, -0.120938
+x values at i = 417   -0.120938, -0.121544
+x values at i = 418   -0.121544, -0.122651
+x values at i = 419   -0.122651, -0.124222
+x values at i = 420   -0.124222, -0.126116
+x values at i = 421   -0.126116, -0.128559
+x values at i = 422   -0.128559, -0.131359
+x values at i = 423   -0.131359, -0.134777
+x values at i = 424   -0.134777, -0.138604
+x values at i = 425   -0.138604, -0.143098
+x values at i = 426   -0.143098, -0.148077
+x values at i = 427   -0.148077, -0.153746
+x values at i = 428   -0.153746, -0.160004
+x values at i = 429   -0.160004, -0.166947
+x values at i = 430   -0.166947, -0.174611
+x values at i = 431   -0.174611, -0.179469
+x values at i = 432   -0.179469, -0.184738
+x values at i = 433   -0.184738, -0.190093
+x values at i = 434   -0.190093, -0.195852
+x values at i = 435   -0.195852, -0.201676
+x values at i = 436   -0.201676, -0.207894
+x values at i = 437   -0.207894, -0.214159
+x values at i = 438   -0.214159, -0.220802
+x values at i = 439   -0.220802, -0.234195
+x values at i = 440   -0.234195, -0.248981
+x values at i = 441   -0.248981, -0.263851
+x values at i = 442   -0.263851, -0.279914
+x values at i = 443   -0.279914, -0.296042
+x values at i = 444   -0.296042, -0.313122
+x values at i = 445   -0.313122, -0.330282
+x values at i = 446   -0.330282, -0.348128
+x values at i = 447   -0.348128, -0.36609
+x values at i = 448   -0.36609, -0.384456
+x values at i = 449   -0.384456, -0.402983
+x values at i = 450   -0.402983, -0.421628
+x values at i = 451   -0.421628, -0.435572
+x values at i = 452   -0.435572, -0.449445
+x values at i = 453   -0.449445, -0.479078
+x values at i = 454   -0.479078, -0.507646
+x values at i = 455   -0.507646, -0.522141
+x values at i = 456   -0.522141, -0.536196
+x values at i = 457   -0.536196, -0.550409
+x values at i = 458   -0.550409, -0.564079
+x values at i = 459   -0.564079, -0.577891
+x values at i = 460   -0.577891, -0.59107
+x values at i = 461   -0.59107, -0.604361
+x values at i = 462   -0.604361, -0.616943
+x values at i = 463   -0.616943, -0.629594
+x values at i = 464   -0.629594, -0.641475
+x values at i = 465   -0.641475, -0.653363
+x values at i = 466   -0.653363, -0.66444
+x values at i = 467   -0.66444, -0.687197
+x values at i = 468   -0.687197, -0.70852
+x values at i = 469   -0.70852, -0.718183
+x values at i = 470   -0.718183, -0.727555
+x values at i = 471   -0.727555, -0.736255
+x values at i = 472   -0.736255, -0.744692
+x values at i = 473   -0.744692, -0.752473
+x values at i = 474   -0.752473, -0.760008
+x values at i = 475   -0.760008, -0.766914
+x values at i = 476   -0.766914, -0.773582
+x values at i = 477   -0.773582, -0.779655
+x values at i = 478   -0.779655, -0.785492
+x values at i = 479   -0.785492, -0.790772
+x values at i = 480   -0.790772, -0.795816
+x values at i = 481   -0.795816, -0.800345
+x values at i = 482   -0.800345, -0.804632
+x values at i = 483   -0.804632, -0.808448
+x values at i = 484   -0.808448, -0.812019
+x values at i = 485   -0.812019, -0.817919
+x values at i = 486   -0.817919, -0.822818
+x values at i = 487   -0.822818, -0.828727
+x values at i = 488   -0.828727, -0.830707
+x values at i = 489   -0.830707, -0.830423
+x values at i = 490   -0.830423, -0.829598
+x values at i = 491   -0.829598, -0.828742
+x values at i = 492   -0.828742, -0.827681
+x values at i = 493   -0.827681, -0.826378
+x values at i = 494   -0.826378, -0.824885
+x values at i = 495   -0.824885, -0.823155
+x values at i = 496   -0.823155, -0.821247
+x values at i = 497   -0.821247, -0.81911
+x values at i = 498   -0.81911, -0.816804
+x values at i = 499   -0.816804, -0.814281
+x values at i = 500   -0.814281, -0.811592
+x values at i = 501   -0.811592, -0.808705
+x values at i = 502   -0.808705, -0.805648
+x values at i = 503   -0.805648, -0.799048
+x values at i = 504   -0.799048, -0.791712
+x values at i = 505   -0.791712, -0.788379
+x values at i = 506   -0.788379, -0.790683
+x values at i = 507   -0.790683, -0.791111
+x values at i = 508   -0.791111, -0.805542
+x values at i = 509   -0.805542, -0.809353
+x values at i = 510   -0.809353, -0.81763
+x values at i = 511   -0.81763, -0.819237
+x values at i = 512   -0.819237, -0.825556
+x values at i = 513   -0.825556, -0.832646
+x values at i = 514   -0.832646, -0.832861
+x values at i = 515   -0.832861, -0.839925
+x values at i = 516   -0.839925, -0.845262
+x values at i = 517   -0.845262, -0.846393
+x values at i = 518   -0.846393, -0.851326
+x values at i = 519   -0.851326, -0.852614
+x values at i = 520   -0.852614, -0.857126
+x values at i = 521   -0.857126, -0.85835
+x values at i = 522   -0.85835, -0.86272
+x values at i = 523   -0.86272, -0.863845
+x values at i = 524   -0.863845, -0.868032
+x values at i = 525   -0.868032, -0.868902
+x values at i = 526   -0.868902, -0.873099
+x values at i = 527   -0.873099, -0.87373
+x values at i = 528   -0.87373, -0.877866
+x values at i = 529   -0.877866, -0.878168
+x values at i = 530   -0.878168, -0.88236
+x values at i = 531   -0.88236, -0.882378
+x values at i = 532   -0.882378, -0.886251
+x values at i = 533   -0.886251, -0.886548
+x values at i = 534   -0.886548, -0.889902
+x values at i = 535   -0.889902, -0.890436
+x values at i = 536   -0.890436, -0.893234
+x values at i = 537   -0.893234, -0.894017
+x values at i = 538   -0.894017, -0.896358
+x values at i = 539   -0.896358, -0.897284
+x values at i = 540   -0.897284, -0.900244
+x values at i = 541   -0.900244, -0.901703
+x values at i = 542   -0.901703, -0.903396
+x values at i = 543   -0.903396, -0.906145
+x values at i = 544   -0.906145, -0.906232
+x values at i = 545   -0.906232, -0.908507
+x values at i = 546   -0.908507, -0.910429
+x values at i = 547   -0.910429, -0.911903
+x values at i = 548   -0.911903, -0.911935
+x values at i = 549   -0.911935, -0.913013
+x values at i = 550   -0.913013, -0.913672
+x values at i = 551   -0.913672, -0.913891
+x values at i = 552   -0.913891, -0.913593
+x values at i = 553   -0.913593, -0.912684
+x values at i = 554   -0.912684, -0.91266
+x values at i = 555   -0.91266, -0.911713
+x values at i = 556   -0.911713, -0.910431
+x values at i = 557   -0.910431, -0.909247
+x values at i = 558   -0.909247, -0.908809
+x values at i = 559   -0.908809, -0.90684
+x values at i = 560   -0.90684, -0.906687
+x values at i = 561   -0.906687, -0.904518
+x values at i = 562   -0.904518, -0.903644
+x values at i = 563   -0.903644, -0.901815
+x values at i = 564   -0.901815, -0.899979
+x values at i = 565   -0.899979, -0.898733
+x values at i = 566   -0.898733, -0.895841
+x values at i = 567   -0.895841, -0.895266
+x values at i = 568   -0.895266, -0.89141
+x values at i = 569   -0.89141, -0.891004
+x values at i = 570   -0.891004, -0.887193
+x values at i = 571   -0.887193, -0.885706
+x values at i = 572   -0.885706, -0.882616
+x values at i = 573   -0.882616, -0.87963
+x values at i = 574   -0.87963, -0.877656
+x values at i = 575   -0.877656, -0.873053
+x values at i = 576   -0.873053, -0.872745
+x values at i = 577   -0.872745, -0.874961
+x values at i = 578   -0.874961, -0.881594
+x values at i = 579   -0.881594, -0.888225
+x values at i = 580   -0.888225, -0.894545
+x values at i = 581   -0.894545, -0.906982
+x values at i = 582   -0.906982, -0.918393
+x values at i = 583   -0.918393, -0.92929
+x values at i = 584   -0.92929, -0.9394
+x values at i = 585   -0.9394, -0.944182
+x values at i = 586   -0.944182, -0.9488
+x values at i = 587   -0.9488, -0.953197
+x values at i = 588   -0.953197, -0.957443
+x values at i = 589   -0.957443, -0.961449
+x values at i = 590   -0.961449, -0.965313
+x values at i = 591   -0.965313, -0.968925
+x values at i = 592   -0.968925, -0.972396
+x values at i = 593   -0.972396, -0.975607
+x values at i = 594   -0.975607, -0.978676
+x values at i = 595   -0.978676, -0.981481
+x values at i = 596   -0.981481, -0.984137
+x values at i = 597   -0.984137, -0.98699
+x values at i = 598   -0.98699, -0.989563
+x values at i = 599   -0.989563, -0.991771
+x values at i = 600   -0.991771, -0.993632
+x values at i = 601   -0.993632, -0.995111
+x values at i = 602   -0.995111, -0.996188
+x values at i = 603   -0.996188, -0.996852
+x values at i = 604   -0.996852, -0.997075
+x values at i = 605   -0.997075, -0.995744
+x values at i = 606   -0.995744, -0.991762
+x values at i = 607   -0.991762, -0.988602
+x values at i = 608   -0.988602, -0.984746
+x values at i = 609   -0.984746, -0.979973
+x values at i = 610   -0.979973, -0.974492
+x values at i = 611   -0.974492, -0.96798
+x values at i = 612   -0.96798, -0.96075
+x values at i = 613   -0.96075, -0.952377
+x values at i = 614   -0.952377, -0.94327
+x values at i = 615   -0.94327, -0.932916
+x values at i = 616   -0.932916, -0.921804
+x values at i = 617   -0.921804, -0.909353
+x values at i = 618   -0.909353, -0.896102
+x values at i = 619   -0.896102, -0.884045
+x values at i = 620   -0.884045, -0.870996
+x values at i = 621   -0.870996, -0.857442
+x values at i = 622   -0.857442, -0.843023
+x values at i = 623   -0.843023, -0.828127
+x values at i = 624   -0.828127, -0.812514
+x values at i = 625   -0.812514, -0.796433
+x values at i = 626   -0.796433, -0.779802
+x values at i = 627   -0.779802, -0.745009
+x values at i = 628   -0.745009, -0.709092
+x values at i = 629   -0.709092, -0.690427
+x values at i = 630   -0.690427, -0.671756
+x values at i = 631   -0.671756, -0.652565
+x values at i = 632   -0.652565, -0.633543
+x values at i = 633   -0.633543, -0.618775
+x values at i = 634   -0.618775, -0.604185
+x values at i = 635   -0.604185, -0.589301
+x values at i = 636   -0.589301, -0.574657
+x values at i = 637   -0.574657, -0.559734
+x values at i = 638   -0.559734, -0.545104
+x values at i = 639   -0.545104, -0.530218
+x values at i = 640   -0.530218, -0.51567
+x values at i = 641   -0.51567, -0.491248
+x values at i = 642   -0.491248, -0.467844
+x values at i = 643   -0.467844, -0.444077
+x values at i = 644   -0.444077, -0.421379
+x values at i = 645   -0.421379, -0.406408
+x values at i = 646   -0.406408, -0.391303
+x values at i = 647   -0.391303, -0.376829
+x values at i = 648   -0.376829, -0.362254
+x values at i = 649   -0.362254, -0.34833
+x values at i = 650   -0.34833, -0.334359
+x values at i = 651   -0.334359, -0.32104
+x values at i = 652   -0.32104, -0.307742
+x values at i = 653   -0.307742, -0.295086
+x values at i = 654   -0.295086, -0.282531
+x values at i = 655   -0.282531, -0.270596
+x values at i = 656   -0.270596, -0.258852
+x values at i = 657   -0.258852, -0.237066
+x values at i = 658   -0.237066, -0.21659
+x values at i = 659   -0.21659, -0.198279
+x values at i = 660   -0.198279, -0.181965
+x values at i = 661   -0.181965, -0.174595
+x values at i = 662   -0.174595, -0.173942
+x values at i = 663   -0.173942, -0.161694
+x values at i = 664   -0.161694, -0.15855
+x values at i = 665   -0.15855, -0.145084
+x values at i = 666   -0.145084, -0.137812
+x values at i = 667   -0.137812, -0.131671
+x values at i = 668   -0.131671, -0.125089
+x values at i = 669   -0.125089, -0.118774
+x values at i = 670   -0.118774, -0.11203
+x values at i = 671   -0.11203, -0.106129
+x values at i = 672   -0.106129, -0.0982896
+x values at i = 673   -0.0982896, -0.0939871
+x values at i = 674   -0.0939871, -0.0841629
+x values at i = 675   -0.0841629, -0.0821423
+x values at i = 676   -0.0821423, -0.0729103
+x values at i = 677   -0.0729103, -0.0707593
+x values at i = 678   -0.0707593, -0.061356
+x values at i = 679   -0.061356, -0.059665
+x values at i = 680   -0.059665, -0.049201
+x values at i = 681   -0.049201, -0.038707
+x values at i = 682   -0.038707, -0.0368897
+x values at i = 683   -0.0368897, -0.0236014
+x values at i = 684   -0.0236014, -0.0184608
+x values at i = 685   -0.0184608, -0.0100598
+x values at i = 686   -0.0100598, 0.000540407
+x values at i = 687   0.000540407, 0.00421499
+x values at i = 688   0.00421499, 0.0190862
+x values at i = 689   0.0190862, 0.0386142
+x values at i = 690   0.0386142, 0.0454629
+x values at i = 691   0.0454629, 0.0577519
+x values at i = 692   0.0577519, 0.073089
+x values at i = 693   0.073089, 0.0763007
+x values at i = 694   0.0763007, 0.0945929
+x values at i = 695   0.0945929, 0.102996
+x values at i = 696   0.102996, 0.133134
+x values at i = 697   0.133134, 0.143922
+x values at i = 698   0.143922, 0.152959
+x values at i = 699   0.152959, 0.172246
+x values at i = 700   0.172246, 0.190391
+x values at i = 701   0.190391, 0.192041
+x values at i = 702   0.192041, 0.204522
+x values at i = 703   0.204522, 0.207669
+x values at i = 704   0.207669, 0.216868
+x values at i = 705   0.216868, 0.223581
+x values at i = 706   0.223581, 0.22946
+x values at i = 707   0.22946, 0.238748
+x values at i = 708   0.238748, 0.241973
+x values at i = 709   0.241973, 0.252758
+x values at i = 710   0.252758, 0.254697
+x values at i = 711   0.254697, 0.266064
+x values at i = 712   0.266064, 0.267372
+x values at i = 713   0.267372, 0.278404
+x values at i = 714   0.278404, 0.28023
+x values at i = 715   0.28023, 0.290132
+x values at i = 716   0.290132, 0.292967
+
+//
+page3
+
+arcspline ends
+0, 0 : 0.292967, 0.133134
+0, 1 : 0.389419, 0.292967
+0, 2 : 0.423128, 0.389419
+0, 3 : 0.553843, 0.423128
+0, 4 : 0.639816, 0.553843
+0, 5 : 0.865388, 0.639816
+0, 6 : 0.995909, 0.865388
+0, 7 : 0.960717, 0.995909
+0, 8 : 0.790012, 0.960717
+0, 9 : 0.794274, 0.790012
+0, 10 : 0.774071, 0.794274
+0, 11 : 0.664504, 0.774071
+0, 12 : 0.664504, 0.604448
+0, 13 : 0.604448, 0.582626
+0, 14 : 0.582626, 0.583557
+0, 15 : 0.583557, 0.583698
+0, 16 : 0.583698, 0.583894
+0, 17 : 0.587391, 0.583894
+0, 18 : 0.592638, 0.587391
+0, 19 : 0.568638, 0.592638
+0, 20 : 0.565869, 0.568638
+0, 21 : 0.462717, 0.565869
+0, 22 : 0.427211, 0.462717
+0, 23 : 0.362039, 0.427211
+0, 24 : 0.346915, 0.362039
+0, 25 : 0.27834, 0.346915
+0, 26 : 0.27834, 0.238555
+0, 27 : 0.238555, 0.23212
+0, 28 : 0.23212, 0.2285
+0, 29 : 0.2285, 0.230837
+0, 30 : 0.236245, 0.230837
+0, 31 : 0.203737, 0.236245
+0, 32 : 0.0839409, 0.203737
+0, 33 : 0.0729429, 0.0839409
+0, 34 : 0.0582121, 0.0729429
+0, 35 : -0.0693154, 0.0582121
+0, 36 : -0.120938, -0.0693154
+0, 37 : -0.174611, -0.120938
+0, 38 : -0.421628, -0.174611
+0, 39 : -0.449445, -0.421628
+0, 40 : -0.66444, -0.449445
+0, 41 : -0.830707, -0.66444
+0, 42 : -0.829598, -0.830707
+0, 43 : -0.788379, -0.829598
+0, 44 : -0.900244, -0.788379
+0, 45 : -0.913891, -0.900244
+0, 46 : -0.912684, -0.913891
+0, 47 : -0.872745, -0.912684
+0, 48 : -0.984137, -0.872745
+0, 49 : -0.997075, -0.984137
+0, 50 : -0.896102, -0.997075
+0, 51 : -0.633543, -0.896102
+0, 52 : -0.51567, -0.633543
+0, 53 : -0.421379, -0.51567
+0, 54 : -0.173942, -0.421379
+0, 55 : -0.15855, -0.173942
+0, 56 : -0.0841629, -0.15855
+0, 57 : 0.0190862, -0.0841629
+0, 58 : 0.0945929, 0.0190862
+0, 59 : 0.133134, 0.0945929
+0, 60 : 0.292967, 0.133134
+
+///////////////////////////
+page4
+arc ends...
+
+0, 0, 0 : 0.292967, 0.290132
+0, 0, 1 : 0.290132, 0.28023
+0, 0, 2 : 0.28023, 0.278404
+0, 0, 3 : 0.278404, 0.267372
+0, 0, 4 : 0.267372, 0.266064
+0, 0, 5 : 0.266064, 0.254697
+0, 0, 6 : 0.254697, 0.252758
+0, 0, 7 : 0.252758, 0.241973
+0, 0, 8 : 0.241973, 0.238748
+0, 0, 9 : 0.238748, 0.22946
+0, 0, 10 : 0.22946, 0.223581
+0, 0, 11 : 0.223581, 0.216868
+0, 0, 12 : 0.216868, 0.207669
+0, 0, 13 : 0.207669, 0.204522
+0, 0, 14 : 0.204522, 0.192041
+0, 0, 15 : 0.192041, 0.190391
+0, 0, 16 : 0.190391, 0.172246
+0, 0, 17 : 0.172246, 0.152959
+0, 0, 18 : 0.152959, 0.143922
+0, 0, 19 : 0.143922, 0.133134
+0, 1, 0 : 0.389419, 0.389066
+0, 1, 1 : 0.389066, 0.382105
+0, 1, 2 : 0.382105, 0.37937
+0, 1, 3 : 0.37937, 0.367729
+0, 1, 4 : 0.367729, 0.36689
+0, 1, 5 : 0.36689, 0.354972
+0, 1, 6 : 0.354972, 0.350163
+0, 1, 7 : 0.350163, 0.34089
+0, 1, 8 : 0.34089, 0.331627
+0, 1, 9 : 0.331627, 0.325919
+0, 1, 10 : 0.325919, 0.311775
+0, 1, 11 : 0.311775, 0.309756
+0, 1, 12 : 0.309756, 0.301125
+0, 1, 13 : 0.301125, 0.292967
+0, 2, 0 : 0.423128, 0.411847
+0, 2, 1 : 0.411847, 0.401159
+0, 2, 2 : 0.401159, 0.391483
+0, 2, 3 : 0.391483, 0.389419
+0, 3, 0 : 0.553843, 0.534984
+0, 3, 1 : 0.534984, 0.517162
+0, 3, 2 : 0.517162, 0.499305
+0, 3, 3 : 0.499305, 0.482748
+0, 3, 4 : 0.482748, 0.474481
+0, 3, 5 : 0.474481, 0.466578
+0, 3, 6 : 0.466578, 0.458698
+0, 3, 7 : 0.458698, 0.451202
+0, 3, 8 : 0.451202, 0.443748
+0, 3, 9 : 0.443748, 0.436693
+0, 3, 10 : 0.436693, 0.429707
+0, 3, 11 : 0.429707, 0.423128
+0, 4, 0 : 0.639816, 0.617803
+0, 4, 1 : 0.617803, 0.596222
+0, 4, 2 : 0.596222, 0.574597
+0, 4, 3 : 0.574597, 0.553843
+0, 5, 0 : 0.865388, 0.853624
+0, 5, 1 : 0.853624, 0.841157
+0, 5, 2 : 0.841157, 0.82853
+0, 5, 3 : 0.82853, 0.815263
+0, 5, 4 : 0.815263, 0.801898
+0, 5, 5 : 0.801898, 0.787971
+0, 5, 6 : 0.787971, 0.773993
+0, 5, 7 : 0.773993, 0.759546
+0, 5, 8 : 0.759546, 0.701086
+0, 5, 9 : 0.701086, 0.639816
+0, 6, 0 : 0.995909, 0.995375
+0, 6, 1 : 0.995375, 0.993749
+0, 6, 2 : 0.993749, 0.99108
+0, 6, 3 : 0.99108, 0.987335
+0, 6, 4 : 0.987335, 0.976763
+0, 6, 5 : 0.976763, 0.962168
+0, 6, 6 : 0.962168, 0.953337
+0, 6, 7 : 0.953337, 0.943622
+0, 6, 8 : 0.943622, 0.932826
+0, 6, 9 : 0.932826, 0.921241
+0, 6, 10 : 0.921241, 0.90853
+0, 6, 11 : 0.90853, 0.895128
+0, 6, 12 : 0.895128, 0.880558
+0, 6, 13 : 0.880558, 0.865388
+0, 7, 0 : 0.960717, 0.968972
+0, 7, 1 : 0.968972, 0.976265
+0, 7, 2 : 0.976265, 0.982253
+0, 7, 3 : 0.982253, 0.987246
+0, 7, 4 : 0.987246, 0.991019
+0, 7, 5 : 0.991019, 0.99376
+0, 7, 6 : 0.99376, 0.995365
+0, 7, 7 : 0.995365, 0.995909
+0, 8, 0 : 0.790012, 0.795597
+0, 8, 1 : 0.795597, 0.80904
+0, 8, 2 : 0.80904, 0.82507
+0, 8, 3 : 0.82507, 0.838893
+0, 8, 4 : 0.838893, 0.854211
+0, 8, 5 : 0.854211, 0.867737
+0, 8, 6 : 0.867737, 0.882151
+0, 8, 7 : 0.882151, 0.894957
+0, 8, 8 : 0.894957, 0.908202
+0, 8, 9 : 0.908202, 0.919937
+0, 8, 10 : 0.919937, 0.931722
+0, 8, 11 : 0.931722, 0.942062
+0, 8, 12 : 0.942062, 0.952086
+0, 8, 13 : 0.952086, 0.960717
+0, 9, 0 : 0.794274, 0.794135
+0, 9, 1 : 0.794135, 0.793888
+0, 9, 2 : 0.793888, 0.79375
+0, 9, 3 : 0.79375, 0.793178
+0, 9, 4 : 0.793178, 0.792607
+0, 9, 5 : 0.792607, 0.792441
+0, 9, 6 : 0.792441, 0.791593
+0, 9, 7 : 0.791593, 0.790621
+0, 9, 8 : 0.790621, 0.790152
+0, 9, 9 : 0.790152, 0.790012
+0, 10, 0 : 0.774071, 0.776864
+0, 10, 1 : 0.776864, 0.778657
+0, 10, 2 : 0.778657, 0.782638
+0, 10, 3 : 0.782638, 0.782748
+0, 10, 4 : 0.782748, 0.786147
+0, 10, 5 : 0.786147, 0.786928
+0, 10, 6 : 0.786928, 0.789037
+0, 10, 7 : 0.789037, 0.790029
+0, 10, 8 : 0.790029, 0.79126
+0, 10, 9 : 0.79126, 0.7921
+0, 10, 10 : 0.7921, 0.792915
+0, 10, 11 : 0.792915, 0.793402
+0, 10, 12 : 0.793402, 0.793919
+0, 10, 13 : 0.793919, 0.794071
+0, 10, 14 : 0.794071, 0.794274
+0, 11, 0 : 0.664504, 0.669476
+0, 11, 1 : 0.669476, 0.671992
+0, 11, 2 : 0.671992, 0.676189
+0, 11, 3 : 0.676189, 0.679575
+0, 11, 4 : 0.679575, 0.688054
+0, 11, 5 : 0.688054, 0.69487
+0, 11, 6 : 0.69487, 0.703017
+0, 11, 7 : 0.703017, 0.70842
+0, 11, 8 : 0.70842, 0.710079
+0, 11, 9 : 0.710079, 0.717929
+0, 11, 10 : 0.717929, 0.724899
+0, 11, 11 : 0.724899, 0.732349
+0, 11, 12 : 0.732349, 0.739008
+0, 11, 13 : 0.739008, 0.74028
+0, 11, 14 : 0.74028, 0.745931
+0, 11, 15 : 0.745931, 0.75211
+0, 11, 16 : 0.75211, 0.758009
+0, 11, 17 : 0.758009, 0.758342
+0, 11, 18 : 0.758342, 0.763908
+0, 11, 19 : 0.763908, 0.769255
+0, 11, 20 : 0.769255, 0.769326
+0, 11, 21 : 0.769326, 0.774071
+0, 12, 0 : 0.664504, 0.658451
+0, 12, 1 : 0.658451, 0.655486
+0, 12, 2 : 0.655486, 0.65057
+0, 12, 3 : 0.65057, 0.646746
+0, 12, 4 : 0.646746, 0.642199
+0, 12, 5 : 0.642199, 0.63836
+0, 12, 6 : 0.63836, 0.634104
+0, 12, 7 : 0.634104, 0.630403
+0, 12, 8 : 0.630403, 0.627725
+0, 12, 9 : 0.627725, 0.626439
+0, 12, 10 : 0.626439, 0.622957
+0, 12, 11 : 0.622957, 0.619311
+0, 12, 12 : 0.619311, 0.616097
+0, 12, 13 : 0.616097, 0.612796
+0, 12, 14 : 0.612796, 0.609898
+0, 12, 15 : 0.609898, 0.608491
+0, 12, 16 : 0.608491, 0.606979
+0, 12, 17 : 0.606979, 0.604448
+0, 13, 0 : 0.604448, 0.601133
+0, 13, 1 : 0.601133, 0.59977
+0, 13, 2 : 0.59977, 0.598169
+0, 13, 3 : 0.598169, 0.595535
+0, 13, 4 : 0.595535, 0.593969
+0, 13, 5 : 0.593969, 0.593175
+0, 13, 6 : 0.593175, 0.589894
+0, 13, 7 : 0.589894, 0.589376
+0, 13, 8 : 0.589376, 0.587136
+0, 13, 9 : 0.587136, 0.586501
+0, 13, 10 : 0.586501, 0.58543
+0, 13, 11 : 0.58543, 0.585259
+0, 13, 12 : 0.585259, 0.584565
+0, 13, 13 : 0.584565, 0.584064
+0, 13, 14 : 0.584064, 0.5839
+0, 13, 15 : 0.5839, 0.583369
+0, 13, 16 : 0.583369, 0.583298
+0, 13, 17 : 0.583298, 0.583026
+0, 13, 18 : 0.583026, 0.582883
+0, 13, 19 : 0.582883, 0.582787
+0, 13, 20 : 0.582787, 0.582677
+0, 13, 21 : 0.582677, 0.582663
+0, 13, 22 : 0.582663, 0.582626
+0, 14, 0 : 0.582626, 0.58266
+0, 14, 1 : 0.58266, 0.582677
+0, 14, 2 : 0.582677, 0.582742
+0, 14, 3 : 0.582742, 0.582826
+0, 14, 4 : 0.582826, 0.582853
+0, 14, 5 : 0.582853, 0.582949
+0, 14, 6 : 0.582949, 0.582962
+0, 14, 7 : 0.582962, 0.583094
+0, 14, 8 : 0.583094, 0.58315
+0, 14, 9 : 0.58315, 0.583197
+0, 14, 10 : 0.583197, 0.58329
+0, 14, 11 : 0.58329, 0.583311
+0, 14, 12 : 0.583311, 0.583557
+0, 15, 0 : 0.583557, 0.583576
+0, 15, 1 : 0.583576, 0.583698
+0, 16, 0 : 0.583698, 0.58381
+0, 16, 1 : 0.58381, 0.58381
+0, 16, 2 : 0.58381, 0.583863
+0, 16, 3 : 0.583863, 0.583869
+0, 16, 4 : 0.583869, 0.583894
+0, 17, 0 : 0.587391, 0.586682
+0, 17, 1 : 0.586682, 0.585722
+0, 17, 2 : 0.585722, 0.585132
+0, 17, 3 : 0.585132, 0.583894
+0, 18, 0 : 0.592638, 0.592562
+0, 18, 1 : 0.592562, 0.592313
+0, 18, 2 : 0.592313, 0.59192
+0, 18, 3 : 0.59192, 0.591335
+0, 18, 4 : 0.591335, 0.590621
+0, 18, 5 : 0.590621, 0.589696
+0, 18, 6 : 0.589696, 0.588657
+0, 18, 7 : 0.588657, 0.587391
+0, 19, 0 : 0.568638, 0.571593
+0, 19, 1 : 0.571593, 0.574199
+0, 19, 2 : 0.574199, 0.576753
+0, 19, 3 : 0.576753, 0.579044
+0, 19, 4 : 0.579044, 0.581193
+0, 19, 5 : 0.581193, 0.583165
+0, 19, 6 : 0.583165, 0.58492
+0, 19, 7 : 0.58492, 0.586554
+0, 19, 8 : 0.586554, 0.587933
+0, 19, 9 : 0.587933, 0.589204
+0, 19, 10 : 0.589204, 0.590217
+0, 19, 11 : 0.590217, 0.591107
+0, 19, 12 : 0.591107, 0.591755
+0, 19, 13 : 0.591755, 0.592254
+0, 19, 14 : 0.592254, 0.592535
+0, 19, 15 : 0.592535, 0.592638
+0, 20, 0 : 0.565869, 0.567289
+0, 20, 1 : 0.567289, 0.568638
+0, 21, 0 : 0.462717, 0.470626
+0, 21, 1 : 0.470626, 0.478291
+0, 21, 2 : 0.478291, 0.485969
+0, 21, 3 : 0.485969, 0.493333
+0, 21, 4 : 0.493333, 0.500725
+0, 21, 5 : 0.500725, 0.507727
+0, 21, 6 : 0.507727, 0.514775
+0, 21, 7 : 0.514775, 0.521356
+0, 21, 8 : 0.521356, 0.528001
+0, 21, 9 : 0.528001, 0.534102
+0, 21, 10 : 0.534102, 0.540282
+0, 21, 11 : 0.540282, 0.545848
+0, 21, 12 : 0.545848, 0.551497
+0, 21, 13 : 0.551497, 0.556476
+0, 21, 14 : 0.556476, 0.558991
+0, 21, 15 : 0.558991, 0.561334
+0, 21, 16 : 0.561334, 0.563688
+0, 21, 17 : 0.563688, 0.565869
+0, 22, 0 : 0.427211, 0.436291
+0, 22, 1 : 0.436291, 0.445047
+0, 22, 2 : 0.445047, 0.45416
+0, 22, 3 : 0.45416, 0.462717
+0, 23, 0 : 0.362039, 0.368871
+0, 23, 1 : 0.368871, 0.379858
+0, 23, 2 : 0.379858, 0.391139
+0, 23, 3 : 0.391139, 0.402921
+0, 23, 4 : 0.402921, 0.415111
+0, 23, 5 : 0.415111, 0.427211
+0, 24, 0 : 0.346915, 0.355614
+0, 24, 1 : 0.355614, 0.362039
+0, 25, 0 : 0.27834, 0.283364
+0, 25, 1 : 0.283364, 0.28598
+0, 25, 2 : 0.28598, 0.290378
+0, 25, 3 : 0.290378, 0.294012
+0, 25, 4 : 0.294012, 0.297649
+0, 25, 5 : 0.297649, 0.303226
+0, 25, 6 : 0.303226, 0.310909
+0, 25, 7 : 0.310909, 0.319614
+0, 25, 8 : 0.319614, 0.320253
+0, 25, 9 : 0.320253, 0.328595
+0, 25, 10 : 0.328595, 0.334535
+0, 25, 11 : 0.334535, 0.337964
+0, 25, 12 : 0.337964, 0.346464
+0, 25, 13 : 0.346464, 0.346915
+0, 26, 0 : 0.27834, 0.272366
+0, 26, 1 : 0.272366, 0.269559
+0, 26, 2 : 0.269559, 0.264965
+0, 26, 3 : 0.264965, 0.262045
+0, 26, 4 : 0.262045, 0.261544
+0, 26, 5 : 0.261544, 0.257518
+0, 26, 6 : 0.257518, 0.254287
+0, 26, 7 : 0.254287, 0.250805
+0, 26, 8 : 0.250805, 0.249318
+0, 26, 9 : 0.249318, 0.24795
+0, 26, 10 : 0.24795, 0.244976
+0, 26, 11 : 0.244976, 0.242819
+0, 26, 12 : 0.242819, 0.242567
+0, 26, 13 : 0.242567, 0.240047
+0, 26, 14 : 0.240047, 0.238555
+0, 27, 0 : 0.238555, 0.23804
+0, 27, 1 : 0.23804, 0.236056
+0, 27, 2 : 0.236056, 0.234569
+0, 27, 3 : 0.234569, 0.234283
+0, 27, 4 : 0.234283, 0.233126
+0, 27, 5 : 0.233126, 0.23212
+0, 28, 0 : 0.23212, 0.231943
+0, 28, 1 : 0.231943, 0.23089
+0, 28, 2 : 0.23089, 0.230441
+0, 28, 3 : 0.230441, 0.22987
+0, 28, 4 : 0.22987, 0.229204
+0, 28, 5 : 0.229204, 0.22898
+0, 28, 6 : 0.22898, 0.2285
+0, 29, 0 : 0.2285, 0.228643
+0, 29, 1 : 0.228643, 0.228752
+0, 29, 2 : 0.228752, 0.229387
+0, 29, 3 : 0.229387, 0.229813
+0, 29, 4 : 0.229813, 0.230206
+0, 29, 5 : 0.230206, 0.230837
+0, 30, 0 : 0.236245, 0.236121
+0, 30, 1 : 0.236121, 0.23611
+0, 30, 2 : 0.23611, 0.235718
+0, 30, 3 : 0.235718, 0.235678
+0, 30, 4 : 0.235678, 0.235165
+0, 30, 5 : 0.235165, 0.234952
+0, 30, 6 : 0.234952, 0.234361
+0, 30, 7 : 0.234361, 0.233818
+0, 30, 8 : 0.233818, 0.233589
+0, 30, 9 : 0.233589, 0.232591
+0, 30, 10 : 0.232591, 0.231974
+0, 30, 11 : 0.231974, 0.231545
+0, 30, 12 : 0.231545, 0.230837
+0, 31, 0 : 0.203737, 0.208048
+0, 31, 1 : 0.208048, 0.208562
+0, 31, 2 : 0.208562, 0.212006
+0, 31, 3 : 0.212006, 0.215586
+0, 31, 4 : 0.215586, 0.215589
+0, 31, 5 : 0.215589, 0.218917
+0, 31, 6 : 0.218917, 0.221079
+0, 31, 7 : 0.221079, 0.221855
+0, 31, 8 : 0.221855, 0.224532
+0, 31, 9 : 0.224532, 0.225369
+0, 31, 10 : 0.225369, 0.22687
+0, 31, 11 : 0.22687, 0.228722
+0, 31, 12 : 0.228722, 0.228975
+0, 31, 13 : 0.228975, 0.230728
+0, 31, 14 : 0.230728, 0.231271
+0, 31, 15 : 0.231271, 0.232288
+0, 31, 16 : 0.232288, 0.23321
+0, 31, 17 : 0.23321, 0.233521
+0, 31, 18 : 0.233521, 0.23454
+0, 31, 19 : 0.23454, 0.234597
+0, 31, 20 : 0.234597, 0.235295
+0, 31, 21 : 0.235295, 0.23554
+0, 31, 22 : 0.23554, 0.23584
+0, 31, 23 : 0.23584, 0.236069
+0, 31, 24 : 0.236069, 0.236138
+0, 31, 25 : 0.236138, 0.236245
+0, 32, 0 : 0.0839409, 0.0924955
+0, 32, 1 : 0.0924955, 0.102139
+0, 32, 2 : 0.102139, 0.111588
+0, 32, 3 : 0.111588, 0.114444
+0, 32, 4 : 0.114444, 0.120923
+0, 32, 5 : 0.120923, 0.129898
+0, 32, 6 : 0.129898, 0.138847
+0, 32, 7 : 0.138847, 0.143482
+0, 32, 8 : 0.143482, 0.147319
+0, 32, 9 : 0.147319, 0.155761
+0, 32, 10 : 0.155761, 0.163627
+0, 32, 11 : 0.163627, 0.168055
+0, 32, 12 : 0.168055, 0.171459
+0, 32, 13 : 0.171459, 0.178591
+0, 32, 14 : 0.178591, 0.182143
+0, 32, 15 : 0.182143, 0.185512
+0, 32, 16 : 0.185512, 0.186364
+0, 32, 17 : 0.186364, 0.188864
+0, 32, 18 : 0.188864, 0.192024
+0, 32, 19 : 0.192024, 0.195162
+0, 32, 20 : 0.195162, 0.198104
+0, 32, 21 : 0.198104, 0.199409
+0, 32, 22 : 0.199409, 0.201018
+0, 32, 23 : 0.201018, 0.203737
+0, 33, 0 : 0.0729429, 0.0827668
+0, 33, 1 : 0.0827668, 0.0839409
+0, 34, 0 : 0.0582121, 0.0655669
+0, 34, 1 : 0.0655669, 0.0707518
+0, 34, 2 : 0.0707518, 0.0729429
+0, 35, 0 : -0.0693154, -0.0665599
+0, 35, 1 : -0.0665599, -0.0606251
+0, 35, 2 : -0.0606251, -0.0575657
+0, 35, 3 : -0.0575657, -0.0520287
+0, 35, 4 : -0.0520287, -0.0470823
+0, 35, 5 : -0.0470823, -0.0438911
+0, 35, 6 : -0.0438911, -0.0357496
+0, 35, 7 : -0.0357496, -0.0348127
+0, 35, 8 : -0.0348127, -0.027929
+0, 35, 9 : -0.027929, -0.0198273
+0, 35, 10 : -0.0198273, -0.0195932
+0, 35, 11 : -0.0195932, -0.0121942
+0, 35, 12 : -0.0121942, -0.00428654
+0, 35, 13 : -0.00428654, -0.000334536
+0, 35, 14 : -0.000334536, 0.00345412
+0, 35, 15 : 0.00345412, 0.0113901
+0, 35, 16 : 0.0113901, 0.0114642
+0, 35, 17 : 0.0114642, 0.0190995
+0, 35, 18 : 0.0190995, 0.0250181
+0, 35, 19 : 0.0250181, 0.0269987
+0, 35, 20 : 0.0269987, 0.0405236
+0, 35, 21 : 0.0405236, 0.0424295
+0, 35, 22 : 0.0424295, 0.0582121
+0, 36, 0 : -0.120938, -0.117245
+0, 36, 1 : -0.117245, -0.112189
+0, 36, 2 : -0.112189, -0.110621
+0, 36, 3 : -0.110621, -0.103932
+0, 36, 4 : -0.103932, -0.0969928
+0, 36, 5 : -0.0969928, -0.0898981
+0, 36, 6 : -0.0898981, -0.0895888
+0, 36, 7 : -0.0895888, -0.0824821
+0, 36, 8 : -0.0824821, -0.0748174
+0, 36, 9 : -0.0748174, -0.0693154
+0, 37, 0 : -0.174611, -0.166947
+0, 37, 1 : -0.166947, -0.160004
+0, 37, 2 : -0.160004, -0.153746
+0, 37, 3 : -0.153746, -0.148077
+0, 37, 4 : -0.148077, -0.143098
+0, 37, 5 : -0.143098, -0.138604
+0, 37, 6 : -0.138604, -0.134777
+0, 37, 7 : -0.134777, -0.131359
+0, 37, 8 : -0.131359, -0.128559
+0, 37, 9 : -0.128559, -0.126116
+0, 37, 10 : -0.126116, -0.124222
+0, 37, 11 : -0.124222, -0.122651
+0, 37, 12 : -0.122651, -0.121544
+0, 37, 13 : -0.121544, -0.120938
+0, 38, 0 : -0.421628, -0.402983
+0, 38, 1 : -0.402983, -0.384456
+0, 38, 2 : -0.384456, -0.36609
+0, 38, 3 : -0.36609, -0.348128
+0, 38, 4 : -0.348128, -0.330282
+0, 38, 5 : -0.330282, -0.313122
+0, 38, 6 : -0.313122, -0.296042
+0, 38, 7 : -0.296042, -0.279914
+0, 38, 8 : -0.279914, -0.263851
+0, 38, 9 : -0.263851, -0.248981
+0, 38, 10 : -0.248981, -0.234195
+0, 38, 11 : -0.234195, -0.220802
+0, 38, 12 : -0.220802, -0.214159
+0, 38, 13 : -0.214159, -0.207894
+0, 38, 14 : -0.207894, -0.201676
+0, 38, 15 : -0.201676, -0.195852
+0, 38, 16 : -0.195852, -0.190093
+0, 38, 17 : -0.190093, -0.184738
+0, 38, 18 : -0.184738, -0.179469
+0, 38, 19 : -0.179469, -0.174611
+0, 39, 0 : -0.449445, -0.435572
+0, 39, 1 : -0.435572, -0.421628
+0, 40, 0 : -0.66444, -0.653363
+0, 40, 1 : -0.653363, -0.641475
+0, 40, 2 : -0.641475, -0.629594
+0, 40, 3 : -0.629594, -0.616943
+0, 40, 4 : -0.616943, -0.604361
+0, 40, 5 : -0.604361, -0.59107
+0, 40, 6 : -0.59107, -0.577891
+0, 40, 7 : -0.577891, -0.564079
+0, 40, 8 : -0.564079, -0.550409
+0, 40, 9 : -0.550409, -0.536196
+0, 40, 10 : -0.536196, -0.522141
+0, 40, 11 : -0.522141, -0.507646
+0, 40, 12 : -0.507646, -0.479078
+0, 40, 13 : -0.479078, -0.449445
+0, 41, 0 : -0.830707, -0.828727
+0, 41, 1 : -0.828727, -0.822818
+0, 41, 2 : -0.822818, -0.817919
+0, 41, 3 : -0.817919, -0.812019
+0, 41, 4 : -0.812019, -0.808448
+0, 41, 5 : -0.808448, -0.804632
+0, 41, 6 : -0.804632, -0.800345
+0, 41, 7 : -0.800345, -0.795816
+0, 41, 8 : -0.795816, -0.790772
+0, 41, 9 : -0.790772, -0.785492
+0, 41, 10 : -0.785492, -0.779655
+0, 41, 11 : -0.779655, -0.773582
+0, 41, 12 : -0.773582, -0.766914
+0, 41, 13 : -0.766914, -0.760008
+0, 41, 14 : -0.760008, -0.752473
+0, 41, 15 : -0.752473, -0.744692
+0, 41, 16 : -0.744692, -0.736255
+0, 41, 17 : -0.736255, -0.727555
+0, 41, 18 : -0.727555, -0.718183
+0, 41, 19 : -0.718183, -0.70852
+0, 41, 20 : -0.70852, -0.687197
+0, 41, 21 : -0.687197, -0.66444
+0, 42, 0 : -0.829598, -0.830423
+0, 42, 1 : -0.830423, -0.830707
+0, 43, 0 : -0.788379, -0.791712
+0, 43, 1 : -0.791712, -0.799048
+0, 43, 2 : -0.799048, -0.805648
+0, 43, 3 : -0.805648, -0.808705
+0, 43, 4 : -0.808705, -0.811592
+0, 43, 5 : -0.811592, -0.814281
+0, 43, 6 : -0.814281, -0.816804
+0, 43, 7 : -0.816804, -0.81911
+0, 43, 8 : -0.81911, -0.821247
+0, 43, 9 : -0.821247, -0.823155
+0, 43, 10 : -0.823155, -0.824885
+0, 43, 11 : -0.824885, -0.826378
+0, 43, 12 : -0.826378, -0.827681
+0, 43, 13 : -0.827681, -0.828742
+0, 43, 14 : -0.828742, -0.829598
+0, 44, 0 : -0.900244, -0.897284
+0, 44, 1 : -0.897284, -0.896358
+0, 44, 2 : -0.896358, -0.894017
+0, 44, 3 : -0.894017, -0.893234
+0, 44, 4 : -0.893234, -0.890436
+0, 44, 5 : -0.890436, -0.889902
+0, 44, 6 : -0.889902, -0.886548
+0, 44, 7 : -0.886548, -0.886251
+0, 44, 8 : -0.886251, -0.882378
+0, 44, 9 : -0.882378, -0.88236
+0, 44, 10 : -0.88236, -0.878168
+0, 44, 11 : -0.878168, -0.877866
+0, 44, 12 : -0.877866, -0.87373
+0, 44, 13 : -0.87373, -0.873099
+0, 44, 14 : -0.873099, -0.868902
+0, 44, 15 : -0.868902, -0.868032
+0, 44, 16 : -0.868032, -0.863845
+0, 44, 17 : -0.863845, -0.86272
+0, 44, 18 : -0.86272, -0.85835
+0, 44, 19 : -0.85835, -0.857126
+0, 44, 20 : -0.857126, -0.852614
+0, 44, 21 : -0.852614, -0.851326
+0, 44, 22 : -0.851326, -0.846393
+0, 44, 23 : -0.846393, -0.845262
+0, 44, 24 : -0.845262, -0.839925
+0, 44, 25 : -0.839925, -0.832861
+0, 44, 26 : -0.832861, -0.832646
+0, 44, 27 : -0.832646, -0.825556
+0, 44, 28 : -0.825556, -0.819237
+0, 44, 29 : -0.819237, -0.81763
+0, 44, 30 : -0.81763, -0.809353
+0, 44, 31 : -0.809353, -0.805542
+0, 44, 32 : -0.805542, -0.791111
+0, 44, 33 : -0.791111, -0.790683
+0, 44, 34 : -0.790683, -0.788379
+0, 45, 0 : -0.913891, -0.913672
+0, 45, 1 : -0.913672, -0.913013
+0, 45, 2 : -0.913013, -0.911935
+0, 45, 3 : -0.911935, -0.911903
+0, 45, 4 : -0.911903, -0.910429
+0, 45, 5 : -0.910429, -0.908507
+0, 45, 6 : -0.908507, -0.906232
+0, 45, 7 : -0.906232, -0.906145
+0, 45, 8 : -0.906145, -0.903396
+0, 45, 9 : -0.903396, -0.901703
+0, 45, 10 : -0.901703, -0.900244
+0, 46, 0 : -0.912684, -0.913593
+0, 46, 1 : -0.913593, -0.913891
+0, 47, 0 : -0.872745, -0.873053
+0, 47, 1 : -0.873053, -0.877656
+0, 47, 2 : -0.877656, -0.87963
+0, 47, 3 : -0.87963, -0.882616
+0, 47, 4 : -0.882616, -0.885706
+0, 47, 5 : -0.885706, -0.887193
+0, 47, 6 : -0.887193, -0.891004
+0, 47, 7 : -0.891004, -0.89141
+0, 47, 8 : -0.89141, -0.895266
+0, 47, 9 : -0.895266, -0.895841
+0, 47, 10 : -0.895841, -0.898733
+0, 47, 11 : -0.898733, -0.899979
+0, 47, 12 : -0.899979, -0.901815
+0, 47, 13 : -0.901815, -0.903644
+0, 47, 14 : -0.903644, -0.904518
+0, 47, 15 : -0.904518, -0.906687
+0, 47, 16 : -0.906687, -0.90684
+0, 47, 17 : -0.90684, -0.908809
+0, 47, 18 : -0.908809, -0.909247
+0, 47, 19 : -0.909247, -0.910431
+0, 47, 20 : -0.910431, -0.911713
+0, 47, 21 : -0.911713, -0.91266
+0, 47, 22 : -0.91266, -0.912684
+0, 48, 0 : -0.984137, -0.981481
+0, 48, 1 : -0.981481, -0.978676
+0, 48, 2 : -0.978676, -0.975607
+0, 48, 3 : -0.975607, -0.972396
+0, 48, 4 : -0.972396, -0.968925
+0, 48, 5 : -0.968925, -0.965313
+0, 48, 6 : -0.965313, -0.961449
+0, 48, 7 : -0.961449, -0.957443
+0, 48, 8 : -0.957443, -0.953197
+0, 48, 9 : -0.953197, -0.9488
+0, 48, 10 : -0.9488, -0.944182
+0, 48, 11 : -0.944182, -0.9394
+0, 48, 12 : -0.9394, -0.92929
+0, 48, 13 : -0.92929, -0.918393
+0, 48, 14 : -0.918393, -0.906982
+0, 48, 15 : -0.906982, -0.894545
+0, 48, 16 : -0.894545, -0.888225
+0, 48, 17 : -0.888225, -0.881594
+0, 48, 18 : -0.881594, -0.874961
+0, 48, 19 : -0.874961, -0.872745
+0, 49, 0 : -0.997075, -0.996852
+0, 49, 1 : -0.996852, -0.996188
+0, 49, 2 : -0.996188, -0.995111
+0, 49, 3 : -0.995111, -0.993632
+0, 49, 4 : -0.993632, -0.991771
+0, 49, 5 : -0.991771, -0.989563
+0, 49, 6 : -0.989563, -0.98699
+0, 49, 7 : -0.98699, -0.984137
+0, 50, 0 : -0.896102, -0.909353
+0, 50, 1 : -0.909353, -0.921804
+0, 50, 2 : -0.921804, -0.932916
+0, 50, 3 : -0.932916, -0.94327
+0, 50, 4 : -0.94327, -0.952377
+0, 50, 5 : -0.952377, -0.96075
+0, 50, 6 : -0.96075, -0.96798
+0, 50, 7 : -0.96798, -0.974492
+0, 50, 8 : -0.974492, -0.979973
+0, 50, 9 : -0.979973, -0.984746
+0, 50, 10 : -0.984746, -0.988602
+0, 50, 11 : -0.988602, -0.991762
+0, 50, 12 : -0.991762, -0.995744
+0, 50, 13 : -0.995744, -0.997075
+0, 51, 0 : -0.633543, -0.652565
+0, 51, 1 : -0.652565, -0.671756
+0, 51, 2 : -0.671756, -0.690427
+0, 51, 3 : -0.690427, -0.709092
+0, 51, 4 : -0.709092, -0.745009
+0, 51, 5 : -0.745009, -0.779802
+0, 51, 6 : -0.779802, -0.796433
+0, 51, 7 : -0.796433, -0.812514
+0, 51, 8 : -0.812514, -0.828127
+0, 51, 9 : -0.828127, -0.843023
+0, 51, 10 : -0.843023, -0.857442
+0, 51, 11 : -0.857442, -0.870996
+0, 51, 12 : -0.870996, -0.884045
+0, 51, 13 : -0.884045, -0.896102
+0, 52, 0 : -0.51567, -0.530218
+0, 52, 1 : -0.530218, -0.545104
+0, 52, 2 : -0.545104, -0.559734
+0, 52, 3 : -0.559734, -0.574657
+0, 52, 4 : -0.574657, -0.589301
+0, 52, 5 : -0.589301, -0.604185
+0, 52, 6 : -0.604185, -0.618775
+0, 52, 7 : -0.618775, -0.633543
+0, 53, 0 : -0.421379, -0.444077
+0, 53, 1 : -0.444077, -0.467844
+0, 53, 2 : -0.467844, -0.491248
+0, 53, 3 : -0.491248, -0.51567
+0, 54, 0 : -0.173942, -0.174595
+0, 54, 1 : -0.174595, -0.181965
+0, 54, 2 : -0.181965, -0.198279
+0, 54, 3 : -0.198279, -0.21659
+0, 54, 4 : -0.21659, -0.237066
+0, 54, 5 : -0.237066, -0.258852
+0, 54, 6 : -0.258852, -0.270596
+0, 54, 7 : -0.270596, -0.282531
+0, 54, 8 : -0.282531, -0.295086
+0, 54, 9 : -0.295086, -0.307742
+0, 54, 10 : -0.307742, -0.32104
+0, 54, 11 : -0.32104, -0.334359
+0, 54, 12 : -0.334359, -0.34833
+0, 54, 13 : -0.34833, -0.362254
+0, 54, 14 : -0.362254, -0.376829
+0, 54, 15 : -0.376829, -0.391303
+0, 54, 16 : -0.391303, -0.406408
+0, 54, 17 : -0.406408, -0.421379
+0, 55, 0 : -0.15855, -0.161694
+0, 55, 1 : -0.161694, -0.173942
+0, 56, 0 : -0.0841629, -0.0939871
+0, 56, 1 : -0.0939871, -0.0982896
+0, 56, 2 : -0.0982896, -0.106129
+0, 56, 3 : -0.106129, -0.11203
+0, 56, 4 : -0.11203, -0.118774
+0, 56, 5 : -0.118774, -0.125089
+0, 56, 6 : -0.125089, -0.131671
+0, 56, 7 : -0.131671, -0.137812
+0, 56, 8 : -0.137812, -0.145084
+0, 56, 9 : -0.145084, -0.15855
+0, 57, 0 : 0.0190862, 0.00421499
+0, 57, 1 : 0.00421499, 0.000540407
+0, 57, 2 : 0.000540407, -0.0100598
+0, 57, 3 : -0.0100598, -0.0184608
+0, 57, 4 : -0.0184608, -0.0236014
+0, 57, 5 : -0.0236014, -0.0368897
+0, 57, 6 : -0.0368897, -0.038707
+0, 57, 7 : -0.038707, -0.049201
+0, 57, 8 : -0.049201, -0.059665
+0, 57, 9 : -0.059665, -0.061356
+0, 57, 10 : -0.061356, -0.0707593
+0, 57, 11 : -0.0707593, -0.0729103
+0, 57, 12 : -0.0729103, -0.0821423
+0, 57, 13 : -0.0821423, -0.0841629
+0, 58, 0 : 0.0945929, 0.0763007
+0, 58, 1 : 0.0763007, 0.073089
+0, 58, 2 : 0.073089, 0.0577519
+0, 58, 3 : 0.0577519, 0.0454629
+0, 58, 4 : 0.0454629, 0.0386142
+0, 58, 5 : 0.0386142, 0.0190862
+0, 59, 0 : 0.133134, 0.102996
+0, 59, 1 : 0.102996, 0.0945929
+0, 60, 0 : 0.292967, 0.290132
+0, 60, 1 : 0.290132, 0.28023
+0, 60, 2 : 0.28023, 0.278404
+0, 60, 3 : 0.278404, 0.267372
+0, 60, 4 : 0.267372, 0.266064
+0, 60, 5 : 0.266064, 0.254697
+0, 60, 6 : 0.254697, 0.252758
+0, 60, 7 : 0.252758, 0.241973
+0, 60, 8 : 0.241973, 0.238748
+0, 60, 9 : 0.238748, 0.22946
+0, 60, 10 : 0.22946, 0.223581
+0, 60, 11 : 0.223581, 0.216868
+0, 60, 12 : 0.216868, 0.207669
+0, 60, 13 : 0.207669, 0.204522
+0, 60, 14 : 0.204522, 0.192041
+0, 60, 15 : 0.192041, 0.190391
+0, 60, 16 : 0.190391, 0.172246
+0, 60, 17 : 0.172246, 0.152959
+0, 60, 18 : 0.152959, 0.143922
+0, 60, 19 : 0.143922, 0.133134
+
+
+-------------------------------------------------------------
+page 5
+new errors
+Number of Arcs at mod1 = 0, mod2 = 0, degree = 123 : 858
+ERROR : sth is not cont. @ 318 with -0.013769, -0.012312
+ERROR : sth is not cont. @ 325 with 0.971364, 1.25887
+ERROR : sth is not cont. @ 857 with 0.986106, 1.30089
+Number of Arcs at mod1 = 0, mod2 = 0, degree = 124 : 870
+ERROR : sth is not cont. @ 330 with -0.0146461, -0.0134811
+ERROR : sth is not cont. @ 339 with 0.95568, 1.25961
+ERROR : sth is not cont. @ 869 with 0.971307, 1.30303
+Number of Arcs at mod1 = 0, mod2 = 0, degree = 125 : 875
+ERROR : sth is not cont. @ 327 with -0.0154355, -0.0146165
+ERROR : sth is not cont. @ 335 with 0.940017, 1.26002
+ERROR : sth is not cont. @ 874 with 0.956441, 1.30481
+Number of Arcs at mod1 = 0, mod2 = 0, degree = 126 : 875
+ERROR : sth is not cont. @ 338 with -0.0161692, -0.015747
+ERROR : sth is not cont. @ 346 with 0.924382, 1.26012
+ERROR : sth is not cont. @ 874 with 0.941547, 1.30627
+Number of Arcs at mod1 = 0, mod2 = 0, degree = 127 : 877
+ERROR : sth is not cont. @ 337 with -0.0168473, -0.0168704
+ERROR : sth is not cont. @ 346 with 0.908779, 1.25989
+ERROR : sth is not cont. @ 876 with 0.92663, 1.30741
+Number of Arcs at mod1 = 0, mod2 = 0, degree = 128 : 884
+
+
+
+ERROR : sth is not cont. @ 318 with -0.013769, -0.012312
+ERROR : sth is not cont. @ 325 with 0.971364, 1.25887
+ERROR : sth is not cont. @ 857 with 0.986106, 1.30089
+0, 0, 0 : -0.752621, -0.753282
+0, 0, 1 : -0.753282, -0.753356
+0, 0, 2 : -0.753356, -0.753594
+0, 1, 0 : -0.702253, -0.708103
+0, 1, 1 : -0.708103, -0.709093
+0, 1, 2 : -0.709093, -0.717293
+0, 1, 3 : -0.717293, -0.720243
+0, 1, 4 : -0.720243, -0.725276
+0, 1, 5 : -0.725276, -0.725522
+0, 1, 6 : -0.725522, -0.729818
+0, 1, 7 : -0.729818, -0.73299
+0, 1, 8 : -0.73299, -0.733928
+0, 1, 9 : -0.733928, -0.737526
+0, 1, 10 : -0.737526, -0.739428
+0, 1, 11 : -0.739428, -0.740714
+0, 1, 12 : -0.740714, -0.74233
+0, 1, 13 : -0.74233, -0.743467
+0, 1, 14 : -0.743467, -0.744938
+0, 1, 15 : -0.744938, -0.745818
+0, 1, 16 : -0.745818, -0.747305
+0, 1, 17 : -0.747305, -0.747808
+0, 1, 18 : -0.747808, -0.749333
+0, 1, 19 : -0.749333, -0.749448
+0, 1, 20 : -0.749448, -0.750787
+0, 1, 21 : -0.750787, -0.751071
+0, 1, 22 : -0.751071, -0.75183
+0, 1, 23 : -0.75183, -0.752399
+0, 1, 24 : -0.752399, -0.752621
+0, 2, 0 : -0.814048, -0.811936
+0, 2, 1 : -0.811936, -0.809858
+0, 2, 2 : -0.809858, -0.808106
+0, 2, 3 : -0.808106, -0.804531
+0, 2, 4 : -0.804531, -0.803862
+0, 2, 5 : -0.803862, -0.799226
+0, 2, 6 : -0.799226, -0.799034
+0, 2, 7 : -0.799034, -0.794091
+0, 2, 8 : -0.794091, -0.793183
+0, 2, 9 : -0.793183, -0.788505
+0, 2, 10 : -0.788505, -0.787193
+0, 2, 11 : -0.787193, -0.782391
+0, 2, 12 : -0.782391, -0.780856
+0, 2, 13 : -0.780856, -0.775757
+0, 2, 14 : -0.775757, -0.774401
+0, 2, 15 : -0.774401, -0.767617
+0, 2, 16 : -0.767617, -0.760923
+0, 2, 17 : -0.760923, -0.760673
+0, 2, 18 : -0.760673, -0.753463
+0, 2, 19 : -0.753463, -0.746125
+0, 2, 20 : -0.746125, -0.743632
+0, 2, 21 : -0.743632, -0.738473
+0, 2, 22 : -0.738473, -0.730718
+0, 2, 23 : -0.730718, -0.724596
+0, 2, 24 : -0.724596, -0.722657
+0, 2, 25 : -0.722657, -0.706114
+0, 2, 26 : -0.706114, -0.703552
+0, 2, 27 : -0.703552, -0.702253
+0, 3, 0 : -0.88384, -0.882027
+0, 3, 1 : -0.882027, -0.876596
+0, 3, 2 : -0.876596, -0.872
+0, 3, 3 : -0.872, -0.870843
+0, 3, 4 : -0.870843, -0.866264
+0, 3, 5 : -0.866264, -0.862735
+0, 3, 6 : -0.862735, -0.858871
+0, 3, 7 : -0.858871, -0.854473
+0, 3, 8 : -0.854473, -0.849697
+0, 3, 9 : -0.849697, -0.844302
+0, 3, 10 : -0.844302, -0.838479
+0, 3, 11 : -0.838479, -0.836723
+0, 3, 12 : -0.836723, -0.832166
+0, 3, 13 : -0.832166, -0.831398
+0, 3, 14 : -0.831398, -0.825897
+0, 3, 15 : -0.825897, -0.825634
+0, 3, 16 : -0.825634, -0.820091
+0, 3, 17 : -0.820091, -0.818519
+0, 3, 18 : -0.818519, -0.814105
+0, 3, 19 : -0.814105, -0.814048
+0, 4, 0 : -0.882818, -0.883265
+0, 4, 1 : -0.883265, -0.883584
+0, 4, 2 : -0.883584, -0.88384
+0, 5, 0 : -0.875446, -0.876242
+0, 5, 1 : -0.876242, -0.87808
+0, 5, 2 : -0.87808, -0.878963
+0, 5, 3 : -0.878963, -0.879645
+0, 5, 4 : -0.879645, -0.880961
+0, 5, 5 : -0.880961, -0.881621
+0, 5, 6 : -0.881621, -0.882009
+0, 5, 7 : -0.882009, -0.882818
+0, 6, 0 : -0.841737, -0.843584
+0, 6, 1 : -0.843584, -0.843822
+0, 6, 2 : -0.843822, -0.85335
+0, 6, 3 : -0.85335, -0.853733
+0, 6, 4 : -0.853733, -0.858097
+0, 6, 5 : -0.858097, -0.861844
+0, 6, 6 : -0.861844, -0.862073
+0, 6, 7 : -0.862073, -0.865649
+0, 6, 8 : -0.865649, -0.86886
+0, 6, 9 : -0.86886, -0.869345
+0, 6, 10 : -0.869345, -0.871654
+0, 6, 11 : -0.871654, -0.874107
+0, 6, 12 : -0.874107, -0.875446
+0, 7, 0 : -0.954368, -0.9515
+0, 7, 1 : -0.9515, -0.948294
+0, 7, 2 : -0.948294, -0.944683
+0, 7, 3 : -0.944683, -0.940685
+0, 7, 4 : -0.940685, -0.936241
+0, 7, 5 : -0.936241, -0.931359
+0, 7, 6 : -0.931359, -0.925998
+0, 7, 7 : -0.925998, -0.925218
+0, 7, 8 : -0.925218, -0.920756
+0, 7, 9 : -0.920756, -0.920449
+0, 7, 10 : -0.920449, -0.916118
+0, 7, 11 : -0.916118, -0.914672
+0, 7, 12 : -0.914672, -0.911256
+0, 7, 13 : -0.911256, -0.908626
+0, 7, 14 : -0.908626, -0.906233
+0, 7, 15 : -0.906233, -0.902376
+0, 7, 16 : -0.902376, -0.900931
+0, 7, 17 : -0.900931, -0.895986
+0, 7, 18 : -0.895986, -0.895489
+0, 7, 19 : -0.895489, -0.889736
+0, 7, 20 : -0.889736, -0.883771
+0, 7, 21 : -0.883771, -0.883027
+0, 7, 22 : -0.883027, -0.877471
+0, 7, 23 : -0.877471, -0.870962
+0, 7, 24 : -0.870962, -0.869865
+0, 7, 25 : -0.869865, -0.863982
+0, 7, 26 : -0.863982, -0.857088
+0, 7, 27 : -0.857088, -0.85675
+0, 7, 28 : -0.85675, -0.848834
+0, 7, 29 : -0.848834, -0.84436
+0, 7, 30 : -0.84436, -0.841737
+0, 8, 0 : -0.967024, -0.966823
+0, 8, 1 : -0.966823, -0.96622
+0, 8, 2 : -0.96622, -0.965232
+0, 8, 3 : -0.965232, -0.96385
+0, 8, 4 : -0.96385, -0.962088
+0, 8, 5 : -0.962088, -0.959928
+0, 8, 6 : -0.959928, -0.957361
+0, 8, 7 : -0.957361, -0.95471
+0, 8, 8 : -0.95471, -0.954368
+0, 9, 0 : -0.956508, -0.956658
+0, 9, 1 : -0.956658, -0.959875
+0, 9, 2 : -0.959875, -0.961189
+0, 9, 3 : -0.961189, -0.962518
+0, 9, 4 : -0.962518, -0.964511
+0, 9, 5 : -0.964511, -0.965881
+0, 9, 6 : -0.965881, -0.9664
+0, 9, 7 : -0.9664, -0.967024
+0, 10, 0 : -0.873463, -0.880016
+0, 10, 1 : -0.880016, -0.886779
+0, 10, 2 : -0.886779, -0.896409
+0, 10, 3 : -0.896409, -0.89909
+0, 10, 4 : -0.89909, -0.909894
+0, 10, 5 : -0.909894, -0.911361
+0, 10, 6 : -0.911361, -0.919734
+0, 10, 7 : -0.919734, -0.925191
+0, 10, 8 : -0.925191, -0.928243
+0, 10, 9 : -0.928243, -0.935839
+0, 10, 10 : -0.935839, -0.937343
+0, 10, 11 : -0.937343, -0.942289
+0, 10, 12 : -0.942289, -0.947992
+0, 10, 13 : -0.947992, -0.947998
+0, 10, 14 : -0.947998, -0.952652
+0, 10, 15 : -0.952652, -0.956508
+0, 11, 0 : -0.63947, -0.640411
+0, 11, 1 : -0.640411, -0.655707
+0, 11, 2 : -0.655707, -0.65597
+0, 11, 3 : -0.65597, -0.67138
+0, 11, 4 : -0.67138, -0.671945
+0, 11, 5 : -0.671945, -0.686677
+0, 11, 6 : -0.686677, -0.687888
+0, 11, 7 : -0.687888, -0.701698
+0, 11, 8 : -0.701698, -0.703758
+0, 11, 9 : -0.703758, -0.716583
+0, 11, 10 : -0.716583, -0.730952
+0, 11, 11 : -0.730952, -0.734661
+0, 11, 12 : -0.734661, -0.745148
+0, 11, 13 : -0.745148, -0.76496
+0, 11, 14 : -0.76496, -0.772169
+0, 11, 15 : -0.772169, -0.779678
+0, 11, 16 : -0.779678, -0.794138
+0, 11, 17 : -0.794138, -0.797675
+0, 11, 18 : -0.797675, -0.808332
+0, 11, 19 : -0.808332, -0.821159
+0, 11, 20 : -0.821159, -0.822081
+0, 11, 21 : -0.822081, -0.83565
+0, 11, 22 : -0.83565, -0.842743
+0, 11, 23 : -0.842743, -0.848678
+0, 11, 24 : -0.848678, -0.861392
+0, 11, 25 : -0.861392, -0.862408
+0, 11, 26 : -0.862408, -0.873463
+0, 12, 0 : -0.624854, -0.62696
+0, 12, 1 : -0.62696, -0.63947
+0, 13, 0 : -0.564486, -0.576312
+0, 13, 1 : -0.576312, -0.579396
+0, 13, 2 : -0.579396, -0.589174
+0, 13, 3 : -0.589174, -0.594586
+0, 13, 4 : -0.594586, -0.601779
+0, 13, 5 : -0.601779, -0.60965
+0, 13, 6 : -0.60965, -0.614476
+0, 13, 7 : -0.614476, -0.624854
+0, 14, 0 : -0.537074, -0.550506
+0, 14, 1 : -0.550506, -0.550577
+0, 14, 2 : -0.550577, -0.563599
+0, 14, 3 : -0.563599, -0.564486
+0, 15, 0 : -0.426562, -0.434514
+0, 15, 1 : -0.434514, -0.446515
+0, 15, 2 : -0.446515, -0.459872
+0, 15, 3 : -0.459872, -0.459961
+0, 15, 4 : -0.459961, -0.47339
+0, 15, 5 : -0.47339, -0.488266
+0, 15, 6 : -0.488266, -0.488508
+0, 15, 7 : -0.488508, -0.503349
+0, 15, 8 : -0.503349, -0.513421
+0, 15, 9 : -0.513421, -0.519993
+0, 15, 10 : -0.519993, -0.537074
+0, 16, 0 : -0.345181, -0.355673
+0, 16, 1 : -0.355673, -0.361436
+0, 16, 2 : -0.361436, -0.37128
+0, 16, 3 : -0.37128, -0.379754
+0, 16, 4 : -0.379754, -0.390294
+0, 16, 5 : -0.390294, -0.398879
+0, 16, 6 : -0.398879, -0.400103
+0, 16, 7 : -0.400103, -0.411394
+0, 16, 8 : -0.411394, -0.422243
+0, 16, 9 : -0.422243, -0.426562
+0, 17, 0 : -0.345181, -0.341137
+0, 18, 0 : -0.243972, -0.25455
+0, 18, 1 : -0.25455, -0.256368
+0, 18, 2 : -0.256368, -0.265304
+0, 18, 3 : -0.265304, -0.272279
+0, 18, 4 : -0.272279, -0.275893
+0, 18, 5 : -0.275893, -0.286677
+0, 18, 6 : -0.286677, -0.286683
+0, 18, 7 : -0.286683, -0.299522
+0, 18, 8 : -0.299522, -0.308185
+0, 18, 9 : -0.308185, -0.311014
+0, 18, 10 : -0.311014, -0.321286
+0, 18, 11 : -0.321286, -0.330554
+0, 18, 12 : -0.330554, -0.330644
+0, 18, 13 : -0.330644, -0.338997
+0, 18, 14 : -0.338997, -0.341137
+0, 19, 0 : -0.17996, -0.187796
+0, 19, 1 : -0.187796, -0.195786
+0, 19, 2 : -0.195786, -0.200323
+0, 19, 3 : -0.200323, -0.203685
+0, 19, 4 : -0.203685, -0.211795
+0, 19, 5 : -0.211795, -0.219738
+0, 19, 6 : -0.219738, -0.220096
+0, 19, 7 : -0.220096, -0.227865
+0, 19, 8 : -0.227865, -0.235821
+0, 19, 9 : -0.235821, -0.238912
+0, 19, 10 : -0.238912, -0.243972
+0, 20, 0 : -0.12948, -0.139457
+0, 20, 1 : -0.139457, -0.141621
+0, 20, 2 : -0.141621, -0.154319
+0, 20, 3 : -0.154319, -0.159509
+0, 20, 4 : -0.159509, -0.166872
+0, 20, 5 : -0.166872, -0.17996
+0, 21, 0 : -0.0260793, -0.0319578
+0, 21, 1 : -0.0319578, -0.0419304
+0, 21, 2 : -0.0419304, -0.0435164
+0, 21, 3 : -0.0435164, -0.0496956
+0, 21, 4 : -0.0496956, -0.0559881
+0, 21, 5 : -0.0559881, -0.0601211
+0, 21, 6 : -0.0601211, -0.0626045
+0, 21, 7 : -0.0626045, -0.0692739
+0, 21, 8 : -0.0692739, -0.0762909
+0, 21, 9 : -0.0762909, -0.0800469
+0, 21, 10 : -0.0800469, -0.083322
+0, 21, 11 : -0.083322, -0.0906856
+0, 21, 12 : -0.0906856, -0.0980481
+0, 21, 13 : -0.0980481, -0.100313
+0, 21, 14 : -0.100313, -0.105761
+0, 21, 15 : -0.105761, -0.113444
+0, 21, 16 : -0.113444, -0.120351
+0, 21, 17 : -0.120351, -0.121478
+0, 21, 18 : -0.121478, -0.12948
+0, 22, 0 : 0.0232785, 0.0228252
+0, 22, 1 : 0.0228252, 0.0217437
+0, 22, 2 : 0.0217437, 0.01984
+0, 22, 3 : 0.01984, 0.0198
+0, 22, 4 : 0.0198, 0.0176135
+0, 22, 5 : 0.0176135, 0.0174852
+0, 22, 6 : 0.0174852, 0.0149153
+0, 22, 7 : 0.0149153, 0.0148064
+0, 22, 8 : 0.0148064, 0.0119903
+0, 22, 9 : 0.0119903, 0.0111553
+0, 22, 10 : 0.0111553, 0.00882493
+0, 22, 11 : 0.00882493, 0.00655587
+0, 22, 12 : 0.00655587, 0.00533254
+0, 22, 13 : 0.00533254, 0.00158472
+0, 22, 14 : 0.00158472, 0.000732061
+0, 22, 15 : 0.000732061, -0.00243757
+0, 22, 16 : -0.00243757, -0.00653979
+0, 22, 17 : -0.00653979, -0.011269
+0, 22, 18 : -0.011269, -0.0154361
+0, 22, 19 : -0.0154361, -0.0210754
+0, 22, 20 : -0.0210754, -0.0260793
+0, 23, 0 : 0.0772158, 0.0707139
+0, 23, 1 : 0.0707139, 0.0560937
+0, 23, 2 : 0.0560937, 0.0527151
+0, 23, 3 : 0.0527151, 0.0360833
+0, 23, 4 : 0.0360833, 0.0349723
+0, 23, 5 : 0.0349723, 0.0232785
+0, 24, 0 : 0.218359, 0.207704
+0, 24, 1 : 0.207704, 0.201619
+0, 24, 2 : 0.201619, 0.191133
+0, 24, 3 : 0.191133, 0.181862
+0, 24, 4 : 0.181862, 0.1702
+0, 24, 5 : 0.1702, 0.159085
+0, 24, 6 : 0.159085, 0.145997
+0, 24, 7 : 0.145997, 0.144536
+0, 24, 8 : 0.144536, 0.133128
+0, 24, 9 : 0.133128, 0.118413
+0, 24, 10 : 0.118413, 0.103726
+0, 24, 11 : 0.103726, 0.0872249
+0, 24, 12 : 0.0872249, 0.0772158
+0, 25, 0 : 0.218359, 0.218743
+0, 26, 0 : 0.218743, 0.220399
+0, 26, 1 : 0.220399, 0.22211
+0, 26, 2 : 0.22211, 0.224158
+0, 26, 3 : 0.224158, 0.225901
+0, 26, 4 : 0.225901, 0.228181
+0, 26, 5 : 0.228181, 0.229566
+0, 26, 6 : 0.229566, 0.232512
+0, 27, 0 : 0.240546, 0.238629
+0, 27, 1 : 0.238629, 0.236356
+0, 27, 2 : 0.236356, 0.235026
+0, 27, 3 : 0.235026, 0.232512
+0, 28, 0 : 0.276437, 0.273899
+0, 28, 1 : 0.273899, 0.26928
+0, 28, 2 : 0.26928, 0.265773
+0, 28, 3 : 0.265773, 0.264771
+0, 28, 4 : 0.264771, 0.260594
+0, 28, 5 : 0.260594, 0.256406
+0, 28, 6 : 0.256406, 0.252485
+0, 28, 7 : 0.252485, 0.252466
+0, 28, 8 : 0.252466, 0.248415
+0, 28, 9 : 0.248415, 0.244557
+0, 28, 10 : 0.244557, 0.240546
+0, 29, 0 : 0.354796, 0.34467
+0, 29, 1 : 0.34467, 0.335267
+0, 29, 2 : 0.335267, 0.335021
+0, 29, 3 : 0.335021, 0.325099
+0, 29, 4 : 0.325099, 0.320124
+0, 29, 5 : 0.320124, 0.315699
+0, 29, 6 : 0.315699, 0.310933
+0, 29, 7 : 0.310933, 0.308297
+0, 29, 8 : 0.308297, 0.306242
+0, 29, 9 : 0.306242, 0.301412
+0, 29, 10 : 0.301412, 0.298829
+0, 29, 11 : 0.298829, 0.296688
+0, 29, 12 : 0.296688, 0.291871
+0, 29, 13 : 0.291871, 0.291139
+0, 29, 14 : 0.291139, 0.28692
+0, 29, 15 : 0.28692, 0.2846
+0, 29, 16 : 0.2846, 0.281775
+0, 29, 17 : 0.281775, 0.279014
+0, 29, 18 : 0.279014, 0.276437
+0, 30, 0 : 0.400101, 0.388596
+0, 30, 1 : 0.388596, 0.379562
+0, 30, 2 : 0.379562, 0.377271
+0, 30, 3 : 0.377271, 0.365831
+0, 30, 4 : 0.365831, 0.354796
+0, 31, 0 : 0.518056, 0.513081
+0, 31, 1 : 0.513081, 0.5118
+0, 31, 2 : 0.5118, 0.505211
+0, 31, 3 : 0.505211, 0.498547
+0, 31, 4 : 0.498547, 0.4934
+0, 31, 5 : 0.4934, 0.491569
+0, 31, 6 : 0.491569, 0.484573
+0, 31, 7 : 0.484573, 0.477295
+0, 31, 8 : 0.477295, 0.469996
+0, 31, 9 : 0.469996, 0.468862
+0, 31, 10 : 0.468862, 0.462466
+0, 31, 11 : 0.462466, 0.439602
+0, 31, 12 : 0.439602, 0.432033
+0, 31, 13 : 0.432033, 0.408939
+0, 31, 14 : 0.408939, 0.400101
+0, 32, 0 : 0.541493, 0.541149
+0, 32, 1 : 0.541149, 0.533944
+0, 32, 2 : 0.533944, 0.528421
+0, 32, 3 : 0.528421, 0.526131
+0, 32, 4 : 0.526131, 0.518056
+0, 33, 0 : 0.590625, 0.590308
+0, 33, 1 : 0.590308, 0.590239
+0, 33, 2 : 0.590239, 0.589234
+0, 33, 3 : 0.589234, 0.589144
+0, 33, 4 : 0.589144, 0.587407
+0, 33, 5 : 0.587407, 0.587129
+0, 33, 6 : 0.587129, 0.585109
+0, 33, 7 : 0.585109, 0.583624
+0, 33, 8 : 0.583624, 0.58117
+0, 33, 9 : 0.58117, 0.578833
+0, 33, 10 : 0.578833, 0.578158
+0, 33, 11 : 0.578158, 0.574435
+0, 33, 12 : 0.574435, 0.57052
+0, 33, 13 : 0.57052, 0.569924
+0, 33, 14 : 0.569924, 0.565587
+0, 33, 15 : 0.565587, 0.564479
+0, 33, 16 : 0.564479, 0.56023
+0, 33, 17 : 0.56023, 0.558026
+0, 33, 18 : 0.558026, 0.55432
+0, 33, 19 : 0.55432, 0.550386
+0, 33, 20 : 0.550386, 0.548014
+0, 33, 21 : 0.548014, 0.541493
+0, 34, 0 : 0.589732, 0.589872
+0, 34, 1 : 0.589872, 0.590195
+0, 34, 2 : 0.590195, 0.590427
+0, 34, 3 : 0.590427, 0.590625
+0, 35, 0 : 0.61267, 0.599541
+0, 35, 1 : 0.599541, 0.591224
+0, 35, 2 : 0.591224, 0.589732
+0, 36, 0 : 0.647144, 0.641433
+0, 36, 1 : 0.641433, 0.629415
+0, 36, 2 : 0.629415, 0.626904
+0, 36, 3 : 0.626904, 0.61267
+0, 37, 0 : 0.670383, 0.655849
+0, 37, 1 : 0.655849, 0.647144
+0, 38, 0 : 0.698876, 0.673002
+0, 38, 1 : 0.673002, 0.670383
+0, 39, 0 : 0.821458, 0.81176
+0, 39, 1 : 0.81176, 0.809871
+0, 39, 2 : 0.809871, 0.799417
+0, 39, 3 : 0.799417, 0.797698
+0, 39, 4 : 0.797698, 0.787507
+0, 39, 5 : 0.787507, 0.784387
+0, 39, 6 : 0.784387, 0.77586
+0, 39, 7 : 0.77586, 0.770267
+0, 39, 8 : 0.770267, 0.764594
+0, 39, 9 : 0.764594, 0.754572
+0, 39, 10 : 0.754572, 0.753311
+0, 39, 11 : 0.753311, 0.737627
+0, 39, 12 : 0.737627, 0.718864
+0, 39, 13 : 0.718864, 0.711439
+0, 39, 14 : 0.711439, 0.698876
+0, 40, 0 : 0.851021, 0.846906
+0, 40, 1 : 0.846906, 0.83884
+0, 40, 2 : 0.83884, 0.837625
+0, 40, 3 : 0.837625, 0.830266
+0, 40, 4 : 0.830266, 0.824423
+0, 40, 5 : 0.824423, 0.821458
+0, 41, 0 : 0.997991, 0.997833
+0, 41, 1 : 0.997833, 0.99708
+0, 41, 2 : 0.99708, 0.996473
+0, 41, 3 : 0.996473, 0.995563
+0, 41, 4 : 0.995563, 0.994189
+0, 41, 5 : 0.994189, 0.993548
+0, 41, 6 : 0.993548, 0.991003
+0, 41, 7 : 0.991003, 0.9909
+0, 41, 8 : 0.9909, 0.988065
+0, 41, 9 : 0.988065, 0.98469
+0, 41, 10 : 0.98469, 0.981131
+0, 41, 11 : 0.981131, 0.981032
+0, 41, 12 : 0.981032, 0.976977
+0, 41, 13 : 0.976977, 0.972702
+0, 41, 14 : 0.972702, 0.968089
+0, 41, 15 : 0.968089, 0.966507
+0, 41, 16 : 0.966507, 0.963312
+0, 41, 17 : 0.963312, 0.958237
+0, 41, 18 : 0.958237, 0.957072
+0, 41, 19 : 0.957072, 0.947711
+0, 41, 20 : 0.947711, 0.946239
+0, 41, 21 : 0.946239, 0.936191
+0, 41, 22 : 0.936191, 0.933596
+0, 41, 23 : 0.933596, 0.919544
+0, 41, 24 : 0.919544, 0.911684
+0, 41, 25 : 0.911684, 0.903971
+0, 41, 26 : 0.903971, 0.887189
+0, 41, 27 : 0.887189, 0.88441
+0, 41, 28 : 0.88441, 0.869807
+0, 41, 29 : 0.869807, 0.869154
+0, 41, 30 : 0.869154, 0.854818
+0, 41, 31 : 0.854818, 0.851021
+0, 42, 0 : 0.998278, 0.998206
+0, 42, 1 : 0.998206, 0.997991
+0, 43, 0 : 0.963773, 0.965976
+0, 43, 1 : 0.965976, 0.97123
+0, 43, 2 : 0.97123, 0.972748
+0, 43, 3 : 0.972748, 0.976119
+0, 43, 4 : 0.976119, 0.980176
+0, 43, 5 : 0.980176, 0.980752
+0, 43, 6 : 0.980752, 0.984902
+0, 43, 7 : 0.984902, 0.986012
+0, 43, 8 : 0.986012, 0.988702
+0, 43, 9 : 0.988702, 0.990652
+0, 43, 10 : 0.990652, 0.991919
+0, 43, 11 : 0.991919, 0.994054
+0, 43, 12 : 0.994054, 0.99645
+0, 43, 13 : 0.99645, 0.996627
+0, 43, 14 : 0.996627, 0.997822
+0, 43, 15 : 0.997822, 0.998278
+0, 44, 0 : 0.790355, 0.792769
+0, 44, 1 : 0.792769, 0.796839
+0, 44, 2 : 0.796839, 0.801807
+0, 44, 3 : 0.801807, 0.807491
+0, 44, 4 : 0.807491, 0.816989
+0, 44, 5 : 0.816989, 0.828857
+0, 44, 6 : 0.828857, 0.834036
+0, 44, 7 : 0.834036, 0.840073
+0, 44, 8 : 0.840073, 0.853025
+0, 44, 9 : 0.853025, 0.857005
+0, 44, 10 : 0.857005, 0.865444
+0, 44, 11 : 0.865444, 0.87771
+0, 44, 12 : 0.87771, 0.87917
+0, 44, 13 : 0.87917, 0.892068
+0, 44, 14 : 0.892068, 0.895483
+0, 44, 15 : 0.895483, 0.904246
+0, 44, 16 : 0.904246, 0.905765
+0, 44, 17 : 0.905765, 0.912276
+0, 44, 18 : 0.912276, 0.918488
+0, 44, 19 : 0.918488, 0.920236
+0, 44, 20 : 0.920236, 0.927723
+0, 44, 21 : 0.927723, 0.931296
+0, 44, 22 : 0.931296, 0.935029
+0, 44, 23 : 0.935029, 0.941821
+0, 44, 24 : 0.941821, 0.942903
+0, 44, 25 : 0.942903, 0.948442
+0, 44, 26 : 0.948442, 0.954055
+0, 44, 27 : 0.954055, 0.95465
+0, 44, 28 : 0.95465, 0.960517
+0, 44, 29 : 0.960517, 0.963773
+0, 45, 0 : 0.791745, 0.791195
+0, 45, 1 : 0.791195, 0.790561
+0, 45, 2 : 0.790561, 0.790355
+0, 46, 0 : 0.796455, 0.796241
+0, 46, 1 : 0.796241, 0.795816
+0, 46, 2 : 0.795816, 0.795802
+0, 46, 3 : 0.795802, 0.795196
+0, 46, 4 : 0.795196, 0.794576
+0, 46, 5 : 0.794576, 0.794498
+0, 46, 6 : 0.794498, 0.793666
+0, 46, 7 : 0.793666, 0.792775
+0, 46, 8 : 0.792775, 0.792606
+0, 46, 9 : 0.792606, 0.791745
+0, 47, 0 : 0.796642, 0.796597
+0, 47, 1 : 0.796597, 0.796538
+0, 47, 2 : 0.796538, 0.796455
+0, 48, 0 : 0.678994, 0.688861
+0, 48, 1 : 0.688861, 0.698703
+0, 48, 2 : 0.698703, 0.708873
+0, 48, 3 : 0.708873, 0.710221
+0, 48, 4 : 0.710221, 0.718637
+0, 48, 5 : 0.718637, 0.728669
+0, 48, 6 : 0.728669, 0.737512
+0, 48, 7 : 0.737512, 0.737979
+0, 48, 8 : 0.737979, 0.742693
+0, 48, 9 : 0.742693, 0.74718
+0, 48, 10 : 0.74718, 0.751672
+0, 48, 11 : 0.751672, 0.755912
+0, 48, 12 : 0.755912, 0.757538
+0, 48, 13 : 0.757538, 0.760148
+0, 48, 14 : 0.760148, 0.764123
+0, 48, 15 : 0.764123, 0.768036
+0, 48, 16 : 0.768036, 0.771212
+0, 48, 17 : 0.771212, 0.771658
+0, 48, 18 : 0.771658, 0.775201
+0, 48, 19 : 0.775201, 0.778433
+0, 48, 20 : 0.778433, 0.780402
+0, 48, 21 : 0.780402, 0.78154
+0, 48, 22 : 0.78154, 0.784361
+0, 48, 23 : 0.784361, 0.786546
+0, 48, 24 : 0.786546, 0.786985
+0, 48, 25 : 0.786985, 0.789294
+0, 48, 26 : 0.789294, 0.790598
+0, 48, 27 : 0.790598, 0.791373
+0, 48, 28 : 0.791373, 0.793126
+0, 48, 29 : 0.793126, 0.793274
+0, 48, 30 : 0.793274, 0.794956
+0, 48, 31 : 0.794956, 0.795703
+0, 48, 32 : 0.795703, 0.795979
+0, 48, 33 : 0.795979, 0.796489
+0, 48, 34 : 0.796489, 0.796642
+0, 49, 0 : 0.669129, 0.674018
+0, 49, 1 : 0.674018, 0.678464
+0, 49, 2 : 0.678464, 0.678994
+0, 50, 0 : 0.606307, 0.613759
+0, 50, 1 : 0.613759, 0.618104
+0, 50, 2 : 0.618104, 0.618427
+0, 50, 3 : 0.618427, 0.622425
+0, 50, 4 : 0.622425, 0.626783
+0, 50, 5 : 0.626783, 0.631235
+0, 50, 6 : 0.631235, 0.632999
+0, 50, 7 : 0.632999, 0.635697
+0, 50, 8 : 0.635697, 0.640266
+0, 50, 9 : 0.640266, 0.644853
+0, 50, 10 : 0.644853, 0.649583
+0, 50, 11 : 0.649583, 0.652033
+0, 50, 12 : 0.652033, 0.654307
+0, 50, 13 : 0.654307, 0.659183
+0, 50, 14 : 0.659183, 0.664061
+0, 50, 15 : 0.664061, 0.669129
+0, 51, 0 : 0.596768, 0.601434
+0, 51, 1 : 0.601434, 0.605278
+0, 51, 2 : 0.605278, 0.606307
+0, 52, 0 : 0.592744, 0.594756
+0, 52, 1 : 0.594756, 0.596768
+0, 53, 0 : 0.530788, 0.534489
+0, 53, 1 : 0.534489, 0.537965
+0, 53, 2 : 0.537965, 0.541799
+0, 53, 3 : 0.541799, 0.545478
+0, 53, 4 : 0.545478, 0.545974
+0, 53, 5 : 0.545974, 0.553511
+0, 53, 6 : 0.553511, 0.559006
+0, 53, 7 : 0.559006, 0.561016
+0, 53, 8 : 0.561016, 0.569087
+0, 53, 9 : 0.569087, 0.571185
+0, 53, 10 : 0.571185, 0.576812
+0, 53, 11 : 0.576812, 0.577285
+0, 53, 12 : 0.577285, 0.58352
+0, 53, 13 : 0.58352, 0.584909
+0, 53, 14 : 0.584909, 0.589995
+0, 53, 15 : 0.589995, 0.592744
+0, 54, 0 : 0.525619, 0.530055
+0, 54, 1 : 0.530055, 0.530788
+0, 55, 0 : 0.420347, 0.425462
+0, 55, 1 : 0.425462, 0.428261
+0, 55, 2 : 0.428261, 0.43302
+0, 55, 3 : 0.43302, 0.437101
+0, 55, 4 : 0.437101, 0.440423
+0, 55, 5 : 0.440423, 0.447723
+0, 55, 6 : 0.447723, 0.457143
+0, 55, 7 : 0.457143, 0.467512
+0, 55, 8 : 0.467512, 0.468889
+0, 55, 9 : 0.468889, 0.479912
+0, 55, 10 : 0.479912, 0.486334
+0, 55, 11 : 0.486334, 0.492495
+0, 55, 12 : 0.492495, 0.502476
+0, 55, 13 : 0.502476, 0.504372
+0, 55, 14 : 0.504372, 0.51678
+0, 55, 15 : 0.51678, 0.517311
+0, 55, 16 : 0.517311, 0.525619
+0, 56, 0 : 0.420347, 0.414514
+0, 56, 1 : 0.414514, 0.411993
+0, 56, 2 : 0.411993, 0.40798
+0, 56, 3 : 0.40798, 0.407177
+0, 57, 0 : 0.407177, 0.40727
+0, 57, 1 : 0.40727, 0.4073
+0, 57, 2 : 0.4073, 0.407441
+0, 57, 3 : 0.407441, 0.4076
+0, 57, 4 : 0.4076, 0.407762
+0, 57, 5 : 0.407762, 0.408109
+0, 57, 6 : 0.408109, 0.408186
+0, 57, 7 : 0.408186, 0.40873
+0, 57, 8 : 0.40873, 0.409024
+0, 57, 9 : 0.409024, 0.409449
+0, 57, 10 : 0.409449, 0.409718
+0, 57, 11 : 0.409718, 0.410335
+0, 58, 0 : 0.412497, 0.411968
+0, 58, 1 : 0.411968, 0.41135
+0, 58, 2 : 0.41135, 0.410987
+0, 58, 3 : 0.410987, 0.410335
+0, 59, 0 : 0.417143, 0.417049
+0, 59, 1 : 0.417049, 0.416954
+0, 59, 2 : 0.416954, 0.416774
+0, 59, 3 : 0.416774, 0.416361
+0, 59, 4 : 0.416361, 0.416335
+0, 59, 5 : 0.416335, 0.4158
+0, 59, 6 : 0.4158, 0.415218
+0, 59, 7 : 0.415218, 0.415147
+0, 59, 8 : 0.415147, 0.414346
+0, 59, 9 : 0.414346, 0.413486
+0, 59, 10 : 0.413486, 0.413403
+0, 59, 11 : 0.413403, 0.412497
+0, 60, 0 : 0.373317, 0.374313
+0, 60, 1 : 0.374313, 0.378778
+0, 60, 2 : 0.378778, 0.383705
+0, 60, 3 : 0.383705, 0.388358
+0, 60, 4 : 0.388358, 0.389529
+0, 60, 5 : 0.389529, 0.392566
+0, 60, 6 : 0.392566, 0.396489
+0, 60, 7 : 0.396489, 0.399026
+0, 60, 8 : 0.399026, 0.399989
+0, 60, 9 : 0.399989, 0.40319
+0, 60, 10 : 0.40319, 0.405298
+0, 60, 11 : 0.405298, 0.406021
+0, 60, 12 : 0.406021, 0.408565
+0, 60, 13 : 0.408565, 0.409562
+0, 60, 14 : 0.409562, 0.410769
+0, 60, 15 : 0.410769, 0.412459
+0, 60, 16 : 0.412459, 0.412628
+0, 60, 17 : 0.412628, 0.414218
+0, 60, 18 : 0.414218, 0.414452
+0, 60, 19 : 0.414452, 0.41545
+0, 60, 20 : 0.41545, 0.415755
+0, 60, 21 : 0.415755, 0.416377
+0, 60, 22 : 0.416377, 0.41658
+0, 60, 23 : 0.41658, 0.41694
+0, 60, 24 : 0.41694, 0.417009
+0, 60, 25 : 0.417009, 0.417143
+0, 61, 0 : 0.231161, 0.242231
+0, 61, 1 : 0.242231, 0.24937
+0, 61, 2 : 0.24937, 0.253349
+0, 61, 3 : 0.253349, 0.263911
+0, 61, 4 : 0.263911, 0.274479
+0, 61, 5 : 0.274479, 0.282744
+0, 61, 6 : 0.282744, 0.294038
+0, 61, 7 : 0.294038, 0.313157
+0, 61, 8 : 0.313157, 0.317646
+0, 61, 9 : 0.317646, 0.321951
+0, 61, 10 : 0.321951, 0.330509
+0, 61, 11 : 0.330509, 0.338616
+0, 61, 12 : 0.338616, 0.346391
+0, 61, 13 : 0.346391, 0.350097
+0, 61, 14 : 0.350097, 0.353761
+0, 61, 15 : 0.353761, 0.360702
+0, 61, 16 : 0.360702, 0.367277
+0, 61, 17 : 0.367277, 0.373317
+0, 62, 0 : 0.194798, 0.20366
+0, 62, 1 : 0.20366, 0.217396
+0, 62, 2 : 0.217396, 0.22014
+0, 62, 3 : 0.22014, 0.231161
+0, 63, 0 : 0.174832, 0.184512
+0, 63, 1 : 0.184512, 0.189207
+0, 63, 2 : 0.189207, 0.194798
+0, 64, 0 : 0.152899, 0.16105
+0, 64, 1 : 0.16105, 0.163864
+0, 64, 2 : 0.163864, 0.174832
+0, 65, 0 : 0.113947, 0.123873
+0, 65, 1 : 0.123873, 0.124363
+0, 65, 2 : 0.124363, 0.133602
+0, 65, 3 : 0.133602, 0.136134
+0, 65, 4 : 0.136134, 0.143363
+0, 65, 5 : 0.143363, 0.148321
+0, 65, 6 : 0.148321, 0.152899
+0, 66, 0 : 0.0324227, 0.0336587
+0, 66, 1 : 0.0336587, 0.0475907
+0, 66, 2 : 0.0475907, 0.0480715
+0, 66, 3 : 0.0480715, 0.0642123
+0, 66, 4 : 0.0642123, 0.0645368
+0, 66, 5 : 0.0645368, 0.0811108
+0, 66, 6 : 0.0811108, 0.0821204
+0, 66, 7 : 0.0821204, 0.0977362
+0, 66, 8 : 0.0977362, 0.102247
+0, 66, 9 : 0.102247, 0.113947
+0, 67, 0 : -0.00159644, 0.00555218
+0, 67, 1 : 0.00555218, 0.0102264
+0, 67, 2 : 0.0102264, 0.0121974
+0, 67, 3 : 0.0121974, 0.0185468
+0, 67, 4 : 0.0185468, 0.0201916
+0, 67, 5 : 0.0201916, 0.0243928
+0, 67, 6 : 0.0243928, 0.0285064
+0, 67, 7 : 0.0285064, 0.0298931
+0, 67, 8 : 0.0298931, 0.0324227
+0, 68, 0 : -0.0165205, -0.00953064
+0, 68, 1 : -0.00953064, -0.00195967
+0, 68, 2 : -0.00195967, -0.00159644
+0, 69, 0 : -0.21519, -0.208258
+0, 69, 1 : -0.208258, -0.194162
+0, 69, 2 : -0.194162, -0.190902
+0, 69, 3 : -0.190902, -0.174258
+0, 69, 4 : -0.174258, -0.173396
+0, 69, 5 : -0.173396, -0.156022
+0, 69, 6 : -0.156022, -0.155246
+0, 69, 7 : -0.155246, -0.138905
+0, 69, 8 : -0.138905, -0.136844
+0, 69, 9 : -0.136844, -0.117533
+0, 69, 10 : -0.117533, -0.108777
+0, 69, 11 : -0.108777, -0.098032
+0, 69, 12 : -0.098032, -0.087863
+0, 69, 13 : -0.087863, -0.0812707
+0, 69, 14 : -0.0812707, -0.0776801
+0, 69, 15 : -0.0776801, -0.0690949
+0, 69, 16 : -0.0690949, -0.0672734
+0, 69, 17 : -0.0672734, -0.0575182
+0, 69, 18 : -0.0575182, -0.0569395
+0, 69, 19 : -0.0569395, -0.0467034
+0, 69, 20 : -0.0467034, -0.0464538
+0, 69, 21 : -0.0464538, -0.0365107
+0, 69, 22 : -0.0365107, -0.0362652
+0, 69, 23 : -0.0362652, -0.0269261
+0, 69, 24 : -0.0269261, -0.0261029
+0, 69, 25 : -0.0261029, -0.0179815
+0, 69, 26 : -0.0179815, -0.0165205
+0, 70, 0 : -0.308381, -0.301818
+0, 70, 1 : -0.301818, -0.29189
+0, 70, 2 : -0.29189, -0.275334
+0, 70, 3 : -0.275334, -0.270999
+0, 70, 4 : -0.270999, -0.258727
+0, 70, 5 : -0.258727, -0.242472
+0, 70, 6 : -0.242472, -0.24217
+0, 70, 7 : -0.24217, -0.225185
+0, 70, 8 : -0.225185, -0.21519
+0, 71, 0 : -0.332825, -0.320605
+0, 71, 1 : -0.320605, -0.308381
+0, 72, 0 : -0.378757, -0.358909
+0, 72, 1 : -0.358909, -0.356187
+0, 72, 2 : -0.356187, -0.332825
+0, 73, 0 : -0.449975, -0.43968
+0, 73, 1 : -0.43968, -0.433292
+0, 73, 2 : -0.433292, -0.425548
+0, 73, 3 : -0.425548, -0.416007
+0, 73, 4 : -0.416007, -0.411522
+0, 73, 5 : -0.411522, -0.397959
+0, 73, 6 : -0.397959, -0.397802
+0, 73, 7 : -0.397802, -0.384641
+0, 73, 8 : -0.384641, -0.378757
+0, 74, 0 : -0.565814, -0.564578
+0, 74, 1 : -0.564578, -0.549367
+0, 74, 2 : -0.549367, -0.544186
+0, 74, 3 : -0.544186, -0.532715
+0, 74, 4 : -0.532715, -0.522719
+0, 74, 5 : -0.522719, -0.516566
+0, 74, 6 : -0.516566, -0.500363
+0, 74, 7 : -0.500363, -0.499968
+0, 74, 8 : -0.499968, -0.48478
+0, 74, 9 : -0.48478, -0.475676
+0, 74, 10 : -0.475676, -0.469278
+0, 74, 11 : -0.469278, -0.45445
+0, 74, 12 : -0.45445, -0.449975
+0, 75, 0 : -0.739618, -0.738847
+0, 75, 1 : -0.738847, -0.735986
+0, 75, 2 : -0.735986, -0.734523
+0, 75, 3 : -0.734523, -0.732851
+0, 75, 4 : -0.732851, -0.729275
+0, 75, 5 : -0.729275, -0.728838
+0, 75, 6 : -0.728838, -0.725389
+0, 75, 7 : -0.725389, -0.722805
+0, 75, 8 : -0.722805, -0.720979
+0, 75, 9 : -0.720979, -0.716313
+0, 75, 10 : -0.716313, -0.716199
+0, 75, 11 : -0.716199, -0.710797
+0, 75, 12 : -0.710797, -0.709581
+0, 75, 13 : -0.709581, -0.704931
+0, 75, 14 : -0.704931, -0.702503
+0, 75, 15 : -0.702503, -0.698326
+0, 75, 16 : -0.698326, -0.695255
+0, 75, 17 : -0.695255, -0.691168
+0, 75, 18 : -0.691168, -0.687692
+0, 75, 19 : -0.687692, -0.683109
+0, 75, 20 : -0.683109, -0.680015
+0, 75, 21 : -0.680015, -0.674369
+0, 75, 22 : -0.674369, -0.672055
+0, 75, 23 : -0.672055, -0.66458
+0, 75, 24 : -0.66458, -0.66399
+0, 75, 25 : -0.66399, -0.655691
+0, 75, 26 : -0.655691, -0.653922
+0, 75, 27 : -0.653922, -0.64731
+0, 75, 28 : -0.64731, -0.642032
+0, 75, 29 : -0.642032, -0.638657
+0, 75, 30 : -0.638657, -0.629962
+0, 75, 31 : -0.629962, -0.62923
+0, 75, 32 : -0.62923, -0.621029
+0, 75, 33 : -0.621029, -0.602914
+0, 75, 34 : -0.602914, -0.599419
+0, 75, 35 : -0.599419, -0.583899
+0, 75, 36 : -0.583899, -0.565814
+0, 76, 0 : -0.753594, -0.752769
+0, 76, 1 : -0.752769, -0.752004
+0, 76, 2 : -0.752004, -0.750247
+0, 76, 3 : -0.750247, -0.74736
+0, 76, 4 : -0.74736, -0.745774
+0, 76, 5 : -0.745774, -0.743531
+0, 76, 6 : -0.743531, -0.739618
+0, 77, 0 : -0.752621, -0.753282
+0, 77, 1 : -0.753282, -0.753356
+0, 77, 2 : -0.753356, -0.753594
