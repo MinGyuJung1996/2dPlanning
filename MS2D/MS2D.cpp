@@ -2,7 +2,7 @@
 
 namespace ms{
 
-	int RES = 3;
+	int RES = 100;
 
 extern int coefBasis[20][20];
 extern double basis2[10001][3];
@@ -19,8 +19,8 @@ const bool change7 = true; // change 7 model to 6 + 7
 void initialize()
 {
 	fopen_s(&f, "time.txt", "w");
-	ModelInfo_CurrentModel.first  = 0;
-	ModelInfo_CurrentModel.second = 5;
+	ModelInfo_CurrentModel.first  = 7;
+	ModelInfo_CurrentModel.second = 7;
 	Models_Imported[0] = import_Crv("impt1.txt");
 	Models_Imported[1] = import_Crv("impt2.txt");
 	Models_Imported[2] = import_Crv("impt3.txt");
@@ -700,7 +700,7 @@ void minkowskisum(int frame, int figure2)
 		}
 	}
 
-	//// 9. some code to make it work with MAT
+	//// 9. some code to make it work with MAT (only test left now)
 	//for (size_t i = 0; i < Model_Result.size(); i++)
 	//{
 	//	for (size_t j = 0;  j < Model_Result[i].size();  j++)

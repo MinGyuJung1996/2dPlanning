@@ -12,6 +12,14 @@ namespace planning
 #define OUTPUT  // Mark output of a function in param list
 #define LOOP	// Mark loop variables. To Be vigilant updating the loop variables 
 
+// change below to false when release. All Error message will be excluded in compile time.
+#define PRINT_ERRORS					false
+#define ERR_ARC_END_POINTS				true
+#define ERR_FOOT_C_BELOW_1				true
+#define ERR_ARC_NORMAL_INTER_DTHETA		true
+#define ERR_GET_POINT_GEOM_DTHETA		true
+#define ERR_ARC_NORMAL_TO_PARAM			true
+
 	extern int drawBifurCircle;
 	extern int drawVoronoiSingleBranch;
 	extern int drawMinkowski;
@@ -19,7 +27,14 @@ namespace planning
 	extern int drawBoundary;
 	extern int drawTransition;
 
-	extern bool keyboardflag[256];
+	extern std::vector<ms::Circle> circlesToDraw;
+
+	extern bool keyboardflag[256];	
+	extern double rfbTerminationEps; //originally 1e-18
+	extern double rfbTerminationEps2; // origirnally 2.5e-3;
+
+	extern int lineSegCnt;
+
 
 	using namespace std;
 	using namespace ms;

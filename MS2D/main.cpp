@@ -13,7 +13,7 @@ namespace ms {
 	/* Comments - MS2D.h Âü°í */
 
 #pragma region global variables related to time.
-	int ModelInfo_CurrentFrame = 44;			// 7,7,261 case
+	int ModelInfo_CurrentFrame = 358; // 44;		// 7,7,261 case
 	//int ModelInfo_CurrentFrame = 93;			// [0, 360)
 	pair<int, int> ModelInfo_CurrentModel;	// [0, 8) x [0, 8)
 
@@ -210,6 +210,7 @@ namespace ms {
 		}
 		//~debug
 		
+		// DRAW MINK
 		if(planning::drawMinkowski)
 		for (int i = 0; i < (int)Model_Result.size(); i++) {
 			if (ModelInfo_Boundary[i])
@@ -220,7 +221,7 @@ namespace ms {
 				glColor3d(0.0, 0.0, 1.0);
 			}
 
-			/*for (int j = 0; j < (int)Model_Result[i].size(); j++)
+			for (int j = 0; j < (int)Model_Result[i].size(); j++)
 			{
 				for (int k = 0; k < (int)Model_Result[i][j].Arcs.size(); k++)
 				{
@@ -229,26 +230,27 @@ namespace ms {
 					Model_Result[i][j].Arcs[k].draw();
 				}
 				dbg if (c > cnt) break;
-			}*/
-
-			//debug
-			vector<CircularArc> ordered;
-			planning::convertMsOutput_Clockwise(Model_Result[i], ordered);
-			for (size_t i = 0, length = ordered.size(); i < length; i++)
-			{
-				if (c > cnt) break;
-				c++;
-
-				/*if (i == 97)
-					glColor3f(0.5f, 0.5f, 1.0f);
-				if (i == 99)
-					glColor3f(0, 0, 0);*/
-				ordered[i].draw();
 			}
+
+			////debug
+			//vector<CircularArc> ordered;
+			//planning::convertMsOutput_Clockwise(Model_Result[i], ordered);
+			//for (size_t i = 0, length = ordered.size(); i < length; i++)
+			//{
+			//	if (c > cnt) break;
+			//	c++;
+
+			//	/*if (i == 97)
+			//		glColor3f(0.5f, 0.5f, 1.0f);
+			//	if (i == 99)
+			//		glColor3f(0, 0, 0);*/
+			//	ordered[i].draw();
+			//}
 		}
 
 
 		/////////////////////////////////////////////////////////////////////////
+		// DRAW BOUND
 
 		if(planning::drawBoundary)
 		{
@@ -270,10 +272,34 @@ namespace ms {
 		{
 			planning::VR_IN vrin;
 			planning::_Convert_MsOut_To_VrIn(Model_Result, ModelInfo_Boundary, vrin);
-			cout << "---------------------------------------------number of circular arcs ("<< ModelInfo_CurrentModel.first << ", " <<ModelInfo_CurrentModel.second << ", " << ModelInfo_CurrentFrame << ") : " << vrin.arcs.size() << endl;
 			planning::_Medial_Axis_Transformation(vrin);
+			cout << "---------------------------------------------number of circular arcs ("<< ModelInfo_CurrentModel.first << ", " <<ModelInfo_CurrentModel.second << ", " << ModelInfo_CurrentFrame << ") : " << vrin.arcs.size() << endl;
+			cout << "---------------------------------------------number of voronoi line segments : " << planning::lineSegCnt << endl;
+
+			// dbg
+			if (1)
+			{
+				// tag0544
+				for (auto a : vrin.arcs)
+				{
+					Point p(0.595017, -0.75676);
+					double eps = 1e-8;
+					if ((a.x[0] - p).length() < eps || (a.x[1] - p).length() < eps)
+					{
+						cerr << "normals " << a.n[0] << "       " << a.n[1] << endl;
+						a.draw();
+					}
+				}
+			}
 		}
 		glColor3f(0, 0, 0);
+		/////////////////////////////////////////////////////////////////////////
+
+		//DRAW circlesToDraw;
+		if(planning::keyboardflag['e'])
+		for (auto a : planning::circlesToDraw)
+			a.draw();
+
 		/////////////////////////////////////////////////////////////////////////
 
 		// debug : to see if results are connected in order : conclusion : somewhat connected & not?
@@ -346,10 +372,50 @@ namespace ms {
 		if (button == 4)
 			zoom *= 0.95;
 
+		if (button == GLUT_LEFT_BUTTON)
+		{
+			auto fx = float(x - 2 * wd / 3) / (wd/3);
+			auto fy = float(-y + ht / 2) / (ht / 2);
+			fx = zoom * fx + tx;
+			fy = zoom * fy + ty;
+			cerr
+				<< "***************************************************************" << endl
+				<< "clicked point : " << fx << ", " << fy << "   ( zoom = " << zoom << " ) " << endl
+				<< "***************************************************************" << endl;
+		}
+
+		static int grb = 0;
+		static Point c;
+		if (button == GLUT_RIGHT_BUTTON)
+		{
+			auto fx = float(x - 2 * wd / 3) / (wd / 3);
+			auto fy = float(-y + ht / 2) / (ht / 2);
+			fx = zoom * fx + tx;
+			fy = zoom * fy + ty;
+
+			if (grb % 2 == 0)
+			{
+				c = Point(fx, fy);
+			}
+			else
+			{
+				planning::circlesToDraw.push_back(Circle(c, Point(fx, fy)));
+			}
+
+			grb++;
+		}
+
 		glutPostRedisplay();
 	}
 
 	void keyboard_callback(unsigned char a, int b, int c) {
+		/*
+		currently used :
+		w
+		a s d f g
+		z x c v b n m
+		*/
+
 		using namespace planning;
 		if (a == 'f')
 			forwardTime = (forwardTime + 1) % 2;
@@ -365,6 +431,17 @@ namespace ms {
 			drawTransition = (drawTransition + 1) % 2;
 
 		keyboardflag[a] = !keyboardflag[a];
+
+		if (a == 'r')
+		{
+			rfbTerminationEps *= 10.0;
+			cerr << "rfbTerminationEps = " << rfbTerminationEps << endl;
+		}
+		if (a == 't')
+		{
+			rfbTerminationEps /= 10;
+			cerr << "rfbTerminationEps = " << rfbTerminationEps << endl;
+		}
 
 
 		if (a == 'a')

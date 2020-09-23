@@ -153,6 +153,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Commentated Notes About The Project.h" />
     <ClInclude Include="MS2D.h" />
     <ClInclude Include="voronoi.hpp" />
   </ItemGroup>
@@ -165,6 +166,7 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="debug_notes.txt" />
+    <Text Include="Major Changes.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

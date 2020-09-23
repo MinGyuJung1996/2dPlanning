@@ -21,6 +21,9 @@
     <ClInclude Include="voronoi.hpp">
       <Filter>헤더 파일</Filter>
     </ClInclude>
+    <ClInclude Include="Commentated Notes About The Project.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MS2D.cpp">
@@ -41,6 +44,9 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="debug_notes.txt">
+      <Filter>헤더 파일</Filter>
+    </Text>
+    <Text Include="Major Changes.txt">
       <Filter>헤더 파일</Filter>
     </Text>
   </ItemGroup>

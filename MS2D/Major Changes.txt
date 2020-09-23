@@ -1,0 +1,7 @@
+1. osculating circle part in RFB was deleted.
+	tag oscrfb
+
+2. endpoint return in findMax
+
+3. g1 incontinuity is concerned in findMax
+	tag g1inc

@@ -4,13 +4,6 @@ namespace planning
 {
 
 
-// change below to false when release. All Error message will be excluded in compile time.
-#define PRINT_ERRORS					true
-#define ERR_ARC_END_POINTS				true
-#define ERR_FOOT_C_BELOW_1				true
-#define ERR_ARC_NORMAL_INTER_DTHETA		true
-#define ERR_GET_POINT_GEOM_DTHETA		true
-#define ERR_ARC_NORMAL_TO_PARAM			true
 
 	int dbgmode = 0;
 	dbg int piececnt = 0;
@@ -25,9 +18,13 @@ namespace planning
 	int drawBoundary = true;
 	int drawTransition = false;
 
+	std::vector<ms::Circle> circlesToDraw;
+
 	bool keyboardflag[256];
-	const double rfbTerminationEps = 1e-18; //originally 1e-18
-	const double rfbTerminationEps2 = 2.5e-3; // origirnally 2.5e-3;
+	double rfbTerminationEps = 1e-18; //originally 1e-18
+	double rfbTerminationEps2 = 2.5e-3; // origirnally 2.5e-3;
+
+
 
 #pragma region math functions
 
@@ -977,6 +974,13 @@ namespace planning
 	*/
 	pointOnCurve findMaximalDiskSharingPoint(vector<CircularArc>& INPUT arcs, pointOnCurve INPUT poc, int INPUT left, int INPUT right)
 	{
+		//tag g1inc
+		if (left != poc.c)
+		{
+			if (fabs(arcs[left].n[1] * arcs[poc.c].n[0]) < 1 - 1e-8) //check if not g1
+				return { left, 1 };
+		}
+
 		//1. init stuff
 		// alias
 		auto& i = poc.c;
@@ -1092,10 +1096,11 @@ namespace planning
 			normal = normal / sqrt(normal*normal);
 
 			bool normalInArc;
+			double eps = 1e-180;
 			if (arcs[j].ccw)
-				normalInArc = ((arcs[j].n[0] ^ normal) >= -1e-120) && ((normal ^ arcs[j].n[1]) >= -1e-120);
+				normalInArc = ((arcs[j].n[0] ^ normal) >= -eps) && ((normal ^ arcs[j].n[1]) >= -eps);
 			else
-				normalInArc = ((arcs[j].n[0] ^ normal) <= 1e-120) && ((normal ^ arcs[j].n[1]) <= 1e-120);
+				normalInArc = ((arcs[j].n[0] ^ normal) <= eps) && ((normal ^ arcs[j].n[1]) <= eps);
 
 			// 2-7. decide which point is closest
 			if (normalInArc)
@@ -1118,7 +1123,7 @@ namespace planning
 			}
 			else
 			{
-				dbg continue;
+				//dbg continue;
 
 				// 2-7-2. use endpoints;
 				auto d0 = arcs[j].x[0] - p;
@@ -1153,7 +1158,8 @@ namespace planning
 				// set loop variables.
 				if (use_r0)
 				{
-					if (r0 < r)
+					//bool eqDist = fabs(sqrt((arcs[j].x[0] - (p + (n * r0))).length()) - r0) < 1e-8;
+					if (r0 < r /*&& eqDist*/)
 					{
 						r = r0;
 						center = p + (n * r);
@@ -1167,7 +1173,8 @@ namespace planning
 				}
 				else
 				{
-					if (r1 < r)
+					//bool eqDist = fabs(sqrt((arcs[j].x[1] - (p + (n * r1))).length()) - r1) < 1e-8;
+					if (r1 < r /*&& eqDist*/)
 					{
 						r = r1;
 						bestJ = j;
@@ -1357,6 +1364,36 @@ namespace planning
 
 		// 1. check cases and return if necessary
 		if (depth >= 20) return;
+		if (cycle.size() == 3 && depth >= 15)
+		{
+			if (epsilon(cycle[0]) || epsilon(cycle[1]) || epsilon(cycle[2]))
+				return;
+
+			auto p0 = getTouchingDiskCenter(cycle[0].x[1], cycle[1].x[0], cycle[0].n[1]);
+			auto p1 = getTouchingDiskCenter(cycle[1].x[1], cycle[2].x[0], cycle[1].n[1]);
+			auto p2 = getTouchingDiskCenter(cycle[2].x[1], cycle[0].x[0], cycle[2].n[1]);
+
+			auto mid0 = cycle[0](0.5);
+			auto mid1 = cycle[1](0.5);
+			auto mid2 = cycle[2](0.5);
+			
+			auto l0 = getLineEquationFromPointVector((mid0 + mid1)*0.5, rotate_p90(mid0 - mid1));
+			auto l1 = getLineEquationFromPointVector((mid2 + mid1)*0.5, rotate_p90(mid2 - mid1));
+			
+			auto q = getLineIntersectionPoint(l0, l1);
+			if (isnan(q.P[0]))
+				q = p0;
+			
+			glBegin(GL_LINES);
+			glColor3f(1, 1, 0);
+			glVertex2dv(p0.P);
+			glVertex2dv(q.P);
+			glVertex2dv(p1.P);
+			glVertex2dv(q.P);
+			glVertex2dv(p2.P);
+			glVertex2dv(q.P);
+			glEnd();
+		}
 		if (cycle.size() == 3 && false  /*&& depth >= 15*/)
 		{
 			if (epsilon(cycle[0]) || epsilon(cycle[1]) || epsilon(cycle[2]))
@@ -1796,25 +1833,8 @@ namespace planning
 			auto p11 = cycle[1].x[1];
 
 			// 1-2. endpoints of bisector
-			auto p = (p00 + p11) * 0.5;
-			auto q = (p01 + p10) * 0.5;
-
-			Point pdraw, qdraw;
-			// 1-3.5 get true voronoi point & write to p,q
-			{
-				/*double s0 = cycle[0].ccw ? -1 : 1;
-				auto r0 = getTouchingDiskRadius(cycle[0].x[1], cycle[1].x[0], cycle[0].n[1]);
-				auto r1 = getTouchingDiskRadius(cycle[0].x[0], cycle[1].x[1], cycle[0].n[0]);
-				p = pdraw = cycle[0].x[1] + r0 * s0 * cycle[0].n[1];
-				q = qdraw = cycle[0].x[0] + r1 * s0 * cycle[0].n[0];
-*/
-				dbg
-					// alternative disk deciding
-					// not really seems to be meaningful...
-					p = getTouchingDiskCenter(cycle[0].x[1], cycle[1].x[0], cycle[0].n[1]);
-					q = getTouchingDiskCenter(cycle[0].x[0], cycle[1].x[1], cycle[0].n[0]);
-				_dbg
-			}
+			auto p = getTouchingDiskCenter(cycle[0].x[1], cycle[1].x[0], cycle[0].n[1]);
+			auto q = getTouchingDiskCenter(cycle[0].x[0], cycle[1].x[1], cycle[0].n[0]);
 
 			if (PRINT_ERRORS)
 			{
@@ -1833,6 +1853,8 @@ namespace planning
 				{
 					cerr << "ERROR : in recFB, distance from circle center diff!!! pcnt dpth c2from diff0 diff1 " << piececnt << " " << depth << " " << case2from << " " << diff0 << " " << diff1 << endl;
 				}
+				if (p*p > 4 || q*q > 4)
+					cerr << "ERROR : in recFB, out of boundary " << len0 << " " << len1 << " " << len2 << " " << len3 << endl;
 				/*if (piececnt == 48)
 				{
 					cerr << "TEST : at pcnt48 diff0 diff1 " << diff0 << " " << diff1 << endl;
@@ -1854,21 +1876,23 @@ namespace planning
 			bool terminal = false;
 
 			if (sqlength(p00-p11)< rfbTerminationEps) {
-				Point normal;
+				//tag oscrfb
+	/*			Point normal;
 				if (cycle[0].ccw)
 					p = cycle[0].c.c;
 				else
 					p = cycle[0].x[0] + cycle[0].c.r * cycle[0].n[0];
-				swap(p, q);
+				swap(p, q);*/
 				//draw(p);
 				terminal = true;
 			}
 			else if (sqlength(p01 - p10)<rfbTerminationEps) {
-				Point normal;
+				//tag oscrfb
+				/*Point normal;
 				if (cycle[0].ccw)
 					q = cycle[0].c.c;
 				else
-					q = cycle[0].x[1] + cycle[0].c.r * cycle[0].n[1];
+					q = cycle[0].x[1] + cycle[0].c.r * cycle[0].n[1];*/
 				//draw(q);
 				terminal = true;
 			}
@@ -1879,7 +1903,7 @@ namespace planning
 
 
 			// 1-4. if (terminal) draw it approx & return
-			if (sqlength(p-q)<2.5e-3 || terminal) {// || terminal){
+			if (sqlength(p-q)<rfbTerminationEps2 || terminal) {// || terminal){
 				//toc(); // do not count drawing time
 
 				if (drawVoronoiSingleBranch)
@@ -1895,6 +1919,7 @@ namespace planning
 					glVertex2dv(q.P);
 					glEnd();
 					glColor3f(0, 0.7, 0);
+					lineSegCnt++;
 
 					if (PRINT_ERRORS)
 					{
@@ -2242,11 +2267,12 @@ namespace planning
 	/* Def:
 	
 	*/
+	dbg int lineSegCnt;
 	void _Medial_Axis_Transformation(VR_IN& INPUT in)
 	{
 		//dbg stuff
 		dbg bifurcnt = 0;
-
+		dbg lineSegCnt = 0;
 
 		// 0. alias
 		auto& spiral = in.arcs;
@@ -2302,6 +2328,18 @@ namespace planning
 					glVertex2dv(q.P);
 					glVertex2dv(mid.P);
 					glEnd();
+
+					if (PRINT_ERRORS)
+					{
+						// dbg_draw
+						// tag0544 - 1
+						if ((mid - Point(1.35744, 0.0685376)).length() < 1e-4)
+						{
+							auto r = (p - mid).length();
+							r = sqrt(r);
+							/*Circle(mid, r).draw();*/
+						}
+					}
 				}
 			}
 
@@ -2470,7 +2508,7 @@ namespace planning
 			{
 				cerr << "ERROR : 4070 case : cycle.size() " << cycle.size() << endl;
 			}
-			if (PRINT_ERRORS && piececnt == 1145)
+			if (PRINT_ERRORS && piececnt == 1145 && cycle.size() > 3)
 			{
 				// tag0544 dbg_draw
 				{
