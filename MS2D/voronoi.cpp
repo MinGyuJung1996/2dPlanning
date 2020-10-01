@@ -4,7 +4,6 @@ namespace planning
 {
 
 
-
 	int dbgmode = 0;
 	dbg int piececnt = 0;
 	dbg int cur_depth = -1;
@@ -24,7 +23,136 @@ namespace planning
 	double rfbTerminationEps = 1e-18; //originally 1e-18
 	double rfbTerminationEps2 = 2.5e-3; // origirnally 2.5e-3;
 
+	namespace output_to_file
+	{
+		int m0=0, m1=7, curF; // change m0 & m1 in cpp file to change output configuration
+		
+		bool flag; //indicates that info should be gathered
 
+		double zoom = 2.0;
+		int width = 128, height = 128;
+		// int number_of_obstacles; 
+		vector<vector<int>> objSize;		//objSize[Model_approx's number][obj number] //initialized in ms::init;
+		vector<CircularArc> boundary;
+		vector<CircularArc> robot;			// robot's c-arc		// init in start()
+		vector<vector<CircularArc>> obj;	//obj[objNo][arcNo];	// init in start()
+		vector<vector<vector<CircularArc>>> ms_obj; // ms_obj[slice][objNo][arcNo];		// built at display call back
+		vector<vector<pair<Point, Point>>> v_edges; // v_edges[slice][i] = line seg		// built at rfb
+		vector<vector<Point>> bifur_points;			// b_pts[slice][i]					// built at rfb
+
+		//set flags, start gathering stuff (should be called at t2 ==0); 
+		void start(/*double z, int w, int h*/)
+		{
+			
+			robot.resize(0);
+			obj.resize(0);
+			ms_obj.resize(0);
+			v_edges.resize(0);
+			bifur_points.resize(0);
+			/*
+			zoom = z;
+			width = w;
+			height = h;
+			*/
+
+			// build boundary;
+			{
+				double r = 2;
+				CircularArc a(Point(0, 0), r, Point(+1, +0), Point(+0, +1));
+				CircularArc b(Point(0, 0), r, Point(+0, +1), Point(-1, +0));
+				CircularArc c(Point(0, 0), r, Point(-1, +0), Point(+0, -1));
+				CircularArc d(Point(0, 0), r, Point(+0, -1), Point(+1, +0));
+				boundary.push_back(a);
+				boundary.push_back(b);
+				boundary.push_back(c);
+				boundary.push_back(d);
+			}
+			
+			// build robot
+			for (auto& as : Models_Approx[m0])
+			{
+				for (auto& arc : as.Arcs)
+					robot.push_back(arc);
+			}
+
+			// build obj
+			auto& arcSize = objSize[m1];
+			auto numberOfObjects = arcSize.size();
+			obj.resize(numberOfObjects);
+			size_t j = 0;
+			for (size_t i = 0; i < numberOfObjects; i++)
+			{
+				int bound = arcSize[i];
+				for (; j < Models_Approx[m1].size(); j++)
+				{
+					auto& as = Models_Approx[m1][j];
+					for (auto& arcs : as.Arcs)
+					{
+						obj[i].push_back(arcs);
+					}
+					if (obj[i].size() >= bound)
+						break;
+				}
+			}
+
+			//resize
+			ms_obj.resize(360);
+			v_edges.resize(360);
+			bifur_points.resize(360);
+
+			flag = true;
+		}
+		void end()
+		{
+			flag = false;
+			std::ofstream fout("exchange.txt");
+
+			auto writeArc = [&](CircularArc & c)
+			{
+				fout << c.c.c.P[0] << " " << c.c.c.P[1] << " " << c.c.r << " " << atan2(c.n[0].P[1], c.n[0].P[0]) << " " << atan2(c.n[1].P[1], c.n[1].P[0]) << endl;
+			};
+
+			fout << zoom << endl;
+			fout << width << " " << height << endl;
+
+			fout << "boundary" << endl;
+			fout << boundary.size() << endl;
+			for (auto & arc : boundary)
+				writeArc(arc);
+
+			fout << "obstacle" << endl;
+			fout << obj.size() << endl;
+			for (auto & o : obj)
+			{
+				fout << o.size() << endl;
+				for (auto &arc : o)
+					writeArc(arc);
+			}
+
+			for (int i = 0; i < 360; i++)
+			{
+				fout << "slice " << i << endl;
+				fout << ms_obj[i].size() << endl;
+				for (size_t j = 0, length = ms_obj[i].size(); j < length; j++)
+				{
+					fout << "mink " << j << endl;
+					fout << " ?" << endl; // TODO Later
+					fout << ms_obj[i][j].size() << endl;
+					for (auto &a : ms_obj[i][j])
+						writeArc(a);
+				}
+				for (size_t xi = 0; xi < width; xi++)
+					for (size_t yi = 0; yi < height; yi++)
+					{
+
+					}
+			}
+
+			fout << "connectivity" << endl; // TODO
+
+			fout.close();
+		}
+	}
 
 #pragma region math functions
 
@@ -1369,6 +1497,12 @@ namespace planning
 			if (epsilon(cycle[0]) || epsilon(cycle[1]) || epsilon(cycle[2]))
 				return;
 
+			/*dbg
+				cerr << cycle[0].c.c << endl
+				<< cycle[1].c.c << endl
+				<< cycle[2].c.c << endl << endl;
+			_dbg*/
+
 			auto p0 = getTouchingDiskCenter(cycle[0].x[1], cycle[1].x[0], cycle[0].n[1]);
 			auto p1 = getTouchingDiskCenter(cycle[1].x[1], cycle[2].x[0], cycle[1].n[1]);
 			auto p2 = getTouchingDiskCenter(cycle[2].x[1], cycle[0].x[0], cycle[2].n[1]);
@@ -1382,8 +1516,10 @@ namespace planning
 			
 			auto q = getLineIntersectionPoint(l0, l1);
 			if (isnan(q.P[0]))
+			{
+				dbg return;
 				q = p0;
-			
+			}
 			glBegin(GL_LINES);
 			glColor3f(1, 1, 0);
 			glVertex2dv(p0.P);
@@ -1393,6 +1529,7 @@ namespace planning
 			glVertex2dv(p2.P);
 			glVertex2dv(q.P);
 			glEnd();
+			return;
 		}
 		if (cycle.size() == 3 && false  /*&& depth >= 15*/)
 		{

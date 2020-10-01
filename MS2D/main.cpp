@@ -13,7 +13,7 @@ namespace ms {
 	/* Comments - MS2D.h Âü°í */
 
 #pragma region global variables related to time.
-	int ModelInfo_CurrentFrame = 358; // 44;		// 7,7,261 case
+	int ModelInfo_CurrentFrame = 90;//148; // 44;		// 7,7,261 case
 	//int ModelInfo_CurrentFrame = 93;			// [0, 360)
 	pair<int, int> ModelInfo_CurrentModel;	// [0, 8) x [0, 8)
 
@@ -176,6 +176,31 @@ namespace ms {
 
 		glColor3f(0.0f, 0.0f, 0.0f);
 
+		////////////////////////////////////////////////////////////////////////
+		// plannning::output_to_file
+		if(OUTPUT_TO_FILE && t2 == 0)
+			planning::output_to_file::start();
+
+		vector<vector<CircularArc>>& pushed = planning::output_to_file::ms_obj[t2];
+		if(planning::output_to_file::flag)
+		for (size_t i = 0, length = Model_Result.size(); i < length; i++)
+		{
+			if (ModelInfo_Boundary[i])
+			{
+				vector<CircularArc> v;
+				for (auto& a : Model_Result[i])
+				{
+					for (auto&b : a.Arcs)
+						v.push_back(b);
+				}
+				pushed.push_back(v);
+			}
+			else continue;
+		}
+
+		////////////////////////////////////////////////////////////////////////
+
+
 		//debug : see order
 		static int cnt = 11110;
 		cnt++;
@@ -330,9 +355,16 @@ namespace ms {
 		}
 		//~debug
 
+		////////////////////////////////////////////////////////////////////////
+		// plannning::output_to_file
+		if (OUTPUT_TO_FILE && t2 == 359)
+			planning::output_to_file::end();
+
+		////////////////////////////////////////////////////////////////////////
+
 		glColor3f(0.0f, 0.0f, 0.0f);
 
-		if (true) // true: draw original, false : draw Approx version
+		if (false) // true: draw original, false : draw Approx version
 		{
 			glViewport(0, 0, wd * 1 / 3, ht / 2);
 			for (int i = 0; i < (int)Models_Rotated[ModelInfo_CurrentFrame].size() && i < cnt; i++)

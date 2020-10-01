@@ -1,5 +1,6 @@
 #pragma once
 #include "MS2D.h"
+#include <fstream>
 
 
 namespace planning
@@ -38,6 +39,25 @@ namespace planning
 
 	using namespace std;
 	using namespace ms;
+
+	namespace output_to_file
+	{
+		extern int m0, m1, cf;
+		extern bool flag;
+		extern double zoom;
+		extern int width, hegiht;
+
+		// int number_of_obstacles; 
+		extern vector<vector<int>> objSize;
+		extern vector<vector<CircularArc>> obj; //obj[objNo][arcNo];
+		extern vector<vector<vector<CircularArc>>> ms_obj; // ms_obj[slice][objNo][arcNo];
+
+		void start();
+		void end();
+	};
+
+#define OUTPUT_TO_FILE (ms::t0 == planning::output_to_file::m0 && ms::t1 == planning::output_to_file::m1)
+
 
 
 	/* Def : class passed as vornoi part's input

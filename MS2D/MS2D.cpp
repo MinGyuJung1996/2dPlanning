@@ -1,4 +1,4 @@
-#include "MS2D.h"
+#include "voronoi.hpp"
 
 namespace ms{
 
@@ -12,6 +12,7 @@ extern double basis5[10001][6];
 extern double basis6[10001][7];
 
 const bool change7 = true; // change 7 model to 6 + 7
+const bool change0 = true; // change 0 to half size
 
 /*!
 *	\brief 필요한 데이터(B-Spline Model Data, Interior Disk Data)를 Import하고, 8개의 기본 모델에 대하여 Arc Spline으로 근사한다
@@ -71,9 +72,30 @@ void initialize()
 		}
 	}
 
+	if (change0)
+	{
+		int ind = 0;
+		Point a[4];
+		auto trans = Point(0, 0);
+		auto scale = 0.4f;
+		for (auto& i : Models_Imported[ind])
+		{
+			a[0] = scale * i.P[0] - trans;
+			a[1] = scale * i.P[1] - trans;
+			a[2] = scale * i.P[2] - trans;
+			a[3] = scale * i.P[3] - trans;
+			i = BezierCrv(a);
+		}
+		for (auto& i : InteriorDisks_Imported[ind])
+		{
+			i = (Circle(scale * i.c - trans, scale * i.r));
+		}
+	}
+
 	//~debug
 
 
+	planning::output_to_file::objSize.resize(8);
 
 	for (int i = 0; i < 8; i++) {
 		for (int j = 0; j < (int)Models_Imported[i].size(); j++) {
@@ -91,7 +113,77 @@ void initialize()
 			auto input = tempSpiral.integrityTest();
 			Models_Approx[i].insert(Models_Approx[i].end(), input.begin(), input.end());
 		}
+
+		//build planning::output_to_file::objSize;
+		if (i != 7)
+		{
+			int cnt = 0;
+			for (auto& as : Models_Approx[i])
+			{
+				cnt += as.Arcs.size();
+			}
+			planning::output_to_file::objSize[i].push_back(cnt);
+		}
+		else
+		{
+			int cnt = 0;
+			int a0 = Models_Imported[7].size() - Models_Imported[6].size();
+			for (size_t j = 0; j < a0; j++)
+			{
+				cnt += Models_Approx[i][j].Arcs.size();
+			}
+			planning::output_to_file::objSize[i].push_back(cnt);
+
+			cnt = 0;
+			for (size_t j = a0; j < Models_Imported[7].size(); j++)
+			{
+				cnt += Models_Approx[i][j].Arcs.size();
+			}
+			planning::output_to_file::objSize[i].push_back(cnt);
+		}
+		//end objSize
 	}
+
+	// tried to merge models_approx after... but seems to break
+	if (false)
+	{
+		Point a[4];
+		auto trans = Point(0.3, 0);
+		auto scale = 0.3f;
+		for (auto& i : Models_Approx[7])
+		{
+			for (auto& j : i.Arcs)
+			{
+				j.c.c  = scale * j.c.c - trans;
+				j.c.r  = scale * j.c.r;
+				j.x[0] = scale * j.x[0] - trans;
+				j.x[1] = scale * j.x[1] - trans;
+
+			}
+		}
+		for (auto& i : InteriorDisks_Imported[7])
+		{
+			i = (Circle(scale * i.c - trans, scale * i.r));
+		}
+		/*for (size_t i = 0; i < Models_Approx[6].size(); i++)
+		{
+			ArcSpline as = Models_Approx[6][i];
+			for (auto& j : as.Arcs)
+			{
+				j.c.c  = scale * j.c.c  + trans;
+				j.x[0] = scale * j.x[0] + trans;
+				j.x[1] = scale * j.x[1] + trans;
+			}
+
+			Models_Approx[7].push_back(as);
+		}
+		for (auto& i : InteriorDisks_Imported[6])
+		{
+			InteriorDisks_Imported[7].push_back(Circle(scale * i.c + trans, scale * i.r));
+		}*/
+	}
+
+
 	postProcess(ModelInfo_CurrentModel.first, ModelInfo_CurrentModel.second);
 
 
