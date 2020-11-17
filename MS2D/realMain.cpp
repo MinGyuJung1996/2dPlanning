@@ -18,8 +18,8 @@ int main(int argc, char *argv[]) {
 
 	using namespace std;
 
-	//Test:
-	if (true)
+	//Test stuff:
+	if (false)
 	{
 		using namespace ms;
 		vector<CircularArc> cycle;
@@ -157,21 +157,21 @@ int main(int argc, char *argv[]) {
 		cout << "R " << R << endl;
 	}
 
-
-	cout << "fake func" << endl;
-	//graphSearch::main2();
+	//cout << "fake func" << endl;
+	
+	graphSearch::main2();
 	//graphSearch::main(0, NULL);
-	ms::main(argc, argv);
+	//ms::main(argc, argv);
+
+	system("pause");
 }
 
 namespace graphSearch
 {
 	/*
-	
-	Note that:
-		Currently the whole project is depedent to some global variables concering contexts.
-		This functions messes around with those global variables to compute only the stuffs that are needed... 
-		So calling ms::main() after this func could lead to erroneous results.
+	Def:
+		Computes Voronoi Edges for each slice, and store them in a vector<vector<v_edge>> v_edges.
+		Each Voronoi Edge can be referenced by v_edges[Slice_Number][Edge_Number_In_That_Slice];
 	*/
 	int main2()
 	{
@@ -194,22 +194,23 @@ namespace graphSearch
 			planning::_Convert_MsOut_To_VrIn(ms::Model_Result, ms::ModelInfo_Boundary, vrin);
 			planning::_Medial_Axis_Transformation(vrin);
 
-			std::cout << "voronoi " << i << " "
-				<< planning::output_to_file::v_edges[i].size() << std::endl;
+			//// dbg_out
+			//std::cout << "voronoi " << i << " "
+			//	<< planning::output_to_file::v_edges[i].size() << std::endl;
 		}
 		planning::output_to_file::flag = false;
 
-		/* test if result is same : print all v-edges to file and compare it*/
-		std::ofstream fout("ve_out.txt");
-		for (size_t i = 0, length = ms::numofframe; i < length; i++)
-		{
-			fout << "voronoi " << i << std::endl;
-			fout << planning::output_to_file::v_edges[i].size() << std::endl;
-			for (auto e : planning::output_to_file::v_edges[i])
-				fout << e.v0 << "\t" << e.v1 << std::endl;
+		///* test if result is same : print all v-edges to file and compare it*/
+		//std::ofstream fout("ve_out.txt");
+		//for (size_t i = 0, length = ms::numofframe; i < length; i++)
+		//{
+		//	fout << "voronoi " << i << std::endl;
+		//	fout << planning::output_to_file::v_edges[i].size() << std::endl;
+		//	for (auto e : planning::output_to_file::v_edges[i])
+		//		fout << e.v0 << "\t" << e.v1 << std::endl;
 
-		}
-		std::cout << "END OF TEST" << std::endl;
+		//}
+		//std::cout << "END OF TEST" << std::endl;
 
 		// 2. Alias for long names
 		using v_edge = planning::output_to_file::v_edge;
@@ -217,7 +218,10 @@ namespace graphSearch
 			v_edges = planning::output_to_file::v_edges;
 
 		// 3. call functions from namespace graphSearch (AStarOnVorDiag.cpp)
-		// ...
+		std::vector<double> path; // triplet of (path[3n+0], path[3n+1], path[3n+2]) represents a vertice in path. 
+		// vertices = ...
+
+		// 4~. do sth with the path....
 
 		return 0;
 	}
