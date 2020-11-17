@@ -153,20 +153,28 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="collision detection.hpp" />
     <ClInclude Include="Commentated Notes About The Project.h" />
     <ClInclude Include="MS2D.h" />
+    <ClInclude Include="stb.h" />
+    <ClInclude Include="stb_image.h" />
+    <ClInclude Include="stb_image_write.h" />
     <ClInclude Include="voronoi.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AStarOnVorDiag.cpp" />
+    <ClCompile Include="collision detection.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MS2D.cpp" />
     <ClCompile Include="Bernstein.cpp" />
     <ClCompile Include="realMain.cpp" />
+    <ClCompile Include="stb.cpp" />
     <ClCompile Include="voronoi.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="debug_notes.txt" />
     <Text Include="Major Changes.txt" />
+    <Text Include="temp.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

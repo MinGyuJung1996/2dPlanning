@@ -1,0 +1,44 @@
+zoom
+width height
+"robot"
+	number_of_arcs_in_robot
+		center.x center.y radius theta0 theta1 counter_clock_wise
+		...
+"boundary"
+	number_of_arcs_in_boundary
+		center.x center.y radius theta0 theta1 counter_clock_wise
+		...
+"obstacles"
+	number_of_obstacles
+		number_of_arcs_in_obstacle[0]
+			center.x center.y radius theta0 theta1 counter_clock_wise
+			...
+		number_of_arcs_in_obstacle[1]
+		...
+		number_of_arcs_in_obstacle[number_of_obstacles - 1]
+"slice 0"
+	number_of_minkowski_sum_obstacles
+		"mink" 0
+			number_of_arcs_in_mink_obstacle[0]
+				center.x center.y radius theta0 theta1 counter_clock_wise
+				...
+		"mink" 1
+			number_of_arcs_in_mink_obstacle[1]
+				center.x center.y radius theta0 theta1 counter_clock_wise
+				...
+		"mink" 2
+		...
+		"mink" (number_of_minkowski_sum_obstacles - 1)
+	"pixel"
+		/* one of the below cases are repeated  width*height times */
+		number_of_closest_point		// non-zero case
+			distance_to_closest_point[0] mink_obs_number arc_number parameter
+			distance_to_closest_point[1] mink_obs_number arc_number parameter
+			...
+		0 0		// zero-case 1 : inside an object
+		0 -1	// zero-case 2 : Error
+	"voronoi"
+		p.x p.y q.x q.y minkowski0 arc0 minkowski1 arc1
+"slice 1"
+...
+"slice 359"

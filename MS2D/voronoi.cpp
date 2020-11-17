@@ -1,4 +1,5 @@
 #include "voronoi.hpp"
+#include <filesystem>
 
 namespace planning
 {
@@ -23,22 +24,31 @@ namespace planning
 	double rfbTerminationEps = 1e-18; //originally 1e-18
 	double rfbTerminationEps2 = 2.5e-3; // origirnally 2.5e-3;
 
+
 	namespace output_to_file
 	{
-		int m0=0, m1=7, curF; // change m0 & m1 in cpp file to change output configuration
+		// tag to distinguish variables that should be configured before calling start() end()
+#define namespaceConfigurable 
+
+		namespaceConfigurable int m0 = 0, m1 = 7;
+		namespaceConfigurable double zoom = 2.0, tx = 0, ty = 0;
+		namespaceConfigurable int width = 1024, height = 1024;
+		namespaceConfigurable int clustersPicked = 2;
+		
+		int curF; // change m0 & m1 in cpp file to change output configuration
 		
 		bool flag; //indicates that info should be gathered
 
-		double zoom = 2.0;
-		int width = 128, height = 128;
 		// int number_of_obstacles; 
-		vector<vector<int>> objSize;		//objSize[Model_approx's number][obj number] //initialized in ms::init;
+		vector<vector<int>> objSize;		// objSize[Model_approx's number][obj number] //initialized in ms::init;
 		vector<CircularArc> boundary;
 		vector<CircularArc> robot;			// robot's c-arc		// init in start()
-		vector<vector<CircularArc>> obj;	//obj[objNo][arcNo];	// init in start()
+		vector<vector<CircularArc>> obj;	// obj[objNo][arcNo];	// init in start()
 		vector<vector<vector<CircularArc>>> ms_obj; // ms_obj[slice][objNo][arcNo];		// built at display call back
-		vector<vector<pair<Point, Point>>> v_edges; // v_edges[slice][i] = line seg		// built at rfb
-		vector<vector<Point>> bifur_points;			// b_pts[slice][i]					// built at rfb
+		vector<vector<v_edge>> v_edges; // v_edges[slice][i] = line seg		// built at rfb
+		vector<vector<bifur_point>> bifur_points;			// b_pts[slice][i]					// built at rfb
+
+		vector<VR_IN> vrIn;					// vrIn[slice]	// built in display callback // TODO redundant with ms_obj; (ms_obj doesn't have boundary though)
 
 		//set flags, start gathering stuff (should be called at t2 ==0); 
 		void start(/*double z, int w, int h*/)
@@ -49,6 +59,8 @@ namespace planning
 			ms_obj.resize(0);
 			v_edges.resize(0);
 			bifur_points.resize(0);
+			vrIn.resize(0);
+
 			/*
 			zoom = z;
 			width = w;
@@ -99,21 +111,77 @@ namespace planning
 			ms_obj.resize(360);
 			v_edges.resize(360);
 			bifur_points.resize(360);
+			vrIn.resize(360);
 
 			flag = true;
 		}
 		void end()
 		{
+			// 1. set things before outputing file
 			flag = false;
+
 			std::ofstream fout("exchange.txt");
 
-			auto writeArc = [&](CircularArc & c)
+			auto writeArc = [&](CircularArc & c)	//write arc to file
 			{
-				fout << c.c.c.P[0] << " " << c.c.c.P[1] << " " << c.c.r << " " << atan2(c.n[0].P[1], c.n[0].P[0]) << " " << atan2(c.n[1].P[1], c.n[1].P[0]) << endl;
+				fout << c.c.c.P[0] << " " << c.c.c.P[1] << " " << c.c.r << " " << atan2(c.n[0].P[1], c.n[0].P[0]) << " " << atan2(c.n[1].P[1], c.n[1].P[0]) << " " << c.ccw << endl;
+			};
+			auto pixel2world = [&](int x, int y)	//given pixel coord, change it to world coord
+			{
+				auto xx = (double(x)+0.5) / width;
+				auto yy = (double(y)+0.5) / height;
+				auto xxx = 2 * zoom*xx - zoom + tx;
+				auto yyy = 2 * zoom*yy - zoom + ty;
+				return Point(xxx, yyy);
+			};
+			auto arcPointDist = [&](Point& p, CircularArc& c, double t) // function dedicated to use after getClosestArcParam
+			{
+				if (t >= 1.0) return sqrt((p - c.x[1]).length());
+				else if (t <= 0)return sqrt((p - c.x[0]).length());
+				else return fabs(sqrt((p - c.c.c).length()) - c.c.r);
+			};
+			auto arcNoToMSObjNo = [&](VR_IN & vrIn, int arcNo) // given arcNo in the whole arc array, find its chunk(msObj) and its local idx
+			{
+				int accum = 0;
+				for (size_t i = 0, length = vrIn.arcsPerLoop.size(); i < length; i++)
+				{
+					if (arcNo < vrIn.arcsPerLoop[i])
+					{
+						return make_pair(i, arcNo);
+					}
+					else
+					{
+						arcNo -= vrIn.arcsPerLoop[i];
+					}
+				}
 			};
 
+			auto imagesData  = new unsigned char*[NUMBER_OF_SLICES];
+			auto imagesColor = new unsigned char*[NUMBER_OF_SLICES];
+			for (size_t i = 0, length = NUMBER_OF_SLICES; i < length; i++)
+			{
+				imagesData[i]  = new unsigned char[4 * height*width];
+				imagesColor[i] = new unsigned char[4 * height*width];
+			}
+			stbi_flip_vertically_on_write(1);
+
+			glMatrixMode(GL_PROJECTION);
+			glLoadIdentity();
+			gluOrtho2D(-zoom + tx, zoom + tx, -zoom + ty, zoom + ty);
+			glViewport(0, 0, width, height);
+			glClearColor(0, 0, 0, 1);
+
+			coneVoronoi cv;
+
+			// 2. start writing stuff
+			// 2-1.
 			fout << zoom << endl;
 			fout << width << " " << height << endl;
+
+			fout << "robot" << endl;
+			fout << robot.size() << endl;
+			for (auto & arc : robot)
+				writeArc(arc);
 
 			fout << "boundary" << endl;
 			fout << boundary.size() << endl;
@@ -129,27 +197,179 @@ namespace planning
 					writeArc(arc);
 			}
 
-			for (int i = 0; i < 360; i++)
+			// 2-2.
+			for (int i_fake = 1; i_fake <= NUMBER_OF_SLICES; i_fake++)
 			{
-				fout << "slice " << i << endl;
-				fout << ms_obj[i].size() << endl;
-				for (size_t j = 0, length = ms_obj[i].size(); j < length; j++)
-				{
-					fout << "mink " << j << endl;
-					fout << " ?" << endl; // TODO Later
-					fout << ms_obj[i][j].size() << endl;
-					for (auto &a : ms_obj[i][j])
-						writeArc(a);
-				}
-				for (size_t xi = 0; xi < width; xi++)
-					for (size_t yi = 0; yi < height; yi++)
-					{
+				int i = i_fake % NUMBER_OF_SLICES;	// this is idx to arrays containing data
+				int sliceNo = i_fake - 1;			// this is the actual sliceNo
+				// this is because theta=0:i=1, theta=1:i=2, ..., theta=358:i=359, theta=359:i=0....
 
+				fout << "slice " << sliceNo << endl;
+				//fout << ms_obj[i].size() << endl;
+				//for (size_t j = 0, length = ms_obj[i].size(); j < length; j++)
+				//{
+				//	fout << "mink " << j << endl;
+				//	fout << " ?" << endl; // TODO Later
+				//	fout << ms_obj[i][j].size() << endl;
+				//	for (auto &a : ms_obj[i][j])
+				//		writeArc(a);
+				//}
+				fout << vrIn[i].arcsPerLoop.size() - 1 << endl;
+				
+				// 2-2-1.
+				int k_end = 0;
+				for (size_t j = 0, length = vrIn[i].arcsPerLoop.size() - 1 /*last one is outer boundary*/; j < length; j++)
+				{
+						fout << "mink " << j << endl;
+						//fout << " ?" << endl; // TODO Later
+						fout << vrIn[i].arcsPerLoop[j] << endl;
+						int k = k_end;
+						k_end += vrIn[i].arcsPerLoop[j];
+						for (; k < k_end; k++)
+						{
+							writeArc(vrIn[i].arcs[k]);
+						}
+				}
+
+				// 2-2-2. render
+				glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+				cv.colorType = 0;
+				cv.drawVoronoi(vrIn[i]);
+				glBegin(GL_LINES);
+				glColor3f(1, 0, 1);
+				for (auto v : v_edges[i]) {
+					glVertex3d(v.v0.P[0], v.v0.P[1], 0.1);
+					glVertex3d(v.v1.P[0], v.v1.P[1], 0.1);
+				}
+				glEnd();
+				glBegin(GL_POINTS);
+				glColor3f(1, 1, 0);
+				for (auto b : bifur_points[i])
+					glVertex3d(b.p.P[0], b.p.P[1], 0.2);
+				glEnd();
+				glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, imagesColor[i]);
+
+				glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+				cv.colorType = 1;
+				cv.drawVoronoi(vrIn[i]);
+				glBegin(GL_LINES);
+				int j = 0;
+				for (auto v : v_edges[i]) {
+					glColor3ub(3, (unsigned char)(j / 256), (unsigned char)(j % 256));
+					glVertex3d(v.v0.P[0], v.v0.P[1], 0.1);
+					glVertex3d(v.v1.P[0], v.v1.P[1], 0.1);
+					j++;
+				}
+				glEnd();
+				glBegin(GL_POINTS);
+				j = 0;
+				for (auto b : bifur_points[i])
+				{
+					glColor3ub(4, (unsigned char)(j / 256), (unsigned char)(j % 256));
+					glVertex3d(b.p.P[0], b.p.P[1], 0.2);
+					j++;
+				}
+				glEnd();
+				glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, imagesData[i]);
+				stbi_write_png((string("./images/color") + to_string(sliceNo) + string(".png")).c_str(), width, height, 4, imagesColor[i], 4 * width);
+				stbi_write_png((string("./images/data")  + to_string(sliceNo) + string(".png")).c_str(), width, height, 4, imagesData[i],  4 * width);
+
+				// 2-2-3.
+				fout << "pixel" << endl;
+				for (size_t yi = 0; yi < height; yi++)
+					for (size_t xi = 0; xi < width; xi++)
+					{
+						auto ptr = imagesData[i] + (4 * (yi*width + xi));
+						auto r = ptr[0];
+						auto g = ptr[1];
+						auto b = ptr[2];
+						auto p = pixel2world(xi, yi);
+
+						//	Red			Green			Blue			Description
+						//	0			?				?				Error ? (clear color)
+						//	1			arcNo / 256		arcNo % 256		R component 1 denotes : pixel is ouside of object, pixel's closest point = arcNo
+						//	2			loopNo							R = 2 : pixel is inside loop
+						//	3			vLineNo / 256	vLineNo % 256	R = 3 : voronoi edge
+						//	4			bifPtNo / 256	bifPtNo % 256	R = 4 : on bifur Pt
+
+						switch (r)
+						{
+						case 0:
+							//Error case: error(numerical) caused some points to be not colored.
+							fout << 0 << " " << -1 << endl;
+							break;
+						case 1:
+						{
+							fout << 1 << endl;
+							int arcNo = int(g) * 256 + b;
+							double t = getClosestArcParameter(p, vrIn[i].arcs[arcNo]);
+							auto dist = arcPointDist(p, vrIn[i].arcs[arcNo], t);
+							auto objNoAndArcNo = arcNoToMSObjNo(vrIn[i], arcNo);
+							fout << dist << " " << objNoAndArcNo.first << " " << objNoAndArcNo.second << " " << t << endl;
+							break;
+						}
+						case 3:
+						{
+							fout << 2 << endl;
+							int vedgeNo = int(g) * 256 + b;
+							auto& ve = v_edges[i][vedgeNo];
+							for (size_t j = 0; j < 2; j++)
+							{
+								int arcNo = ve.idx[j];
+								double t = getClosestArcParameter(p, vrIn[i].arcs[arcNo]);
+								auto dist = arcPointDist(p, vrIn[i].arcs[arcNo], t);
+								auto objNoAndArcNo = arcNoToMSObjNo(vrIn[i], arcNo);
+								fout << dist << " " << objNoAndArcNo.first << " " << objNoAndArcNo.second << " " << t << endl;
+							}
+
+							break;
+						}
+						case 4:
+						{
+							fout << 3 << " " << endl;
+							int bpNo = int(g) * 256 + b;
+							auto bp = bifur_points[i][bpNo];
+							for (size_t j = 0; j < 3; j++)
+							{
+								int arcNo = bp.idx[j];
+								double t = getClosestArcParameter(p, vrIn[i].arcs[arcNo]);
+								auto dist = arcPointDist(p, vrIn[i].arcs[arcNo], t);
+								auto objNoAndArcNo = arcNoToMSObjNo(vrIn[i], arcNo);
+								fout << dist << " " << objNoAndArcNo.first << " " << objNoAndArcNo.second << " " << t << endl;
+							}
+							break;
+						}
+						case 2:
+						default:
+							fout << 0 << " " << 0 << endl;
+							break;
+						}
 					}
+
+				fout << "voronoi" << endl;
+				fout << v_edges[i].size() << endl;
+				for (auto& ve : v_edges[i])
+				{
+					auto temp0 = arcNoToMSObjNo(vrIn[i], ve.idx[0]);
+					auto temp1 = arcNoToMSObjNo(vrIn[i], ve.idx[1]);
+
+					fout
+						<< ve.v0.P[0]
+						<< " " << ve.v0.P[1]
+						<< " " << ve.v1.P[0]
+						<< " " << ve.v1.P[1]
+						<< " " << temp0.first
+						<< " " << temp0.second
+						<< " " << temp1.first
+						<< " " << temp1.second
+						<< endl;
+				}
 			}
 
-			fout << "connectivity" << endl; // TODO
+			// 2-3.
+			//fout << "connectivity" << endl; // TODO
 
+			// 3. closing part
 			fout.close();
 		}
 	}
@@ -287,6 +507,302 @@ namespace planning
 	Point conic::operator()(double t)
 	{
 
+	}
+/*
+
+	const static double coneVoronoi::PI = 3.14159265358979323846264;
+	const static double coneVoronoi::PI2 = 2 * 3.14159265358979323846264;
+	const static double coneVoronoi::PI_half = 0.5 * 3.14159265358979323846264;*/
+	
+#define cvColorType unsigned char
+#define cvColorFunction glColor3ubv
+
+	/*
+	Assume : 
+		Right region (from tangent's view) is inside object, while left = free, clear space
+		arc exists in only one quadrant
+	*/
+	void coneVoronoi::drawArcToCone(INPUT CircularArc& c, INPUT void* colors)
+	{
+		//cout << "hi\n";
+		auto colorInside = (cvColorType *)colors;
+		auto colorOutside = colorInside + 3;
+		//glColor3usv(colors);
+
+		// 1. build lists of theta
+		vector<double> thetas;
+		{
+			double theta0;
+			double theta1;
+			if (c.n[0].P[1] * c.n[1].P[1] < 0)
+			{	//take care of theta oscilating btw -pi & +pi
+				if (fabs(c.n[0].P[1]) > fabs(c.n[1].P[1]))
+				{
+					theta0 = atan2(c.n[0].P[1], c.n[0].P[0]);
+					theta1 = atan2(-c.n[1].P[1], c.n[1].P[0]);
+				}
+				else
+				{
+					theta0 = atan2(-c.n[0].P[1], c.n[0].P[0]);
+					theta1 = atan2(c.n[1].P[1], c.n[1].P[0]);
+				}
+			}
+			else if (c.n[0].P[1] * c.n[1].P[1] < 1e-300)
+			{
+				if (fabs(c.n[0].P[1]) > fabs(c.n[1].P[1]))
+				{
+					auto sign = signbit(c.n[0].P[1]) ? -1.0e-300 : 1.0e-300;
+					theta0 = atan2(c.n[0].P[1], c.n[0].P[0]);
+					theta1 = atan2(sign, c.n[1].P[0]);
+				}
+				else
+				{
+					auto sign = signbit(c.n[1].P[1]) ? -1.0e-300 : 1.0e-300;
+					theta0 = atan2(sign, c.n[0].P[0]);
+					theta1 = atan2(c.n[1].P[1], c.n[1].P[0]);
+				}
+			}
+			else
+			{
+				theta0 = atan2(c.n[0].P[1], c.n[0].P[0]);
+				theta1 = atan2(c.n[1].P[1], c.n[1].P[0]);
+			}
+			
+			if (theta0 > theta1) swap(theta0, theta1);
+
+			if (PRINT_ERRORS)
+			{
+				if (theta1 - theta0 > 1.6)
+					cerr << "ERROR : in drawArcToCone 1 " << endl;
+			}
+
+			//dbg cout << theta0 << " " << theta1 << endl;
+
+			auto theta = theta0;
+			while (theta < theta1)
+			{
+				thetas.push_back(theta);
+				theta += dtheta;
+			}
+			thetas.push_back(theta1);
+		}
+
+		// 2. build vertices
+		double v0[3];
+		vector<double> v1, v2; // size should be 3n
+		{
+			// 2-1.
+			v0[0] = c.c.c.P[0];
+			v0[1] = c.c.c.P[1];
+			v0[2] = (coneVoronoiDepthBehindSign c.c.r) / coneRad;
+
+			// 2-2. 2-3.
+			double z = coneRad - c.c.r;
+			if (z < 0) cerr << "ERROR : coneRad was set too small" << endl;
+			for (auto t : thetas)
+			{
+				auto nx = cos(t);
+				auto ny = sin(t);
+
+				v1.push_back(v0[0] + c.c.r * nx);
+				v1.push_back(v0[1] + c.c.r * ny);
+				v1.push_back(.0);
+
+				v2.push_back(v0[0] + coneRad * nx);
+				v2.push_back(v0[1] + coneRad * ny);
+				v2.push_back((coneVoronoiDepthBehindSign z) / coneRad);
+			}
+		}
+
+		// 3. draw
+		// 
+
+		// 3-1. draw sharp part
+		if (c.ccw)
+			cvColorFunction(colorOutside);
+		else
+			cvColorFunction(colorInside);
+		glBegin(GL_TRIANGLE_FAN);
+		glVertex3dv(v0);
+		auto p = &(v1[0]);
+		for (size_t i = 0, length = v1.size(); i < length; i+=3)
+		{
+			glVertex3dv(p+i);
+		}
+		glEnd();
+
+		// 3-2. draw tunc-cone part
+		if (c.ccw)
+			cvColorFunction(colorInside);
+		else
+			cvColorFunction(colorOutside);
+		glBegin(GL_TRIANGLE_STRIP);
+		auto p1 = &(v1[0]);
+		auto p2 = &(v2[0]);
+		for (size_t i = 0, length = v1.size(); i < length; i += 3)
+		{
+			glVertex3dv(p1 + i);
+			glVertex3dv(p2 + i);
+		}
+		glEnd();
+
+	}
+
+	/*
+
+		Assume: glColor is already called
+	*/
+	void coneVoronoi::drawCone(INPUT Point p, INPUT double theta0, INPUT double theta1, INPUT void* color)
+	{
+		cvColorFunction((cvColorType *)color);
+		glBegin(GL_TRIANGLE_FAN);
+		glVertex3d(p.P[0], p.P[1], coneVoronoiDepthBehindSign 1e-100);
+		for (double t = theta0 - thetaOffset; t < theta1 + thetaOffset; t+=dtheta)
+		{
+			glVertex3d(p.P[0] + coneRad * cos(t), p.P[1] + coneRad * sin(t), coneVoronoiDepthBehindSign 1.0); // z is actually conerad/conerad = 1.0
+		}
+		glVertex3d(p.P[0] + coneRad * cos(theta1), p.P[1] + coneRad * sin(theta1), coneVoronoiDepthBehindSign 1.0); // z is actually conerad/conerad = 1.0
+		glEnd();
+	}
+
+	void coneVoronoi::drawVoronoi(INPUT VR_IN & v)
+	{
+		auto usm = UCHAR_MAX;
+		int i_end = 0;
+
+		switch (colorType)
+		{
+		case 1: /* case 1 : use diff colors btw arcs*/
+			/*
+			each color component is unsigned byte
+			Red			Green		Blue		Description
+			0			?			?			Error?(clear color)
+			1			arcNo/256	arcNo%256	R component 1 denotes : pixel is ouside of object, pixel's closest point = arcNo
+			2			loopNo					R = 2 : pixel is inside loop
+			3			vLineNo/256	vLineNo%256	R = 3 : voronoi edge
+			4			bifPtNo/256	bifPtNo%256	R = 4 : on bifur Pt
+
+			in this function, only r = 1, r = 2 is taken care of.
+			*/
+
+			for (size_t loop = 0, length = v.arcsPerLoop.size(); loop < length; loop++)
+			{
+
+				cvColorType colors[6];
+				colors[0] = 2;
+				colors[1] = loop;
+				colors[2] = 0;
+
+				int i = i_end;
+				i_end += v.arcsPerLoop[loop];
+				//dbg if (loop != length - 1) continue;
+				while (i < i_end)
+				{
+					// 1.0 set color
+					colors[3] = 1;
+					colors[4] = cvColorType(i / 256);
+					colors[5] = cvColorType(i % 256);
+
+					// 1-1. draw cone seg (w/ color as abov)
+
+					drawArcToCone(v.arcs[i], (void*)colors);
+
+					// 1-2. for non-g1 draw cone at t = 0 of that arc;
+					{
+						auto l = v.left[i];
+						if (fabs(v.arcs[i].n[0] * v.arcs[l].n[1]) < 1 - 1e-3)
+						{
+							auto nl = (v.arcs[l].ccw ? -1.0 : 1.0) * v.arcs[l].n[1];
+							auto nr = (v.arcs[i].ccw ? -1.0 : 1.0) * v.arcs[i].n[0];
+
+							if ((nl ^ nr) < 0.0) // = there is empty space outside
+							{
+								auto theta0 = atan2(nl.P[1], nl.P[0]);
+								auto theta1 = atan2(nr.P[1], nr.P[0]);
+
+								if (theta1 < theta0) theta1 += PI2;
+								if (PRINT_ERRORS && theta1 - theta0 > PI)
+								{
+									cerr << "ERROR : in drawCone, theta not right" << endl;
+								}
+								drawCone(v.arcs[i].x[0], theta0, theta1, colors + 3);
+							}
+							else
+							{
+								auto theta0 = atan2(nr.P[1], nr.P[0]);
+								auto theta1 = atan2(nl.P[1], nl.P[0]);
+								if (theta1 < theta0) theta1 += PI2;
+								if (PRINT_ERRORS && theta1 - theta0 > PI)
+								{
+									cerr << "ERROR : in drawCone, theta not right" << endl;
+								}
+								drawCone(v.arcs[i].x[0], theta0, theta1, colors);
+							}
+						}
+					}
+					i++;
+				}
+			}
+
+
+
+			break;
+		case 0: /* case 0 : use same colors for a loop, but diff btw in/out */
+		default:
+			for (size_t loop = 0, length = v.arcsPerLoop.size(); loop < length; loop++)
+			{
+				cvColorType colors[6];
+				colors[0] = colors[3] = cvColorType(usm * loop / length);
+				colors[1] = colors[5] = cvColorType(usm) - colors[0];
+				colors[2] = colors[4] = 0;
+
+				int i = i_end;
+				i_end += v.arcsPerLoop[loop];
+				//dbg if (loop != length - 1) continue;
+				while (i < i_end )
+				{
+					drawArcToCone(v.arcs[i], (void*)colors);
+
+					// TODO
+					// for non-g1 draw cone at t = 0 of that arc;
+					{
+						auto l = v.left[i];
+						if (fabs(v.arcs[i].n[0] * v.arcs[l].n[1]) < 1 - 1e-3)
+						{
+							auto nl = (v.arcs[l].ccw ? -1.0 : 1.0) * v.arcs[l].n[1];
+							auto nr = (v.arcs[i].ccw ? -1.0 : 1.0) * v.arcs[i].n[0];
+
+							if ((nl ^ nr) < 0.0) // = there is empty space outside
+							{
+								auto theta0 = atan2(nl.P[1], nl.P[0]);
+								auto theta1 = atan2(nr.P[1], nr.P[0]);
+
+								if (theta1 < theta0) theta1 += PI2;
+								if(PRINT_ERRORS && theta1 - theta0 > PI)
+								{
+									cerr << "ERROR : in drawCone, theta not right" << endl;
+								}
+								drawCone(v.arcs[i].x[0], theta0, theta1, colors + 3);
+							}
+							else
+							{
+								auto theta0 = atan2(nr.P[1], nr.P[0]);
+								auto theta1 = atan2(nl.P[1], nl.P[0]);
+								if (theta1 < theta0) theta1 += PI2;
+								if (PRINT_ERRORS && theta1 - theta0 > PI)
+								{
+									cerr << "ERROR : in drawCone, theta not right" << endl;
+								}
+								drawCone(v.arcs[i].x[0], theta0, theta1, colors);
+							}
+						}
+					}
+					i++;
+				}
+			}
+
+			break;
+		}
 	}
 #pragma endregion
 
@@ -777,6 +1293,23 @@ namespace planning
 		return ret;
 	}
 
+	/* Def : given a point p and an arc c, first find the point on the arc closest from the point, then return its parameter t ~ [0,1];
+	*/
+	double getClosestArcParameter(Point& p, CircularArc &c)
+	{
+		auto n = (p - c.c.c).normalize();
+		if (isNormalBetween(c.n[0], c.n[1], n))
+		{
+			return arcNormalToParameter(c.n[0], c.n[1], n);
+		}
+		else
+		{
+			auto d0 = (p - c.x[0]).length();
+			auto d1 = (p - c.x[1]).length();
+			if (d0 < d1) return 0.0;
+			else return 1.0;
+		}
+	}
 
 	/* Def : return one circular arc corresponding to interval [t0, t1] of c
 
@@ -922,7 +1455,7 @@ namespace planning
 		return p*p;
 	}
 
-	/* Def : test if endpoint in a cycle shard a max touching
+	/* Def : test if endpoint in a cycle share a max touching
 	*/
 	void testValidCycle(vector<CircularArc> cycle, bool draw = true)
 	{
@@ -936,9 +1469,51 @@ namespace planning
 
 
 			//dbg_draw
-			if (i == 0)
+			if (false)
 			{
-				if (keyboardflag['z'])
+				if (i == 0)
+				{
+					if (keyboardflag['z'])
+					{
+						glBegin(GL_LINES);
+						glColor3f(0, 0, 1);
+						glVertex2dv(center.P);
+						glVertex2dv(cycle[i].x[1].P);
+						glColor3f(0, 1, 0.5);
+						glVertex2dv(center.P);
+						glVertex2dv(cycle[ni].x[0].P);
+						glEnd();
+					}
+				}
+				else if (i == 1)
+				{
+					if (keyboardflag['x'])
+					{
+						glBegin(GL_LINES);
+						glColor3f(0, 0, 1);
+						glVertex2dv(center.P);
+						glVertex2dv(cycle[i].x[1].P);
+						glColor3f(0, 1, 0.5);
+						glVertex2dv(center.P);
+						glVertex2dv(cycle[ni].x[0].P);
+						glEnd();
+					}
+				}
+				else if (i == 2)
+				{
+					if (keyboardflag['c'])
+					{
+						glBegin(GL_LINES);
+						glColor3f(0, 0, 1);
+						glVertex2dv(center.P);
+						glVertex2dv(cycle[i].x[1].P);
+						glColor3f(0, 1, 0.5);
+						glVertex2dv(center.P);
+						glVertex2dv(cycle[ni].x[0].P);
+						glEnd();
+					}
+				}
+				else
 				{
 					glBegin(GL_LINES);
 					glColor3f(0, 0, 1);
@@ -949,45 +1524,6 @@ namespace planning
 					glVertex2dv(cycle[ni].x[0].P);
 					glEnd();
 				}
-			}
-			else if(i == 1)
-			{
-				if (keyboardflag['x'])
-				{
-					glBegin(GL_LINES);
-					glColor3f(0, 0, 1);
-					glVertex2dv(center.P);
-					glVertex2dv(cycle[i].x[1].P);
-					glColor3f(0, 1, 0.5);
-					glVertex2dv(center.P);
-					glVertex2dv(cycle[ni].x[0].P);
-					glEnd();
-				}
-			}
-			else if(i == 2)
-			{
-				if (keyboardflag['c'])
-				{
-					glBegin(GL_LINES);
-					glColor3f(0, 0, 1);
-					glVertex2dv(center.P);
-					glVertex2dv(cycle[i].x[1].P);
-					glColor3f(0, 1, 0.5);
-					glVertex2dv(center.P);
-					glVertex2dv(cycle[ni].x[0].P);
-					glEnd();
-				}
-			}
-			else
-			{
-				glBegin(GL_LINES);
-				glColor3f(0, 0, 1);
-				glVertex2dv(center.P);
-				glVertex2dv(cycle[i].x[1].P);
-				glColor3f(0, 1, 0.5);
-				glVertex2dv(center.P);
-				glVertex2dv(cycle[ni].x[0].P);
-				glEnd();
 			}
 		}
 	}
@@ -1022,10 +1558,11 @@ namespace planning
 			else
 			{
 
-				// 2-1. build vrIn.Arcs
+				// 2-1. build vrIn.Arcs & arcsPerLoop
 				vector<CircularArc> temp;
 				convertMsOutput_Clockwise(msOut[i], temp);
 				vrIn.arcs.insert(vrIn.arcs.end(), temp.begin(), temp.end());
+				vrIn.arcsPerLoop.push_back(temp.size());
 
 				// 2-2. build vrIn.left
 				vrIn.left.resize(vrIn.arcs.size());
@@ -1071,6 +1608,7 @@ namespace planning
 			vrIn.color.push_back(1);
 			vrIn.color.push_back(1);
 			vrIn.color.push_back(1);
+			vrIn.arcsPerLoop.push_back(4);
 		}
 
 
@@ -1520,15 +2058,29 @@ namespace planning
 				dbg return;
 				q = p0;
 			}
-			glBegin(GL_LINES);
-			glColor3f(1, 1, 0);
-			glVertex2dv(p0.P);
-			glVertex2dv(q.P);
-			glVertex2dv(p1.P);
-			glVertex2dv(q.P);
-			glVertex2dv(p2.P);
-			glVertex2dv(q.P);
-			glEnd();
+
+			if (drawVoronoiSingleBranch)
+			{
+				glBegin(GL_LINES);
+				glColor3f(1, 1, 0);
+				glVertex2dv(p0.P);
+				glVertex2dv(q.P);
+				glVertex2dv(p1.P);
+				glVertex2dv(q.P);
+				glVertex2dv(p2.P);
+				glVertex2dv(q.P);
+				glEnd();
+			}
+			if (planning::output_to_file::flag)
+			{
+				planning::output_to_file::bifur_point p;
+				p.p = q;
+				for (int i = 0; i < 3; i++)
+				{
+					p.idx.push_back(cycle[i].originalIndex);
+				}
+				planning::output_to_file::bifur_points[t2].push_back(p);
+			}
 			return;
 		}
 		if (cycle.size() == 3 && false  /*&& depth >= 15*/)
@@ -2070,6 +2622,15 @@ namespace planning
 						}
 					}
 				}
+				if (planning::output_to_file::flag)
+				{
+					planning::output_to_file::v_edge v;
+					v.v0 = p;
+					v.v1 = q;
+					v.idx[0] = cycle[0].originalIndex;
+					v.idx[1] = cycle[1].originalIndex;
+					planning::output_to_file::v_edges[t2].push_back(v);
+				}
 				//tic();
 				return;
 			}
@@ -2439,6 +3000,8 @@ namespace planning
 				{
 					cerr << "ERROR : foot.c < 0 while building domain/transition" << endl;
 				}
+				// 1-2-2. set origIdx for later use
+				spiral[i].originalIndex = i;
 
 				// 1-3. build transition
 				if (PRINT_ERRORS)

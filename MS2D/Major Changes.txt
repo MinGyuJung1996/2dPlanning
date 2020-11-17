@@ -5,3 +5,6 @@
 
 3. g1 incontinuity is concerned in findMax
 	tag g1inc
+
+4. draw2() of circularArc added
+	use theta now.

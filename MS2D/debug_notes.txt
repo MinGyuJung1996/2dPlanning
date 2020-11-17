@@ -25,3 +25,11 @@ case 7,7, 358 :
 
 case 0,7, 148 (change 0,7 on) :
 	
+///////////////////////////////
+
+ccw of models_approx is strange : tag maccw
+	arc in that DS seems to be all under 180degrees... (as changing the ccw using cross-product recovers the original shape from bez)
+	ccw doesn't match w/ cross-product.
+
+normals of arcs resulting from bezierCuver->biarc() is swapped.
+	

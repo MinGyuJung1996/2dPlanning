@@ -1,10 +1,16 @@
 #include <iostream>
 #include <fstream>
-#include "MS2D.h"
-
+#include "voronoi.hpp"
 namespace ms
 {
 	int main(int argc, char *argv[]);
+}
+
+namespace graphSearch
+{
+
+	int main(int argc, char** argv);
+	int main2();
 }
 
 int main(int argc, char *argv[]) {
@@ -12,6 +18,7 @@ int main(int argc, char *argv[]) {
 
 	using namespace std;
 
+	//Test:
 	if (true)
 	{
 		using namespace ms;
@@ -152,7 +159,66 @@ int main(int argc, char *argv[]) {
 
 
 	cout << "fake func" << endl;
+	//graphSearch::main2();
+	//graphSearch::main(0, NULL);
 	ms::main(argc, argv);
+}
 
+namespace graphSearch
+{
+	/*
+	
+	Note that:
+		Currently the whole project is depedent to some global variables concering contexts.
+		This functions messes around with those global variables to compute only the stuffs that are needed... 
+		So calling ms::main() after this func could lead to erroneous results.
+	*/
+	int main2()
+	{
+		// 1. build v_edges
 
+		ms::initialize();	// read data from files.
+		ms::ModelInfo_CurrentModel = std::make_pair(0, 7);
+		ms::postProcess(ms::ModelInfo_CurrentModel.first, ms::ModelInfo_CurrentModel.second); // process arcs to satisfy conditions.
+		planning::output_to_file::flag = true; // flag to enable : gathering data inside global var, during v-diagram construction.
+		planning::output_to_file::v_edges.resize(0); //empty
+		planning::output_to_file::v_edges.resize(ms::numofframe); //pre-allocate
+		planning::output_to_file::bifur_points.resize(0); // dummy
+		planning::output_to_file::bifur_points.resize(ms::numofframe); //dummy
+		for (size_t i = 0, length = ms::numofframe /* = 360*/; i < length; i++)
+		{
+			ms::t2 = i;
+			ms::minkowskisum(i, 7);
+
+			planning::VR_IN vrin;
+			planning::_Convert_MsOut_To_VrIn(ms::Model_Result, ms::ModelInfo_Boundary, vrin);
+			planning::_Medial_Axis_Transformation(vrin);
+
+			std::cout << "voronoi " << i << " "
+				<< planning::output_to_file::v_edges[i].size() << std::endl;
+		}
+		planning::output_to_file::flag = false;
+
+		/* test if result is same : print all v-edges to file and compare it*/
+		std::ofstream fout("ve_out.txt");
+		for (size_t i = 0, length = ms::numofframe; i < length; i++)
+		{
+			fout << "voronoi " << i << std::endl;
+			fout << planning::output_to_file::v_edges[i].size() << std::endl;
+			for (auto e : planning::output_to_file::v_edges[i])
+				fout << e.v0 << "\t" << e.v1 << std::endl;
+
+		}
+		std::cout << "END OF TEST" << std::endl;
+
+		// 2. Alias for long names
+		using v_edge = planning::output_to_file::v_edge;
+		std::vector<std::vector<v_edge>>& 
+			v_edges = planning::output_to_file::v_edges;
+
+		// 3. call functions from namespace graphSearch (AStarOnVorDiag.cpp)
+		// ...
+
+		return 0;
+	}
 }

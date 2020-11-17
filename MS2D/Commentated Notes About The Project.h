@@ -1,4 +1,19 @@
 #pragma once
+/*
+TODO LIST
+	simplify objects
+	encapsulate minkowski-sum
+	make collision-detection
+	support inner loops inside minkwoskisum
+	build sweep-volume, kernel
+
+	make class? instance? for Boundary
+
+Questions
+	mink result is not g1. Is original model g1?
+
+
+*/
 
 /*
 
@@ -34,6 +49,8 @@ MAT's overall structure
 			call once in program.
 		void Lee::draw()	(= draw_mat() call in main.cpp)
 			segment curves and call mat.
+
+//////////////////////////////////////////////////////////////////////////////////
 
 TODO
 	change this solution to include source codes from MS2D project or vice versa.

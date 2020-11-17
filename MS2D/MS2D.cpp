@@ -20,8 +20,8 @@ const bool change0 = true; // change 0 to half size
 void initialize()
 {
 	fopen_s(&f, "time.txt", "w");
-	ModelInfo_CurrentModel.first  = 7;
-	ModelInfo_CurrentModel.second = 7;
+	ModelInfo_CurrentModel.first  = 0; // 1
+	ModelInfo_CurrentModel.second = 6; // 6
 	Models_Imported[0] = import_Crv("impt1.txt");
 	Models_Imported[1] = import_Crv("impt2.txt");
 	Models_Imported[2] = import_Crv("impt3.txt");
@@ -3550,6 +3550,33 @@ void CircularArc::draw()
 }
 
 /*!
+*	Def: Circular drawing function for arcs larger than 180 degrees
+*/
+void CircularArc::draw2()
+{
+	double theta0 = atan2(this->n0().y(), this->n0().x());
+	double theta1 = atan2(this->n1().y(), this->n1().x());
+	if (this->ccw)
+		while (theta1 < theta0) theta1 += 2 * PI;
+	else
+		while (theta1 > theta0) theta1 -= 2 * PI;
+	
+
+
+	glBegin(GL_POINTS);
+	glVertex2dv(x[0].P);
+	glVertex2dv(x[1].P);
+	glEnd();
+	glBegin(GL_LINE_STRIP);
+	for (int i = 0; i <= RES; i++) {
+		auto theta = theta0 + (theta1 - theta0) * i / RES;
+		glVertex2dv((this->c.c + this->c.r * Point(cos(theta), sin(theta))).P);
+	}
+	glEnd();
+}
+
+
+/*!
 *	\brief Bezier Curve의 t점에서의 Geometry를 생성하는 생성자
 */
 Geometry::Geometry(BezierCrv & Crv, double t)
@@ -4063,15 +4090,16 @@ std::pair<CircularArc, CircularArc> BezierCrv::BiArc()
 	auto tangent = diff(*this);
 	auto initTangent = tangent(0.0), endTangent = -tangent(1.0);
 	auto init = (*this)(0.0), end = (*this)(1.0);
-	Point x(shoot(init, initTangent), shoot(end, endTangent));
+	Point x(shoot(init, initTangent), shoot(end, endTangent)); // intersection of tangent lines @ endpoints
 
-	double chord = sqrt(distance((*this)(0.0), (*this)(1.0)));
-	double a = sqrt(distance(init, x)), b = sqrt(distance(end, x));
-	double t = (a + b) / (a + b + chord);
+	double chord = sqrt(distance((*this)(0.0), (*this)(1.0))); //length chord
+	double a = sqrt(distance(init, x)), b = sqrt(distance(end, x)); //x-endpoint dist
+	
 	double w = a / (a + b);
-	Point temp = w * end + (1 - w) * init;
-
-	Point ip = temp * t + x * (1 - t);
+	Point temp = w * end + (1 - w) * init; // some point on chord
+	
+	double t = (a + b) / (a + b + chord);
+	Point ip = temp * t + x * (1 - t); // some point on x-temp
 
 	return std::make_pair(CircularArc(init, ip, initTangent), CircularArc(ip, end, P[Deg] - P[0]));
 }

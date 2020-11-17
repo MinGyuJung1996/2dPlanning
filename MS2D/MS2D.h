@@ -9,9 +9,10 @@
 #include <map>
 #include <queue>
 #include <string>
-#include <GL/glut.h>
 #include <time.h>
 #include <chrono>
+//#include "glad/glad.h" //due to legacy stuff being unusable, (glvertex...), this part was commented.
+#include "GL/glut.h"
 
 namespace ms {
 	extern int
@@ -165,6 +166,13 @@ namespace ms {
 	public:
 		/*! \brief 2차원 포인트의 위치를 저장하는 실수 배열 */
 		double P[2];
+		//double& x = P[0];
+		//double& y = P[1];
+
+		// stuff I added are below
+		inline double& x() { return P[0]; }
+		inline double& y() { return P[1]; }
+		inline double length2() { return P[0] * P[0] + P[1] * P[1]; }
 	};
 
 	/*!
@@ -281,6 +289,7 @@ namespace ms {
 		bool isOuterBoundary(int _case);
 		std::pair<CircularArc, CircularArc> subDiv(double t);
 		void draw();
+		void draw2();
 
 	public:
 		/*! \brief Arc를 포함하는 원 */
@@ -295,14 +304,28 @@ namespace ms {
 		/*! \brief 시계반대방향이면 true, 아니면 false */
 		bool ccw;
 
-		/* ccw of this arc in the output, */
+		/* ccw of this arc in the output loop, */
 		bool globalccw = true;
+
+		/*! \brief Arc가 Boundary에서 ccw라는 것이 보증되면 true */
+		bool boundary;
+
+		bool convex = true;
 
 		//debug
 		CircularArc *lhs, *rhs;
 
-		/*! \brief Arc가 Boundary에서 ccw라는 것이 보증되면 true */
-		bool boundary;
+		//used in MAT
+		int originalIndex;
+
+		/****************************************************/
+		//Alias below
+		/****************************************************/
+
+		inline Point& n0() { return n[0]; }
+		inline Point& n1() { return n[1]; }
+		inline Point& x0() { return x[0]; }
+		inline Point& x1() { return x[1]; }
 	};
 
 	typedef std::pair<CircularArc, CircularArc> biArc;

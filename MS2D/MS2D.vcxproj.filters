@@ -24,6 +24,18 @@
     <ClInclude Include="Commentated Notes About The Project.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
+    <ClInclude Include="stb_image.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="stb_image_write.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="stb.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="collision detection.hpp">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MS2D.cpp">
@@ -41,6 +53,15 @@
     <ClCompile Include="voronoi.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="stb.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="collision detection.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="AStarOnVorDiag.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Text Include="debug_notes.txt">
@@ -49,5 +70,6 @@
     <Text Include="Major Changes.txt">
       <Filter>헤더 파일</Filter>
     </Text>
+    <Text Include="temp.txt" />
   </ItemGroup>
 </Project>

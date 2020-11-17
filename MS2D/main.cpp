@@ -1,6 +1,10 @@
 #include "MS2D.h"
 #include <iostream>
 #include "voronoi.hpp"
+#include "collision detection.hpp"
+
+
+	planning::coneVoronoi coneVor;
 
 namespace ms {
 
@@ -13,7 +17,8 @@ namespace ms {
 	/* Comments - MS2D.h 참고 */
 
 #pragma region global variables related to time.
-	int ModelInfo_CurrentFrame = 90;//148; // 44;		// 7,7,261 case
+	int ModelInfo_CurrentFrame = 355;//148; // 44;		// 7,7,261 case
+	int ModelInfo_CurrentFrameOld; // due to the program structure... when we process frame i, modelInfo_CurrentFrame = i + 1...(due to pre increment in some func...) => save val.
 	//int ModelInfo_CurrentFrame = 93;			// [0, 360)
 	pair<int, int> ModelInfo_CurrentModel;	// [0, 8) x [0, 8)
 
@@ -146,7 +151,7 @@ namespace ms {
 		}
 
 		glClearColor(1.0, 1.0, 1.0, 1.0);
-		glClear(GL_COLOR_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		setup_viewvolume();
 		setup_transform();
 
@@ -158,6 +163,7 @@ namespace ms {
 
 
 		glViewport(wd * 1 / 3, 0, wd * 2 / 3, ht);
+		//glViewport(wd * 1 / 3, 0, 128, 128);
 
 		/* Boundary 위에 Model을 올려놓은 그림을 그리는 코드 */
 		//if (curves) {
@@ -178,7 +184,7 @@ namespace ms {
 
 		////////////////////////////////////////////////////////////////////////
 		// plannning::output_to_file
-		if(OUTPUT_TO_FILE && t2 == 0)
+		if(OUTPUT_TO_FILE && t2 == 1)
 			planning::output_to_file::start();
 
 		vector<vector<CircularArc>>& pushed = planning::output_to_file::ms_obj[t2];
@@ -273,6 +279,36 @@ namespace ms {
 			//}
 		}
 
+		// TEST
+		/*glBegin(GL_TRIANGLES);
+		glVertex3f(1, 1, -1);
+		glVertex3f(0, 1, 0);
+		glVertex3f(1, 0, -1);
+		glEnd();
+*/
+		//TEST : conc internal pixel format of opengl can be thought of as unsigned byte(1byte per component, 4byte(rgba) per pixel).
+		//	data isn't change if glColor/glReadPixels are done with 1byte-components.
+		//	unsigned short changes (255,256,257, 280 are all changed to 257... but why 257?)
+		/*{
+			static int temp = -3;
+			temp+=3;
+
+			glColor3ub(temp, temp+1, temp+2);
+			glBegin(GL_TRIANGLES);
+			glVertex3d(-100, 100, 0.1);
+			glVertex3d(+100, 100, 0.1);
+			glVertex3d(0, -300, 0.1);
+			glEnd();
+
+			unsigned char b[24];
+			glReadPixels(300, 300, 2, 3, GL_RGBA, GL_UNSIGNED_BYTE, b);
+			for (auto i : b)
+				cerr << int(i) << " ";
+			cerr << endl;
+			if (b[0] != temp) cerr << "eeeeeeee: " << b[0] << " " << temp << endl;
+			if (b[1] != temp+1) cerr << "eeeeeeee: " << b[1] << " " << temp+ 1 << endl;
+			if (b[2] != temp + 2) cerr << "eeeeeeee: " << b[2] << " " << temp + 2 << endl;
+		}*/
 
 		/////////////////////////////////////////////////////////////////////////
 		// DRAW BOUND
@@ -293,13 +329,25 @@ namespace ms {
 		static int vr_cnt = 0;
 		vr_cnt++;
 		
-		if(vr_cnt > 2)
-		{
+		/*if(vr_cnt > 2)
+		{*/
 			planning::VR_IN vrin;
 			planning::_Convert_MsOut_To_VrIn(Model_Result, ModelInfo_Boundary, vrin);
 			planning::_Medial_Axis_Transformation(vrin);
 			cout << "---------------------------------------------number of circular arcs ("<< ModelInfo_CurrentModel.first << ", " <<ModelInfo_CurrentModel.second << ", " << ModelInfo_CurrentFrame << ") : " << vrin.arcs.size() << endl;
 			cout << "---------------------------------------------number of voronoi line segments : " << planning::lineSegCnt << endl;
+
+			/////////////////////////////////////////////////////////////////////////
+			//output_to_file
+			if (planning::output_to_file::flag)
+				planning::output_to_file::vrIn[t2] = vrin;
+
+			/////////////////////////////////////////////////////////////////////////
+			//draw coneVoronoi
+			coneVor.colorType = 1;
+			if (planning::keyboardflag['q'])
+				coneVor.drawVoronoi(vrin);
+			/////////////////////////////////////////////////////////////////////////
 
 			// dbg
 			if (1)
@@ -316,7 +364,7 @@ namespace ms {
 					}
 				}
 			}
-		}
+		/*}*/
 		glColor3f(0, 0, 0);
 		/////////////////////////////////////////////////////////////////////////
 
@@ -357,11 +405,16 @@ namespace ms {
 
 		////////////////////////////////////////////////////////////////////////
 		// plannning::output_to_file
-		if (OUTPUT_TO_FILE && t2 == 359)
+		if (planning::output_to_file::flag && t2 == 0)
 			planning::output_to_file::end();
 
 		////////////////////////////////////////////////////////////////////////
 
+
+
+		////////////////////////////////////////////////////////////////////////
+		/* Left View ports */
+		////////////////////////////////////////////////////////////////////////
 		glColor3f(0.0f, 0.0f, 0.0f);
 
 		if (false) // true: draw original, false : draw Approx version
@@ -378,12 +431,102 @@ namespace ms {
 		else
 		{
 			glViewport(0, 0, wd * 1 / 3, ht / 2);
-			for (int i = 0; i < (int)Models_Rotated_Approx[ModelInfo_CurrentFrame].size() && i < cnt; i++)
-				Models_Rotated_Approx[ModelInfo_CurrentFrame][i].draw();
-
+			if (planning::keyboardflag['x'])
+			{
+				for (auto& as : Models_Approx[ModelInfo_CurrentModel.second])
+					for (auto& arc : as.Arcs)
+					{
+						auto a2 = arc;
+						a2.ccw = (arc.n[0] ^ arc.n[1]) > 0; // tag maccw
+						a2.draw2();
+					}
+			}
+			else
+			{
+				for (int i = 0; i < (int)Models_Rotated_Approx[ModelInfo_CurrentFrame].size() && i < cnt; i++)
+					Models_Rotated_Approx[ModelInfo_CurrentFrame][i].draw();
+				if (planning::keyboardflag['z'])
+					for (auto& idr : InteriorDisks_Rotated[t2])
+						idr.draw();
+			}
 			glViewport(0, ht / 2, wd * 1 / 3, ht / 2);
-			for (int i = 0; i < (int)Models_Approx[ModelInfo_CurrentModel.second].size() && i < cnt; i++) {
-				Models_Approx[ModelInfo_CurrentModel.second][i].draw();
+			if (planning::keyboardflag['x']) // if (x) draw sweep
+			{
+				vector<CircularArc> temp;
+				for (auto& as : Models_Approx[ModelInfo_CurrentModel.second])
+					for (auto& arc : as.Arcs)
+					{
+						// arc.
+						auto a2 = arc;
+						a2.n0() = (a2.x0() - a2.c.c).normalize();
+						a2.n1() = (a2.x1() - a2.c.c).normalize();
+						a2.ccw = (a2.n[0] ^ a2.n[1]) > 0;
+						a2.convex = a2.ccw;
+
+						temp.push_back(a2);
+
+
+						////dbg_out (tag maccw)
+						//bool ccwEqual = ((arc.n[0] ^ arc.n[1]) > 0 == arc.ccw);
+						//if (!ccwEqual) cout << "ccw not equal, cross, ccw :" << asin(arc.n[0] ^ arc.n[1])*180/3.1415 << " " << arc.ccw << endl;
+					}
+				
+				////test
+				////result : arc[n].x1 = arc[n+1].x0 in model_approx
+				//double accumulate = 0;
+				//for (size_t i = 0, length = temp.size(); i < length; i++)
+				//{
+				//	auto arc0 = temp[i];
+				//	auto arc1 = temp[i + 1];
+				//	if (i != length - 1)
+				//	{
+				//		auto len = (arc0.x1() - arc1.x0()).length2();
+				//		//dbg_out 
+				//		cout << arc0.x1() << " " << arc1.x0() << endl;
+				//		accumulate += len;
+				//	}
+				//	temp[i].convex = !temp[i].ccw;
+				//}
+				////dbg_out
+				//cout << "accumulate : " << accumulate << endl;
+
+				// dbg
+				/*temp.resize(0);
+				double r = 0.5;*/
+				//CircularArc a(Point(0, 1), r, Point(+1, +0), Point(+0, +1)); temp.push_back(a);
+				////CircularArc b(Point(-0.5, 1.5), -r, Point(+0, +1), Point(-1, +0)); b.ccw = true; temp.push_back(b);
+				//CircularArc b(Point(0, 1), r, Point(+0, +1), Point(-1, +0)); temp.push_back(b);
+				//CircularArc c(Point(0, 1), r, Point(-1, +0), Point(-0, -1)); temp.push_back(c);
+				//CircularArc d(Point(0, 1), r, Point(+0, -1), Point(+1, +0)); temp.push_back(d);
+
+				//// convex case
+				//CircularArc a(Point(0, 0.4) + Point( 0.5,  0.5), -r, Point(+1, +0), Point(+0, +1)); a.ccw = true; a.convex = false; temp.push_back(a);
+				//CircularArc b(Point(0, 0.4) + Point(-0.5,  0.5), -r, Point(+0, +1), Point(-1, +0)); b.ccw = true; b.convex = false; temp.push_back(b);
+				//CircularArc c(Point(0, 0.4) + Point(-0.5, -0.5), -r, Point(-1, +0), Point(-0, -1)); c.ccw = true; c.convex = false; temp.push_back(c);
+				//CircularArc d(Point(0, 0.4) + Point( 0.5, -0.5), -r, Point(+0, -1), Point(+1, +0)); d.ccw = true; d.convex = false; temp.push_back(d);
+
+				//// dbg
+				//temp.resize(0);
+				//double r = 0.5;
+				//CircularArc a(Point(0, 0.6) + Point(+0.4, 0), r, Point(-0.8, +0.6), Point(-0.8, -0.6)); a.ccw = true; a.convex = true; temp.push_back(a);
+				//CircularArc b(Point(0, 0.6) + Point(-0.4, 0), r, Point(+0.8, -0.6), Point(+0.8, +0.6)); b.ccw = true; b.convex = true; temp.push_back(b);
+
+				auto sweep = cd::getRotationBoundary(temp, double(ms::t2));
+				//dbg
+
+				// dbg_out
+				cout << sweep.size() << " " << temp.size() << endl;
+				for (auto i : sweep)
+					i.draw2();
+			}
+			else //else draw original
+			{
+				for (int i = 0; i < (int)Models_Approx[ModelInfo_CurrentModel.second].size() && i < cnt; i++) {
+					Models_Approx[ModelInfo_CurrentModel.second][i].draw();
+				}
+			if (planning::keyboardflag['z']) //if(z) draw internal disk
+				for (auto& id : InteriorDisks_Imported[ModelInfo_CurrentModel.second])
+					id.draw();
 			}
 		}
 		
@@ -501,6 +644,9 @@ namespace ms {
 		glutMouseFunc(mouse_callback);
 		glutKeyboardFunc(keyboard_callback);
 		glutIdleFunc(animate_func);
+
+		glEnable(GL_DEPTH_TEST);
+
 		glutMainLoop();
 		return 0;
 	}

@@ -1,6 +1,7 @@
 #pragma once
 #include "MS2D.h"
 #include <fstream>
+#include "stb_image_write.h"
 
 
 namespace planning
@@ -40,17 +41,37 @@ namespace planning
 	using namespace std;
 	using namespace ms;
 
+	struct VR_IN;
+
 	namespace output_to_file
 	{
+#define NUMBER_OF_SLICES 360
 		extern int m0, m1, cf;
 		extern bool flag;
 		extern double zoom;
 		extern int width, hegiht;
 
-		// int number_of_obstacles; 
-		extern vector<vector<int>> objSize;
-		extern vector<vector<CircularArc>> obj; //obj[objNo][arcNo];
-		extern vector<vector<vector<CircularArc>>> ms_obj; // ms_obj[slice][objNo][arcNo];
+		struct v_edge
+		{
+			Point v0, v1;	// endpoints for this edge.
+			int idx[2];		// two circular arc indexes which makes this v_edge
+		};
+
+		struct bifur_point
+		{
+			Point p; // the bifurcation point
+			vector<int> idx; // circular arc's indices which makes this bifur pt
+		};
+
+		extern vector<vector<int>> objSize;		// objSize[Model_approx's number][obj number] //initialized in ms::init;
+		extern vector<CircularArc> boundary;
+		extern vector<CircularArc> robot;			// robot's c-arc		// init in start()
+		extern vector<vector<CircularArc>> obj;	// obj[objNo][arcNo];	// init in start()
+		extern vector<vector<vector<CircularArc>>> ms_obj; // ms_obj[slice][objNo][arcNo];		// built at display call back
+		extern vector<vector<v_edge>> v_edges; // v_edges[slice][i] = line seg		// built at rfb
+		extern vector<vector<bifur_point>> bifur_points;			// b_pts[slice][i]					// built at rfb
+		extern vector<VR_IN> vrIn;					// vrIn[slice]	// built in display callback // TODO redundant with ms_obj;
+
 
 		void start();
 		void end();
@@ -67,6 +88,7 @@ namespace planning
 		vector<CircularArc> arcs;
 		vector<int>			left;
 		vector<double>		color;
+		vector<int>			arcsPerLoop;
 	};
 
 	/* Def : represents a point on a curve.
@@ -117,6 +139,36 @@ namespace planning
 	};
 
 
+#define coneVoronoiDepthBehindSign -
+	//just in case. object behind has - sign, while front has +
+
+	class coneVoronoi
+	{
+	public:
+		const double PI = 3.14159265358979323846264;
+		const double PI2 = 2 * 3.14159265358979323846264;
+		const double PI_half = 0.5 * 3.14159265358979323846264;
+
+		int colorType = 0;
+		double dtheta = 0.05;
+		double thetaOffset = 0.001;
+		double coneRad = 100.0;
+
+		/*
+		Assume : 
+			Right region (from tangent's view) is inside object, while left = free, clear space
+			arc exists in only one quadrant
+		*/
+		void drawArcToCone(INPUT CircularArc& c, INPUT void* colors);
+
+		void coneVoronoi::drawCone(INPUT Point p, INPUT double theta0, INPUT double theta1, INPUT void* color);
+
+		void drawVoronoi(INPUT VR_IN & v);
+
+	};
+
+
+	double getClosestArcParameter(Point& p, CircularArc &c);
 
 	void					convertMsOutput_Clockwise(deque<ArcSpline>& INPUT in, vector<CircularArc>& OUTPUT returned);
 	CircularArc				flipArc(CircularArc& in);
@@ -125,5 +177,7 @@ namespace planning
 	void _Convert_MsOut_To_VrIn(vector<deque<ArcSpline>>& INPUT msOut, vector<bool>& INPUT isBoundary, VR_IN& OUTPUT vrIn);
 	void _Medial_Axis_Transformation(VR_IN& INPUT in);
 	Point getTouchingDiskCenter(Point p, Point q, Point v);
+
+	bool isNormalBetween(Point n0, Point n1, Point n);
 
 }
