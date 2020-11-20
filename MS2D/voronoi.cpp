@@ -506,7 +506,9 @@ namespace planning
 	
 	Point conic::operator()(double t)
 	{
-
+		//@@TODO: Not implemented
+		throw "conic::operator() is not implemented yet.";
+		return Point();
 	}
 /*
 

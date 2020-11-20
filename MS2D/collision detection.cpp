@@ -68,13 +68,15 @@ namespace cd
 	/*
 	Def : translate arc in world-space
 	*/
-	CircularArc translateArc(CircularArc& arc, Point& translation)
+	CircularArc translateArc(const CircularArc& arc, const Point& translation)
 	{
 		CircularArc ret = arc;
 
 		ret.c.c = ret.c.c + translation;
 		ret.x[0] = ret.x[0] + translation;
 		ret.x[1] = ret.x[1] + translation;
+		//@@TODO: check the return statement.
+		return ret;
 	}
 
 	/**********************************************************************************/
@@ -248,6 +250,8 @@ namespace cd
 				}
 			}
 		}
+		//@@TODO: check the return statement
+		return output;
 	}
 
 	/*
@@ -560,7 +564,8 @@ namespace cd
 				rLines.emplace_back(p, q);
 			}
 		}
-
+		//@@TODO: Check the return statement
+		return ret;
 	}
 		
 	/***********************************************************************************/
@@ -589,7 +594,9 @@ namespace cd
 	bool 
 		testLineSegment(lineSegment& lhs, CircularArc& rhs)
 	{
-
+		//@@TODO: Not implemented
+		throw "testLineSegment is not implemented yet.";
+		return false;
 	}
 
 	/*
