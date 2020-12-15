@@ -1,6 +1,10 @@
 #include <iostream>
 #include <fstream>
 #include "voronoi.hpp"
+#include "AStarOnVorDiag.h"
+
+using namespace std;
+
 namespace ms
 {
 	int main(int argc, char *argv[]);
@@ -11,12 +15,10 @@ namespace graphSearch
 
 	int main(int argc, char** argv);
 	int main2();
+	void searchTest();
 }
 
 int main(int argc, char *argv[]) {
-
-
-	using namespace std;
 
 	//Test stuff:
 	if (false)
@@ -159,7 +161,8 @@ int main(int argc, char *argv[]) {
 
 	//cout << "fake func" << endl;
 	
-	graphSearch::main2();
+	//graphSearch::main2();
+	graphSearch::searchTest();
 	//graphSearch::main(0, NULL);
 	//ms::main(argc, argv);
 
@@ -168,6 +171,8 @@ int main(int argc, char *argv[]) {
 
 namespace graphSearch
 {
+	using v_edge = planning::output_to_file::v_edge;
+
 	/*
 	Def:
 		Computes Voronoi Edges for each slice, and store them in a vector<vector<v_edge>> v_edges.
@@ -213,16 +218,68 @@ namespace graphSearch
 		//std::cout << "END OF TEST" << std::endl;
 
 		// 2. Alias for long names
-		using v_edge = planning::output_to_file::v_edge;
-		std::vector<std::vector<v_edge>>& 
+
+		//using v_edge = planning::output_to_file::v_edge;
+		std::vector<std::vector<v_edge>>&
 			v_edges = planning::output_to_file::v_edges;
 
+		//Graph theGr = create_VorGraph(v_edges);
+		//std::vector<v_edge> path = invoke_AStar(theGr);
+
+
 		// 3. call functions from namespace graphSearch (AStarOnVorDiag.cpp)
-		std::vector<double> path; // triplet of (path[3n+0], path[3n+1], path[3n+2]) represents a vertice in path. 
+		 // triplet of (path[3n+0], path[3n+1], path[3n+2]) represents a vertice in path. 
 		// vertices = ...
 
 		// 4~. do sth with the path....
 
 		return 0;
+	}
+
+	void searchTest()
+	{
+		double coords2d[9][2] = {{0.,0.}, {1., 0.}, {10., 0.},
+								 {0.,1.}, {1., 1.}, {10., 1.},
+								 {0.,10.}, {1., 10.}, {10., 10.}};
+		int layerEdgeIndeces[12][2] = { {0,1}, {1,2}, {3,4}, {4,5}, {6,7}, {7,8},
+									    {0,3}, {1,4}, {2,5}, {3,6}, {4,7}, {5,8} };
+		vector<v_edge> layer0;
+		vector<v_edge> layer1;
+		for (int i = 0; i < 12; ++i)
+		{
+			int idxP = layerEdgeIndeces[i][0];
+			int idxQ = layerEdgeIndeces[i][1];
+			ms::Point p(coords2d[idxP][0], coords2d[idxP][1]);
+			ms::Point q(coords2d[idxQ][0], coords2d[idxQ][1]);
+			v_edge currEdge;
+			currEdge.v0 = p;
+			currEdge.v1 = q;
+			currEdge.idx[0] = -1;
+			currEdge.idx[1] = -1;
+			layer0.push_back(currEdge);
+			layer1.push_back(currEdge);
+		}
+		vector<vector<v_edge>> v_edges;
+		v_edges.push_back(layer0);
+		v_edges.push_back(layer1);
+
+		vector<Vertex> vecVertices;
+		map<Vertex, int, VertexLessFn> mapLookup;
+		Graph theGr = create_VorGraph(v_edges, vecVertices, mapLookup);
+		Vertex ptnSrc(0, 0, 0);
+		Vertex ptnDst(10, 10, 360.);
+		std::vector<Vertex> path = invoke_AStar(theGr, vecVertices, mapLookup, ptnSrc, ptnDst);
+		if (path.empty())
+		{
+			cout << "Path not found" << endl;
+		}
+		else
+		{
+			for (auto v : path)
+			{
+				cout << v << endl;
+			}
+		}
+
 	}
 }

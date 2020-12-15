@@ -54,12 +54,12 @@ namespace cd
 
 	// All of them generate new instances.
 
-	CircularArc	
+	CircularArc	 
 		rotateArc(CircularArc& arc, double rotation);
 	Point		
 		rotatePoint(Point& p, double cosine, double sine);
-	CircularArc 
-		translateArc(CircularArc& arc, Point& translation);
+	//CircularArc
+	//	translateArc(CircularArc& arc, Point& translation);
 
 	/**********************************************************************************
 	**  0-2. helper func(math)
