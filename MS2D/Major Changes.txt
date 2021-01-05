@@ -8,3 +8,9 @@
 
 4. draw2() of circularArc added
 	use theta now.
+
+5. void MinkowskiSum() : collision detection part : can now use circularArc_models instead of bezier_models 
+
+6. fixed bug on MinkowskiSum : "void overlapTest(std::vector<ArcSpline> &source, ArcSpline & lhs, ArcSpline & rhs)"
+	=> case 5 was not evaluated correctly
+	==> see image 1 1 257 5 4

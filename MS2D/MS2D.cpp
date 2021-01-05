@@ -1,4 +1,5 @@
 #include "voronoi.hpp"
+#include "collision detection.hpp"
 
 namespace ms{
 
@@ -11,8 +12,14 @@ extern double basis4[10001][5];
 extern double basis5[10001][6];
 extern double basis6[10001][7];
 
-const bool change7 = true; // change 7 model to 6 + 7
+const bool change7 = true; // change 7 model to scene-with-obstacles (6 + 7)
 const bool change0 = true; // change 0 to half size
+const bool override1 = true;
+std::vector<CircularArc> override1_model_data;
+
+#define useApproxInSymmetryCollision true
+
+#define DEBUG
 
 /*!
 *	\brief 필요한 데이터(B-Spline Model Data, Interior Disk Data)를 Import하고, 8개의 기본 모델에 대하여 Arc Spline으로 근사한다
@@ -20,7 +27,7 @@ const bool change0 = true; // change 0 to half size
 void initialize()
 {
 	fopen_s(&f, "time.txt", "w");
-	ModelInfo_CurrentModel.first  = 0; // 1
+	ModelInfo_CurrentModel.first  = 1; // 1
 	ModelInfo_CurrentModel.second = 6; // 6
 	Models_Imported[0] = import_Crv("impt1.txt");
 	Models_Imported[1] = import_Crv("impt2.txt");
@@ -41,35 +48,133 @@ void initialize()
 
 	//debug : test multiple loops in one model // conclusion : seems to work
 
+	// lambda def: change a given model in models_imported[modelNo]
+	//	used for models that have bezier representation
+	auto changeModel = [&](int modelNo, double scale, double rotationRadian, Point translation)
+	{
+		// to generalize, just change alias
+		auto& model = Models_Imported[modelNo];
+		auto& disks = InteriorDisks_Imported[modelNo];
+		{
+			Point a[4];
+			// 1. do Bezier
+			for (auto& i : model)
+			{
+				// 1-1. scale
+				a[0] = scale * i.P[0];
+				a[1] = scale * i.P[1];
+				a[2] = scale * i.P[2];
+				a[3] = scale * i.P[3];
+
+				// 1-2. rotate
+				a[0] = a[0].rotate(rotationRadian);
+				a[1] = a[1].rotate(rotationRadian);
+				a[2] = a[2].rotate(rotationRadian);
+				a[3] = a[3].rotate(rotationRadian);
+
+				// 1-3. translate
+				a[0] = a[0] + translation;
+				a[1] = a[1] + translation;
+				a[2] = a[2] + translation;
+				a[3] = a[3] + translation;
+
+				// 1-4. save
+				i = BezierCrv(a);
+			}
+
+			// 2. do disk
+			for (auto& i : disks)
+			{
+				i.c = (scale * i.c).rotate(rotationRadian) + translation;
+				i.r = scale * i.r;
+			}
+
+		}
+	};
+
+	// lambda def: apply transfrom to models_improted[modelFrom] and append it to models_imported[modelTo]
+	//	used for models that have bezier representation
+	auto appendModel = [&](int modelFrom, int modelTo, double scale, double rotationRadian, Point translation)
+	{
+		auto& model		= Models_Imported[modelFrom];
+		auto& disks		= InteriorDisks_Imported[modelFrom];
+		auto& model2	= Models_Imported[modelTo];
+		auto& disks2	= InteriorDisks_Imported[modelTo];
+		{
+			Point a[4];
+			// 1. do Bezier
+			for (auto& i : model)
+			{
+				// 1-1. scale
+				a[0] = scale * i.P[0];
+				a[1] = scale * i.P[1];
+				a[2] = scale * i.P[2];
+				a[3] = scale * i.P[3];
+
+				// 1-2. rotate
+				a[0] = a[0].rotate(rotationRadian);
+				a[1] = a[1].rotate(rotationRadian);
+				a[2] = a[2].rotate(rotationRadian);
+				a[3] = a[3].rotate(rotationRadian);
+
+				// 1-3. translate
+				a[0] = a[0] + translation;
+				a[1] = a[1] + translation;
+				a[2] = a[2] + translation;
+				a[3] = a[3] + translation;
+
+				// 1-4. save
+				model2.push_back(BezierCrv(a));
+			}
+
+			// 2. do disk
+			for (auto& i : disks)
+			{
+				Circle push;
+				push.c = (scale * i.c).rotate(rotationRadian) + translation;
+				push.r = scale * i.r;
+
+				disks2.push_back(push);
+			}
+		}
+	};
+
+
 	if (change7)
 	{
-		Point a[4];
-		auto trans = Point(0.3, 0);
-		auto scale = 0.3f;
-		for (auto& i : Models_Imported[7])
-		{
-			a[0] = scale * i.P[0] - trans;
-			a[1] = scale * i.P[1] - trans;
-			a[2] = scale * i.P[2] - trans;
-			a[3] = scale * i.P[3] - trans;
-			i = BezierCrv(a);
-		}
-		for (auto& i : InteriorDisks_Imported[7])
-		{
-			i = (Circle(scale * i.c - trans, scale * i.r));
-		}
-		for (size_t i = 0; i < Models_Imported[6].size(); i++)
-		{
-			a[0] = scale * Models_Imported[6][i].P[0] + trans;
-			a[1] = scale * Models_Imported[6][i].P[1] + trans;
-			a[2] = scale * Models_Imported[6][i].P[2] + trans;
-			a[3] = scale * Models_Imported[6][i].P[3] + trans;
-			Models_Imported[7].push_back(BezierCrv(a));
-		}
-		for (auto& i : InteriorDisks_Imported[6])
-		{
-			InteriorDisks_Imported[7].push_back(Circle(scale * i.c + trans, scale * i.r));
-		}
+		changeModel(   7, 0.3, 0.0, Point(-0.3, 0.0));
+		appendModel(6, 7, 0.3, 0.0, Point(0.02, 0.1));
+		appendModel(5, 7, 0.3, 0.0, Point(0.1, -0.3));
+		appendModel(3, 7, 0.3, 0.0, Point(-0.3, -0.4));
+
+		//Point a[4];
+		//auto trans = Point(0.3, 0);
+		//auto scale = 0.3f;
+		//for (auto& i : Models_Imported[7])
+		//{
+		//	a[0] = scale * i.P[0] - trans;
+		//	a[1] = scale * i.P[1] - trans;
+		//	a[2] = scale * i.P[2] - trans;
+		//	a[3] = scale * i.P[3] - trans;
+		//	i = BezierCrv(a);
+		//}
+		//for (auto& i : InteriorDisks_Imported[7])
+		//{
+		//	i = (Circle(scale * i.c - trans, scale * i.r));
+		//}
+		//
+		//for (size_t i = 0; i < Models_Imported[6].size(); i++)
+		//{
+		//	a[0] = scale * Models_Imported[6][i].P[0] + trans;
+		//	a[1] = scale * Models_Imported[6][i].P[1] + trans;
+		//	a[2] = scale * Models_Imported[6][i].P[2] + trans;
+		//	a[3] = scale * Models_Imported[6][i].P[3] + trans;
+		//	Models_Imported[7].push_back(BezierCrv(a));
+		//}
+		//for (auto& i : InteriorDisks_Imported[6])
+		//{
+		//	InteriorDisks_Imported[7].push_back(Circle(scale * i.c + trans, scale * i.r));
+		//}
 	}
 
 	if (change0)
@@ -183,6 +288,104 @@ void initialize()
 		}*/
 	}
 
+	if (override1)
+	{
+		using namespace std;
+
+		// init step
+
+		int overridedIndex = 1;
+		double scaleFactor = 0.2;
+		ifstream ar ("arcModel.txt");
+		ifstream arr("arcModelRSV.txt");
+		ifstream crr("circModelRSV.txt");
+
+		// read size of input
+
+		int
+			size0,
+			size1,
+			size2;
+
+		ar  >> size0;
+		arr >> size1;
+		crr >> size2;
+
+
+		// do circles;
+
+		vector<Circle> RSV_Circles;
+
+		// 1. read
+		for (int i = 0; i < size2; i++)
+		{
+			double cx, cy, cr;
+			crr >> cx >> cy >> cr;
+
+			RSV_Circles.push_back(Circle(Point(cx, cy), cr));
+		}
+
+		// 2. scale
+		for (auto& circ : RSV_Circles)
+		{
+			circ.c = circ.c * scaleFactor;
+			circ.r = circ.r * scaleFactor;
+		}
+
+		// 3. override data
+		InteriorDisks_Imported[overridedIndex] = RSV_Circles;
+
+		// do RSV
+
+		// 1. Read from file
+		vector<CircularArc> fileRead;
+		for (int i = 0; i < size1; i++)
+		{
+			double cx, cy, cr, t0, t1, ccw;
+			arr >> cx >> cy >> cr >> t0 >> t1 >> ccw;
+
+			if (ccw)
+				while (t1 < t0)
+					t1 += PI * 2;
+			else
+				while (t1 > t0)
+					t1 -= PI * 2;
+			fileRead.push_back(cd::constructArc(Point(cx, cy), cr, t0, t1));
+		}
+
+		// 1.5 scaling
+		for (auto& arc : fileRead)
+		{
+			arc.c.c = arc.c.c * scaleFactor;
+			arc.c.r = arc.c.r * scaleFactor;
+			arc.x0() = arc.x0() * scaleFactor;
+			arc.x1() = arc.x1() * scaleFactor;
+		}
+
+		// 2. make it G0
+		vector<CircularArc> g0;
+		planning::_Convert_VectorCircularArc_G0(fileRead, g0, 1);
+
+		//dbg_out
+		cout << "override1_data endpoints " << endl;
+		for (auto& arc : g0)
+			cout << arc.x0() << ",,, " << arc.x1() << endl;
+		//dbg
+
+		// 3. make it G1
+		vector<CircularArc> g1;
+		planning::_Convert_VectorCircularArc_G1(g0, g1);
+		override1_model_data = g1;
+
+
+		// 4. convert to AS
+		vector<ArcSpline> asRSV;
+		planning::_Convert_VectorCircularArc_To_MsInput(g1, asRSV);
+
+		// 5. override
+		Models_Approx[overridedIndex] = asRSV;
+
+	}
 
 	postProcess(ModelInfo_CurrentModel.first, ModelInfo_CurrentModel.second);
 
@@ -230,15 +433,18 @@ void postProcess(int FirstModel, int SecondModel)
 {
 	// 두 모델이 같은 모델인지 판단한다
 	// 모델이 같은 경우 예외처리를 하여 알고리즘을 가속화하기 때문이다
-	if (FirstModel == SecondModel)
+	if (DEBUG false /*FirstModel == SecondModel*/)
 		ModelInfo_Identical = true;
 	else
 		ModelInfo_Identical = false;
 
 	// Second Model의 Index가 FirstModel보다 큰 경우, 모델을 그대로 사용한다
-	if (SecondModel >= FirstModel) {
+	if (DEBUG true /*(SecondModel >= FirstModel)*/) {
 		// 각각의 Frame에 대해서 계산한다
 		for (int i = 0; i < numofframe; i++) {
+			
+			// 1. Erase Former data
+
 			// 전 모델에서 계산되었던 데이터를 지워준다
 			if (!Models_Rotated[i].empty())
 				Models_Rotated[i].clear();
@@ -249,6 +455,8 @@ void postProcess(int FirstModel, int SecondModel)
 			if (!InteriorDisks_Rotated[i].empty())
 				InteriorDisks_Rotated[i].clear();
 
+			// 2. make InteriorDisks_Rotated
+
 			// 내부 Disks를 회전하여 저장한다
 			// 반지름은 그대로 두고 중심만 회전한다
 			InteriorDisks_Rotated[i] = InteriorDisks_Imported[FirstModel];
@@ -256,32 +464,41 @@ void postProcess(int FirstModel, int SecondModel)
 			for (int j = 0; j < (int)InteriorDisks_Rotated[i].size(); j++)
 				InteriorDisks_Rotated[i][j].c = InteriorDisks_Imported[FirstModel][j].c.rotate(2 * PI * i / numofframe);
 
-			// Models_Imported[FirstModel]의 각 BezierCrv의 Control Point를 회전하여 회전한 모델의 정보를 저장한다
-			// tempF : 회전한 모델 (아마 temp Figure라 tempF라고 했던 것 같아요)
-			auto tempF = Models_Imported[FirstModel];
-			for (int j = 0; j < (int)Models_Imported[FirstModel].size(); j++)
-				for (int k = 0; k <= (int)Models_Imported[FirstModel][j].Deg; k++)
-					tempF[j].P[k] = tempF[j].P[k].rotate(2 * PI * i / numofframe);
-
-			// 회전한 모델을 x, y - extreme, inflection, curvature extreme point에서 쪼갠 뒤 이를 Models_Rotated[i]에 저장한다
-			for (int j = 0; j < (int)tempF.size(); j++)
-				tempF[j].segmentation(Models_Rotated[i]);
-
-			// 모델이 완벽한지 테스트한다
-			for (int j = 0; j < (int)Models_Rotated[i].size(); j++) {
-				auto s = Models_Rotated[i][j].integrityTest();
-				if (s.size() > 0)
-					Models_Rotated[i].insert(Models_Rotated[i].begin() + j + 1, s.begin(), s.end());
+			// 3. build M_R and M_R_A
+			
+			// if (this is the case where original bezier curve does not exists)
+			if (override1 && FirstModel == 1)
+			{
+				planning::_Convert_VectorCircularArc_To_MsInput(override1_model_data, Models_Rotated_Approx[i], i);
 			}
+			else
+			{
+				// Models_Imported[FirstModel]의 각 BezierCrv의 Control Point를 회전하여 회전한 모델의 정보를 저장한다
+				// tempF : 회전한 모델 (아마 temp Figure라 tempF라고 했던 것 같아요)
+				auto tempF = Models_Imported[FirstModel];
+				for (int j = 0; j < (int)Models_Imported[FirstModel].size(); j++)
+					for (int k = 0; k <= (int)Models_Imported[FirstModel][j].Deg; k++)
+						tempF[j].P[k] = tempF[j].P[k].rotate(2 * PI * i / numofframe);
 
-			// 이 모델을 Arc Spline으로 근사한다. 위에서 Curvature Monotone으로 잘랐기 때문에 Spiral임이 보장된다
-			for (int j = 0; j < (int)Models_Rotated[i].size(); j++) {
-				auto tempSpiral = ArcSpline(Models_Rotated[i][j]);
-				// 마찬가지로 완전성을 테스트한다
-				auto input = tempSpiral.integrityTest();
-				Models_Rotated_Approx[i].insert(Models_Rotated_Approx[i].end(), input.begin(), input.end());
+				// 회전한 모델을 x, y - extreme, inflection, curvature extreme point에서 쪼갠 뒤 이를 Models_Rotated[i]에 저장한다
+				for (int j = 0; j < (int)tempF.size(); j++)
+					tempF[j].segmentation(Models_Rotated[i]);
+
+				// 모델이 완벽한지 테스트한다
+				for (int j = 0; j < (int)Models_Rotated[i].size(); j++) {
+					auto s = Models_Rotated[i][j].integrityTest();
+					if (s.size() > 0)
+						Models_Rotated[i].insert(Models_Rotated[i].begin() + j + 1, s.begin(), s.end());
+				}
+
+				// 이 모델을 Arc Spline으로 근사한다. 위에서 Curvature Monotone으로 잘랐기 때문에 Spiral임이 보장된다
+				for (int j = 0; j < (int)Models_Rotated[i].size(); j++) {
+					auto tempSpiral = ArcSpline(Models_Rotated[i][j]);
+					// 마찬가지로 완전성을 테스트한다
+					auto input = tempSpiral.integrityTest();
+					Models_Rotated_Approx[i].insert(Models_Rotated_Approx[i].end(), input.begin(), input.end());
+				}
 			}
-
 		}
 	}
 
@@ -455,6 +672,89 @@ void minkowskisum(int frame, int figure2)
 			}
 	}
 
+	// dbg_out
+	{
+		using namespace std;
+		int i = 5, j = 4;
+		cout << "case 1 1 257 5 4 result : " << 
+			((Models_Rotated_Approx[frame][i].xQuardrants == Models_Approx[figure2][j].xQuardrants) &&
+			(Models_Rotated_Approx[frame][i].yQuardrants == Models_Approx[figure2][j].yQuardrants) &&
+			(Models_Rotated_Approx[frame][i].ccw) && (Models_Approx[figure2][j].ccw)) << endl;
+
+		// into overlapTest
+		std::vector<ArcSpline>& source = ConvolutionArcs;
+		ArcSpline& lhs = Models_Rotated_Approx[frame][i];
+		ArcSpline& rhs = Models_Approx[figure2][j];
+
+			// 1. build ls, rs and call convolution_ArcSpline
+	
+			// 왼쪽 모델의 첫 Index와 끝 Index : ls[0], ls[1]
+			// 오른쪽 모델의 첫 Index와 끝 Index : rs[0], rs[1]
+			int ls[2], rs[2];
+			// 어느 Topology로 두 Arc가 겹쳐있는지 확인한다
+			short overlap = overlapCase(lhs, rhs);
+			// 각 경우에 대하여 인자를 맞추어 Con
+
+			cout << "case 1 1 257 5 4 overlap : " << overlap << endl;
+			switch (overlap) {
+				/*
+					visually
+						clockwise---------->>>
+				lhs			 ---	----	 ----	-----	-----	  ---
+				rhs			-----	 ----	----	 ---	  ---	-----
+				return		  1		  3		  4		  6		  7?	  5?
+				(notice that this is used on original models, and they are ccw. so n[0] to n[1] is ccw. So on left is n[1], while on right is n[0])
+				*/
+				// ls : lhs[idx] of idx ~ [ls[0], ls[1]] may have potential overlap... rs is for rhs
+			case 1:
+				ls[0] = 0;
+				ls[1] = (int)lhs.Arcs.size() - 1;
+				rs[0] = rhs.findIdx(lhs.n[0]);
+				rs[1] = rhs.findIdx(lhs.n[1]);
+				Convolution_ArcSpline(source, lhs, rhs, ls, rs, false);
+				break;
+			case 3:
+				ls[0] = 0;
+				ls[1] = lhs.findIdx(rhs.n[1]);
+				rs[0] = rhs.findIdx(lhs.n[0]);
+				rs[1] = (int)rhs.Arcs.size() - 1;
+				Convolution_ArcSpline(source, lhs, rhs, ls, rs, false);
+				break;
+			case 4:
+				ls[0] = lhs.findIdx(rhs.n[0]);
+				ls[1] = (int)lhs.Arcs.size() - 1;
+				rs[0] = 0;
+				rs[1] = rhs.findIdx(lhs.n[1]);
+				Convolution_ArcSpline(source, lhs, rhs, ls, rs, false);
+				break;
+			case 6:
+				ls[0] = lhs.findIdx(rhs.n[0]);
+				ls[1] = lhs.findIdx(rhs.n[1]);
+				rs[0] = 0;
+				rs[1] = (int)rhs.Arcs.size() - 1;
+				Convolution_ArcSpline(source, lhs, rhs, ls, rs, false);
+				break;
+			case 7:
+				ls[0] = 0; //this may be ineff?
+				ls[1] = (int)lhs.Arcs.size() - 1;
+				rs[0] = 0;
+				rs[1] = (int)rhs.Arcs.size() - 1;
+				Convolution_ArcSpline(source, lhs, rhs, ls, rs, false);
+			default:
+				break;
+			}
+	}
+
+	// dbg_out
+	if (planning::keyboardflag['1'])
+	{
+		using namespace std;
+		cout << "drawing all convolution arcs" << endl;
+		Model_Result.push_back(deque<ArcSpline>(ConvolutionArcs.begin(), ConvolutionArcs.end()));
+		return;
+	}
+
+
 	/* 4. Local Trimming - Self Intersection */
 	// 각 Convolution Arc Spline의 충돌여부를 조사
 	for (int i = 0; i < (int)ConvolutionArcs.size() - 1; i++)
@@ -603,15 +903,25 @@ void minkowskisum(int frame, int figure2)
 
 	// 그 Loop를 제외한 Loop의 임의의 한 점에 대해 Collision Detection Test를 진행한다
 	// Collision Detection이 발생하면 Trimming되어야만 하는 내부의 Segment이므로, 지워준다
+#if useApproxInSymmetryCollision
+	for (int i = 0; i < (int)Model_Result.size(); i++)
+		if (!(i == xmaxIdx || i == xminIdx || i == yminIdx || i == ymaxIdx))
+			if (Model_Result[i].front().Arcs.size() != 0)
+				if (collision(Models_Rotated_Approx[frame], Models_Approx[figure2], Model_Result[i].front().mid()))
+					Model_Result[i].clear();
+#else
+
 	for (int i = 0; i < (int)Model_Result.size(); i++)
 		if (!(i == xmaxIdx || i == xminIdx || i == yminIdx || i == ymaxIdx))
 			if (Model_Result[i].front().Arcs.size() != 0)
 				if (collision(Models_Rotated[frame], Models[figure2], Model_Result[i].front().mid()))
 					Model_Result[i].clear();
+#endif
 
 	/* 6. Local Trimming - Loop */
 	// Loop를 이루지 못하는 경우 지워준다
 
+	// For cases where loop is of 0~2 arcsplines.
 	for (int i = (int)Model_Result.size() - 1; i >= 0; i--) {
 		if (Model_Result[i].size() == 0)
 			Model_Result.erase(Model_Result.begin() + i);
@@ -634,7 +944,7 @@ void minkowskisum(int frame, int figure2)
 				end1 = Model_Result[i][0].end();
 			}
 
-			if (distance(init1, end1) < EPSILON * EPSILON)
+			if (distance(init1, end1) < EPSILON * EPSILON)	// if (size = 1 or 2 && arcSpline is too short???) erase
 				Model_Result.erase(Model_Result.begin() + i);
 		}
 	}
@@ -723,7 +1033,7 @@ void minkowskisum(int frame, int figure2)
 	}
 
 	// 각 Loop에서 x, y의 min / max값을 계산한 뒤, Boundary를 이루는지 Inner Loop을 이루는지를 판단
-	std::vector<std::vector<CircularArc*>> arc;
+	std::vector<std::vector<CircularArc*>> arc; // For each loops, find 4 indcies of arcs which each is xmax, xmin, ymax, ymin int that loop.
 	arc.resize(4);
 	for (int i = 0; i < 4; i++)
 		arc[i].resize(Model_Result.size());
@@ -1526,6 +1836,11 @@ std::tuple<Point, Point, int> intersection_collision(Circle & lhs, Circle & rhs)
 *	\param localX 원의 중심에서 교점을 표현했을 때, local coordinate의 Y방향으로의 벡터
 *
 *	\return 교점의 개수에 따라 서로 다른 tuple을 반환. 첫 번째와 두 번째의 Point 타입은 교점, 세 번째 int 타입은 교점의 개수를 의미한다. 조금 더 보수적으로 확인한다.
+
+Def : Get circle(not arc) intersection by : cosine law on triangle(center-center line , radius1, radius2)
+
+localX : has direction connecting two circle centers
+localY : perpendicular to localX
 */
 std::tuple<Point, Point, int> intersection_self(Circle & lhs, Circle & rhs)
 {
@@ -1647,6 +1962,8 @@ std::tuple<Point, Point, int> intersection_CircularArc(CircularArc & lhs, Circul
 {
 	//auto s = intersect(lhs.c, rhs.c);
 	std::tuple<Point, Point, int> s = intersection_self(lhs.c, rhs.c);
+
+
 	switch (std::get<2>(s)) {
 	case 0:
 		return s;
@@ -2036,6 +2353,32 @@ bool collision(std::vector<BezierCrv>& lhs, std::vector<BezierCrv> &rhs, Point &
 	return false;
 }
 
+/*
+Def : collision test among circularArcs inside (lhs) and (rhs flipped(symmetric-transformed) on p)
+Currently a bit brute force... maybe exploit aabb test? => needs to add symmetric transform somewhere
+*/
+bool collision(std::vector<ArcSpline>& lhs, std::vector<ArcSpline>& rhs, Point& p)
+{
+	std::vector<std::pair<BezierCrv*, BezierCrv*>> q;
+	for (int i = 0; i < (int)lhs.size(); i++)
+	for (int j = 0; j < (int)rhs.size(); j++) 
+	{
+		auto& las = lhs[i];
+		auto& ras = rhs[j];
+		if (aabbtest(las,ras,p)) // TODO: AABB test of ArcSpline later?
+		{
+			for (size_t ii = 0; ii < las.Arcs.size(); ii++)
+			for (size_t jj = 0; jj < ras.Arcs.size(); jj++)
+			{
+				if (intersection_bool(las.Arcs[ii], ras.Arcs[jj], p))
+					return true;
+			}
+		}
+	}
+	return false;
+}
+
+
 /*!
 *	\brief 대소비교
 *
@@ -2056,6 +2399,14 @@ bool operator<(const Segment & lhs, const Segment & rhs)
 *	\param rhs 두 번째 Arc Spline Segment
 *
 *	\return 두 Arc Spline Segment이 연결되어있으면 true를 반환한다. 두 Arc Spline이 연결된 경우, 각각의 인접정보를 업데이트 시켜준다.
+
+Def: If the endpoints of two arcsplines are very close (&& closer to their past-best-neighbors), update info and return true
+Ret: true, if proximity was updated(pair is best, by far)
+
+1. Div to 4 case (lhs.0 or lhs.1) x (rhs.0 or rhs.1)
+2. For each case, check if dist is below some bound
+3. if under some bound, check if the pair is best(closest) for both of the arcSplines. (no-update when one of the arcsplines has a better neighbor)
+4. if best for both => erase past-neighbors proximity info, and update lhs & rhs.
 */
 bool connected(ArcSpline & lhs, ArcSpline & rhs)
 {
@@ -2199,6 +2550,9 @@ bool connected(ArcSpline & lhs, ArcSpline & rhs)
 *	\param rhs 두 번째 Arc Spline Segment
 *
 *	\return 두 Arc Spline Segment이 만나는지를 확인한 뒤, 만나면 각각의 교점 정보를 업데이트한다.
+
+1. (BVH for lhs) vs (BVH for rhs)
+2. if (leaf_VS_leaf case reached) compute if arcs intersect w/ intersection_CircularArc
 */
 void selfIntersectionPts(ArcSpline &lhs, ArcSpline &rhs)
 {
@@ -2210,10 +2564,13 @@ void selfIntersectionPts(ArcSpline &lhs, ArcSpline &rhs)
 	ql.push(std::make_pair(0, (int)lhs.Arcs.size() - 1));
 	qr.push(std::make_pair(0, (int)rhs.Arcs.size() - 1));
 	while (!ql.empty()) {
+
+		// 1. recursively go down BVH
+
 		auto lIdx = ql.front(), rIdx = qr.front();
 		ql.pop();
 		qr.pop();
-		bool t1 = (lIdx.first == lIdx.second), t2 = (rIdx.first == rIdx.second);
+		bool t1 = (lIdx.first == lIdx.second), t2 = (rIdx.first == rIdx.second); // t1: reached leaf node for left-BVH, t2: t1, but for right-BVH
 		if (!t1 && !t2) {
 			if (aabbtest(lhs,rhs,lIdx,rIdx)){
 				// 순서가 중요!
@@ -2247,7 +2604,13 @@ void selfIntersectionPts(ArcSpline &lhs, ArcSpline &rhs)
 		}
 		// Leap Node (Single Circular Arc)까지 도달 -> 그 Arc의 교점의 개수를 가지고 경우를 나누자
 		else {
+
+			// 2. reached leaf x leaf case.
+
+			// 2-1. find intersection
 			auto reval = intersection_CircularArc(lhs.Arcs[lIdx.first], rhs.Arcs[rIdx.first]);
+
+			// 2-2. switch (number_of_intersections)
 			switch (std::get<2>(reval)) {
 			// 하나의 교점인 경우, Convolution 과정에서 저장해놓은 boundary를 이용하여
 			// 지워지는 방향을 dividedPts의 마지막 인자로 표시한다.
@@ -2391,6 +2754,7 @@ void overlapTest(std::vector<ArcSpline> &source, ArcSpline & lhs, ArcSpline & rh
 		rs[1] = (int)rhs.Arcs.size() - 1;
 		Convolution_ArcSpline(source, lhs, rhs, ls, rs, false);
 		break;
+	case 5: // tag overlap
 	case 7:
 		ls[0] = 0; //this may be ineff?
 		ls[1] = (int)lhs.Arcs.size() - 1;
@@ -2443,6 +2807,11 @@ void overlapTestR(std::vector<ArcSpline> &source, ArcSpline & lhs, ArcSpline & r
 		rs[1] = rhs.ccw ? (int)rhs.Arcs.size() - 1 : 0;
 		Convolution_ArcSpline(source, lhs, rhs, ls, rs, true);
 		break;
+	case 5:
+	case 7:
+		// dbg_out
+		std::cout << "overlapTestR : case reached : " << overlap << std::endl;
+		// ~ dbg
 	default:
 		break;
 	}
@@ -2505,7 +2874,7 @@ lhs			 ---	----	 ----	-----	-----	  ---
 rhs			-----	 ----	----	 ---	  ---	-----
 return		  1		  3		  4		  6		  7?	  5?
 (notice that this is used on original models, and they are ccw. so n[0] to n[1] is ccw. So on left is n[1], while on right is n[0])
-0 can be returned
+0 can be returned => no overlap
 2 can't
 5 seems possible.
 but 5,7 can be handled with other case?
@@ -2766,6 +3135,7 @@ void Convolution_ArcSpline(std::vector<ArcSpline> &source, ArcSpline & lhs, ArcS
 				cut = -rhs.Arcs[j].n[1];
 				j += rd;
 			}
+
 			if (!check && (input.Arcs.size() != 0)) {
 				input.ccw = rhs.ccw ^ input.Arcs[0].ccw;
 				input.referenced = false;
@@ -2815,6 +3185,10 @@ void Convolution_ArcSpline(std::vector<ArcSpline> &source, ArcSpline & lhs, ArcS
 *	\param rhs 두 번째 모델
 *
 *	\return 두 aabb box가 충돌하면 true, 아니면 false를 반환한다
+
+Def: using the fact that arcSplines are x,y-monotone, get its AABB by endpoints. Then check its overlap.
+
+Q: is this better than interval test? => we do not know wheter arcSpline.0 < arcSpline.1, so maybe?
 */
 bool aabbtest(ArcSpline & lhs, ArcSpline & rhs)
 {
@@ -2824,6 +3198,39 @@ bool aabbtest(ArcSpline & lhs, ArcSpline & rhs)
 		return false;
 	double height = abs(lhs.init().P[1] - lhs.end().P[1]) + abs(rhs.init().P[1] - rhs.end().P[1]);
 	double hDiff = abs((lhs.init().P[1] + lhs.end().P[1]) - (rhs.init().P[1] + rhs.end().P[1]));
+	if (height < hDiff)
+		return false;
+	return true;
+}
+
+/*
+Def : aabbtest, but assume that rhs is flipped over a point p
+
+Change : 
+	Actually, The other part's comment said it flips with the center of symmtery of P.
+	But what its code did was : 1. flip with origin 2. translate with p.
+	So this part does it like that
+*/
+bool aabbtest(ArcSpline& lhs, ArcSpline& rhs, Point& p)
+{
+	// Naming convention [left/right][init/end][x/y]
+	double
+		lix = lhs.init().P[0],
+		liy = lhs.init().P[1],
+		lex = lhs. end().P[0],
+		ley = lhs. end().P[1];
+	double
+		rix = /* 2 * */ p.P[0] - rhs.init().P[0],
+		riy = /* 2 * */ p.P[1] - rhs.init().P[1],
+		rex = /* 2 * */ p.P[0] - rhs. end().P[0],
+		rey = /* 2 * */ p.P[1] - rhs. end().P[1];
+
+	double width  = abs( lix - lex) + abs(rix - rex);
+	double wDiff  = abs((lix + lex) -    (rix + rex));
+	if (width < wDiff)
+		return false;
+	double height = abs( liy - ley) + abs(riy - rey);
+	double hDiff  = abs((liy + ley) -    (riy + rey));
 	if (height < hDiff)
 		return false;
 	return true;
@@ -3279,7 +3686,7 @@ CircularArc::CircularArc(Point & _c, double _r, Vector normal1, Vector normal2)
 		x[1] = normal2 * _r + _c;
 		n[0] = normal1;
 		n[1] = normal2;
-		ccw = true;	//in this case, purpose of ccw is to determine the sign of radius.
+		ccw = true;	//in this case, purpose of ccw is to determine the sign of radius. => No... This also includes info about globalCCW
 	}
 	else {
 		c.c = _c;
@@ -3411,7 +3818,17 @@ bool CircularArc::trimmingTest()
 	} while (init != Cache_Trimming.idx);
 
 	// FP[0][1][2][3] -> {xmin, xmax, ymin, ymax}의 position
-	auto FindPosition = Grid_Trimming.find(p, x[0], x[1]);
+	std::vector<int> FindPosition;
+	try
+	{
+		FindPosition = Grid_Trimming.find(p, x[0], x[1]);
+	}
+	catch (...)
+	{
+		//dbg_out
+		std::cout << "catched" << std::endl;
+		return false;
+	}
 
 	bool SingleGrid = (FindPosition[0] == FindPosition[1]) && (FindPosition[2] == FindPosition[3]);
 
@@ -3552,7 +3969,7 @@ void CircularArc::draw()
 /*!
 *	Def: Circular drawing function for arcs larger than 180 degrees
 */
-void CircularArc::draw2()
+void CircularArc::draw2(float z)
 {
 	double theta0 = atan2(this->n0().y(), this->n0().x());
 	double theta1 = atan2(this->n1().y(), this->n1().x());
@@ -3563,16 +3980,30 @@ void CircularArc::draw2()
 	
 
 
-	glBegin(GL_POINTS);
-	glVertex2dv(x[0].P);
-	glVertex2dv(x[1].P);
-	glEnd();
-	glBegin(GL_LINE_STRIP);
-	for (int i = 0; i <= RES; i++) {
-		auto theta = theta0 + (theta1 - theta0) * i / RES;
-		glVertex2dv((this->c.c + this->c.r * Point(cos(theta), sin(theta))).P);
+	//glBegin(GL_POINTS);
+	//glVertex2dv(x[0].P);
+	//glVertex2dv(x[1].P);
+	//glEnd();
+	if (z == 0.0f)
+	{
+		glBegin(GL_LINE_STRIP);
+		for (int i = 0; i <= RES; i++) {
+			auto theta = theta0 + (theta1 - theta0) * i / RES;
+			glVertex2dv((this->c.c + this->c.r * Point(cos(theta), sin(theta))).P);
+		}
+		glEnd();
 	}
-	glEnd();
+	else
+	{
+		glBegin(GL_LINE_STRIP);
+		for (int i = 0; i <= RES; i++) {
+			auto theta = theta0 + (theta1 - theta0) * i / RES;
+			auto temp = (this->c.c + this->c.r * Point(cos(theta), sin(theta)));
+			glVertex3d(temp.x(), temp.y(), z);
+		}
+		glEnd();
+
+	}
 }
 
 
@@ -4447,6 +4878,8 @@ void ArcSpline::finalTrimming_Simple()
 *	\param cut true
 *
 *	\return 내부로 파고드는 Arc Spline Segment를 지운다
+
+Def : recursively trim neighbors without intersections
 */
 void ArcSpline::finalTrimmingSuccessive(bool relPos, bool cut)
 {
@@ -4464,6 +4897,8 @@ void ArcSpline::finalTrimmingSuccessive(bool relPos, bool cut)
 *	\brief 하나의 Arc Spline Segment가 한 개 이상의 Self Intersection Point를 갖는 경우의 Trimming
 *
 *	\return 여러 개의 Self Intersection Point가 존재하는 경우, 내부로 파고들어 지워지는 것이 확실한 부분들을 지워나간다.
+
+Def : given intersections, trim useless arcs
 */
 std::vector<ArcSpline> ArcSpline::finalTrimming_Complex()
 {
@@ -4472,6 +4907,7 @@ std::vector<ArcSpline> ArcSpline::finalTrimming_Complex()
 	std::sort(intersections.begin(), intersections.end());
 	std::vector<ArcSpline> reval;
 
+	// 1. simplify cutAfterPts... => if two consecutive intersections share the same cutAfterPt, erase one.
 	for (int i = (int)intersections.size() - 1; i > 0; i--) {
 		if (intersections[i].cutAfterPt && intersections[i - 1].cutAfterPt)
 			intersections.erase(intersections.begin() + i);
@@ -4479,7 +4915,11 @@ std::vector<ArcSpline> ArcSpline::finalTrimming_Complex()
 			intersections.erase(intersections.begin() + i - 1);
 	}
 
+	// 2. evaluate simplified_intersections
+	// 2-1. simple case (only one intersection) => simply trim half of the arc
 	if (intersections.size() == 1) {
+
+		// 2-1-1. trim half.
 		if (intersections[0].cutAfterPt) {
 			Arcs[intersections[0].idx].x[1] = intersections[0].dividePt;
 			Arcs.erase(Arcs.begin() + intersections[0].idx + 1, Arcs.end());
@@ -4488,6 +4928,8 @@ std::vector<ArcSpline> ArcSpline::finalTrimming_Complex()
 			Arcs[intersections[0].idx].x[0] = intersections[0].dividePt;
 			Arcs.erase(Arcs.begin(), Arcs.begin() + intersections[0].idx);
 		}
+
+		// 2-1-2. recursively destroy neighbors without intersections. (if nearest cut is trimmed)
 		if (_neighbor[0])
 			(*neighbor[0]).finalTrimmingSuccessive(relativePosition[0], !intersections[0].cutAfterPt);
 		if (_neighbor[1])
@@ -4496,21 +4938,30 @@ std::vector<ArcSpline> ArcSpline::finalTrimming_Complex()
 		splited = true;
 		return reval;
 	}
+	// 2-2. complex case (inter >= 2)
 	else {
+		
+		// 2-2-1. recursively destroy neighbors without intersections. (if nearest cut is trimmed)
 		if (_neighbor[0])
 			(*neighbor[0]).finalTrimmingSuccessive(relativePosition[0], !intersections.front().cutAfterPt);
 		if (_neighbor[1])
 			(*neighbor[1]).finalTrimmingSuccessive(relativePosition[1], intersections.back().cutAfterPt);
+
+		// 2-2-2. Judge (start, intersection0)
 		if (intersections.front().cutAfterPt) {
 			auto x = *this;
 			x.Arcs[intersections.front().idx].x[1] = intersections.front().dividePt;
 			x.Arcs.erase(x.Arcs.begin() + intersections.front().idx + 1, x.Arcs.end());
 			reval.push_back(x);
 		}
+
+		// 2-2-3. Judge (intersection_n, intersection_n+1)
 		for (int i = 0; i < (int)intersections.size() - 1; i++)
 			if (!intersections[i].cutAfterPt) {
 				reval.push_back(ArcSpline(*this, intersections[i], intersections[i + 1]));
 			}
+
+		// 2-2-4. Judge (intersection_last, end)
 		if (!intersections.back().cutAfterPt) {
 			auto x = *this;
 			x.Arcs[intersections.back().idx].x[0] = intersections.back().dividePt;
@@ -4836,6 +5287,10 @@ std::vector<int> Grid::find(const Point & p1, const Point & p2, const Point & p3
 			break;
 		}
 	}
+	if (reval.size() == 0 || reval[0] < 0 || reval[0] >= grid)
+	{
+		throw 0;
+	}
 	for (int i = reval[0]; i < grid; i++) {
 		if (xmax < x[i + 1]) {
 			reval.push_back(i);
@@ -4847,6 +5302,11 @@ std::vector<int> Grid::find(const Point & p1, const Point & p2, const Point & p3
 			reval.push_back(i);
 			break;
 		}
+	}
+	if (reval.size() < 3 || reval[2] < 0 || reval[2] >= grid)
+	{
+		std::cout << "throwing" << std::endl;
+		throw 0;
 	}
 	for (int i = reval[2]; i < grid; i++) {
 		if (ymax < y[i + 1]) {

@@ -4,6 +4,7 @@
 namespace ms
 {
 	int main(int argc, char *argv[]);
+	int main2(int argc, char* argv[]);
 }
 
 namespace graphSearch
@@ -159,9 +160,9 @@ int main(int argc, char *argv[]) {
 
 	//cout << "fake func" << endl;
 	
-	graphSearch::main2();
+	//graphSearch::main2();
 	//graphSearch::main(0, NULL);
-	//ms::main(argc, argv);
+	ms::main(argc, argv);
 
 	system("pause");
 }

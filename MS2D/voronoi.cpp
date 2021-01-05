@@ -1,5 +1,6 @@
 #include "voronoi.hpp"
 #include <filesystem>
+#include "collision detection.hpp"
 
 namespace planning
 {
@@ -21,8 +22,11 @@ namespace planning
 	std::vector<ms::Circle> circlesToDraw;
 
 	bool keyboardflag[256];
+
+	// Error/Epsilon values used.
 	double rfbTerminationEps = 1e-18; //originally 1e-18
 	double rfbTerminationEps2 = 2.5e-3; // origirnally 2.5e-3;
+	const double RVCA_EndpointError = 1e-8;
 
 
 	namespace output_to_file
@@ -506,7 +510,8 @@ namespace planning
 	
 	Point conic::operator()(double t)
 	{
-
+		//TODO
+		return Point();
 	}
 /*
 
@@ -1528,6 +1533,539 @@ namespace planning
 		}
 	}
 #pragma endregion
+
+	/*
+	Def: 
+		given a chunk-of-arcs that is known to be 
+			G0-continuous(in other words, forms a single closed loop without some arcs dangling out of loop)
+				= for each of the arc endpoint, there exists exactly one endpoint (from another arc) such that the two endpoints are close enough (under some errorBound RVCA_EndpointError)
+			but the order of arcs inside vector<CircularArc> does nothing to do with order in the loop
+				CircularArcs are ordered randomly inside "input"
+		Reorder the order of arcs so that output[i].x[1] == output[i+1].x[0] (applies same for the last/first arc pair)
+
+	Param: 
+		globalCCW_Option :
+			ordering of the arcs should be done so that the loop is (option)
+			-1 : doesn't matter ccw or cw (from arc at input[0] to arc connected to x1() of input[0]
+			0: cw
+			1: ccw
+	Assumes:
+		For each arc, below infos should be filled
+		1. x[0]
+		2. x[1]
+		3. ccw (localccw)
+			so that we can know the tangent direction's +- at one point.
+
+	Dependency?:
+		Some code(section 1) is from cd::_trsi_buildneighbor,
+	*/
+	void _Convert_VectorCircularArc_G0(INPUT vector<CircularArc>& input, OUTPUT vector<CircularArc>& output, INPUT int globalCCW_Option)
+	{
+		if (input.size() < 2) return;
+
+		struct neighbor
+		{
+			int idx[2]; // idx of left, right neighbor
+			double dist[2];	//squared dist -> to save computation time
+			bool opposite01[2];	// opp01[i] = j means that 
+								//	 = (idx[i])'s j-th endpoint is connected to this arc.
+								// opposite01 can be either 0 or 1.
+
+			inline neighbor()
+			{
+				idx[0] = idx[1] = -1; // -1: not initialized
+			}
+			inline bool exists(int leftOrRight)
+			{
+				return idx[leftOrRight] > -1;
+			}
+		};
+		vector<neighbor> neigh;
+		auto& superset = input;
+		auto& errorNeigh = RVCA_EndpointError;
+
+		// 1. find neighbor info (this is mostly eqaul to cd::_trsi_buildneighbor, but changed to use a different error value)
+		{
+			int nArcs = superset.size();
+			neigh.resize(0);
+			neigh.resize(nArcs);
+
+			// for (each arc_pair)
+			for (size_t i = 0; i < nArcs; i++)
+			for (size_t j = i + 1; j < nArcs; j++)
+			{
+				auto
+					& arc0 = superset[i],
+					& arc1 = superset[j];
+
+				// for (each endpoint pair)
+				for (size_t e0 = 0; e0 < 2; e0++)
+					for (size_t e1 = 0; e1 < 2; e1++)
+					{
+						auto
+							& p0 = arc0.x[e0],
+							& p1 = arc1.x[e1];
+
+						// if (two endpoints are close enough)
+						if (fabs(p0.x() - p1.x()) < errorNeigh && fabs(p0.y() - p1.y()) < errorNeigh)
+						{
+							auto
+								dist = (p0 - p1).length2();
+
+							auto
+								& nei0 = neigh[i],
+								& nei1 = neigh[j];
+
+							// 1-1. check if updatable
+							if (nei0.exists(e0) && nei0.dist[e0] < dist)
+								continue;
+							if (nei1.exists(e1) && nei1.dist[e1] < dist)
+								continue;
+
+							// At this point, we know that both endpoints(e0, e1) are either 1.not having neighbor, 2.have a further neighbor
+							// -> set this pair.
+
+							// 1-2. clear neighbor's info pointing to our current pair
+							if (nei0.exists(e0))
+								neigh[nei0.idx[e0]].idx[nei0.opposite01[e0]] = -1;
+							if (nei1.exists(e1))
+								neigh[nei1.idx[e1]].idx[nei1.opposite01[e1]] = -1;
+
+							// 1-3. now set nei0 & nei1, that they are connected
+							nei0.idx[e0] = j;
+							nei1.idx[e1] = i;
+							nei0.opposite01[e0] = e1;
+							nei1.opposite01[e1] = e0;
+							nei0.dist[e0] = nei1.dist[e1] = dist;
+						}
+					}
+			}
+		}
+
+		// 2. push_back arcs into output with neighbor info.
+		{
+			size_t length = input.size();
+			
+			LOOP vector<bool> pushed(length, false);
+			LOOP int pushCount = 0;
+			LOOP int cur = 0;
+			while (true)
+			{
+				// 2-1. check end condition;
+				if (cur < 0 || pushed[cur])
+					break;
+
+				// 2-2. push
+				pushCount++;
+				output.push_back(input[cur]);
+				pushed[cur] = true;
+
+				// 2-3. find next cur;
+				auto
+					& candidate1 = neigh[cur].idx[1],
+					& candidate0 = neigh[cur].idx[0];
+
+				if (candidate1 < 0)
+				{
+					cur = candidate0;
+				}
+				else if (candidate0 < 0)
+				{
+					cur = candidate1;
+				}
+				else
+				{
+					if (pushed[candidate1])
+						cur = candidate0;
+					else
+						cur = candidate1;
+				}
+			}
+
+			// check errors that may happen
+			// probably from input errors... (not froming single loops or more than two endpoints in [RVCA_EP_err, RVCA_EP_err] grid.
+			if (pushCount != length)
+				cout << "ERROR : in _Reorder_VectorCircularArc : not all arcs were pushed" << endl;
+
+		}
+
+		// 3. flip arcs so that output[i].x[1] == output[i+1].x[0];
+		// 3-1. for (i.end and (i+1).start)
+		for (size_t i = 0, length = output.size() - 1; i < length; i++)
+		{
+			//size_t iNext = (i + 1) % length;
+			size_t iNext = i + 1;
+			
+			// if(next arc's x1 is closer than x0) flip
+			if ((output[i].x1() - output[iNext].x1()).length2() < (output[i].x1() - output[iNext].x0()).length2())
+				output[iNext] = flipArc(output[iNext]);
+		}
+		// 3-2. for the first/last arc pair...
+		// on second thought, there is no need to do this.
+		//	as at this point pair (0,1) , (1,2) ... (last-1, last) are all in right order.
+
+		// 4. find/set global ccw or cw;
+		if (globalCCW_Option < 0)
+			return;
+		else
+		{
+			// If the model is globally counter-clock-wise, the inner-region-of-object will be on the left it's tangent direction.
+			// we can know the tangent, but we can't know which side is the inner-region.
+			// But the point with maximum y value is easy to know its inner region
+			//	I. such point is G1 : simply use tangent of that point and (-y vector as a vector pointing to inner region)
+			//  II. max-y-point was not G1 (notice !G1 => max-y == endpoint, but being endpoint =/=> !G1)
+			//		a bit complex, use y component's size of tangent
+
+			// 4-1. find max-y
+			LOOP int localPosition = 2; // 0 : x[0], 1 : x[1], 2: at pi/2
+			LOOP int bestIdx = -1;
+			LOOP double bestY = -1e+100;
+
+			for (int i = 0; i < output.size(); i++)
+			{
+				auto& arc = output[i];
+
+				// 4-1-1. find if arc contains pi/2;
+				auto theta0 = atan2(arc.x0().y(), arc.x0().x());
+				auto theta1 = atan2(arc.x1().y(), arc.x1().x());
+				auto thetaP = PI / 2;
+				if (arc.ccw)
+				{
+					while (theta1 < theta0)
+						theta1 += PI2;
+					while (thetaP < theta0)
+						thetaP += PI2;
+				}
+				else
+				{
+
+					while (theta1 > theta0)
+						theta1 -= PI2;
+					while (thetaP > theta0)
+						thetaP -= PI2;
+				}
+
+				// 4-1-2. record which was max y
+				bool halfPiInside = arc.ccw ? theta1 >= thetaP : thetaP >= theta1; // equal case can be evaluated as the same way, so use >=
+				if (halfPiInside)
+				{
+					double y = arc.c.c.y() + arc.c.r;
+					if (y > bestY)
+					{
+						bestY = y;
+						bestIdx = i;
+						localPosition = 2;
+					}
+				}
+				else
+				{
+					if (arc.x0().y() > bestY)
+					{
+
+						bestY = arc.x0().y();
+						bestIdx = i;
+						localPosition = 0;
+					}
+
+					if (arc.x1().y() > bestY)
+					{
+
+						bestY = arc.x1().y();
+						bestIdx = i;
+						localPosition = 1;
+					}
+				}
+			}
+
+			// 4-2. with maxY, find current globalCCW info.
+			bool currentGlobalCCW = false;
+			if (localPosition == 2)
+			{
+				// 4-2-1. the max y point is in the middle of an arc.
+				//	At max-y-point, inner region is on -y dir, so lets just see tangent direction
+				//	Tangent direction is decided by local-ccw of bestIdx;
+				//	Also, in this case arc is convex, so just directly assign ccw
+				currentGlobalCCW = output[bestY].ccw;
+			}
+			else
+			{
+				// 4-2-2. when max-y-point is from an end
+				//	As an endpoint is shared, one arc will rise-to-max-y and one arc will descend-from-max-y.
+				//	As the global traversal direction is unified in "output" at this point, above is guaranteed.
+				//	Notice that the angle between two tangent vectors can vary from [0, 180) degrees.
+				//	But a vector with smaller absolute-y-value(since one is positive and one is negative), which is somewhat 'closer' to y = max_y line, 
+				//		will have an inner-region in its -y direction, regardless of the other tangent 
+				
+				// find idx of arcs sharing max-y-point
+				int
+					idx0, // arc rising to max-y (in current globalCCW)
+					idx1; // arc descending from max-y (cur gloCCW)
+
+				// if (the max-y is an endpoint x1() of arc bestIdx)
+				if(localPosition == 1)
+				{
+					idx0 = bestIdx;
+					idx1 = (bestIdx + 1) % output.size();
+				}
+				else
+				{
+					idx1 = bestIdx;
+					idx0 = (bestIdx - 1) % output.size();
+				}
+
+				auto
+					& arc0 = output[idx0],
+					& arc1 = output[idx1];
+
+				// find tangent
+				Point
+					tangent0, //tangentN = tangent at max-y-point of arc=idxN
+					tangent1;
+
+				if (arc0.ccw)
+					tangent0 = rotate_p90(arc0.x1() - arc0.c.c).normalize();
+				else
+					tangent0 = rotate_m90(arc0.x1() - arc0.c.c).normalize();
+
+				if (arc1.ccw)
+					tangent1 = rotate_p90(arc1.x0() - arc1.c.c).normalize();
+				else
+					tangent1 = rotate_m90(arc1.x0() - arc1.c.c).normalize();
+
+				// find which tangent has smaller ||y||
+				Point&
+					tangent = (fabs(tangent0.y()) < fabs(tangent1.y())) ? tangent0 : tangent1;
+
+				// now tangent is guaranteed to have an inner-region in -y;
+				if (tangent.x() < 0)
+					currentGlobalCCW = true;
+				else
+					currentGlobalCCW = false;
+			}
+
+			// 4-3. check wheter current global-ccw matches with the request.
+			bool requestCCW = globalCCW_Option != 0;
+			if (requestCCW ^ currentGlobalCCW)
+			{
+				// 4-3-1. flip order in output;
+				reverse(output.begin(), output.end());
+
+				// 4-3-2. flip each arc
+				for (auto& arc : output)
+					arc = flipArc(arc);
+			}
+			else return;
+
+		}
+	}
+
+	/*
+	Def: given an ordered vector<CircularArc>, add some small arcs between non-g1-neighbors, to make it G1-continuous
+
+	Assumes:
+		input : contains circularArcs G0-continuous, such that
+			input[i].x[1] == input[i+1].x[0] (for i in [0, input.size() -1)
+			input[0].x[0] == input[last].x[1]
+	
+	*/
+	void _Convert_VectorCircularArc_G1(INPUT vector<CircularArc>& input, OUTPUT vector<CircularArc>& output)
+	{
+		if (input.size() < 2) return;
+
+		const double MVCAG1_Error = 1 - 1e-4;
+		const double MVCAG1_EPS_ARC_RAD = 1e-10;
+
+		for (size_t i = 0, length = input.size(); i < length; i++)
+		{
+			auto iNext = (i + 1) % length;
+
+			// 1. original arc
+			output.push_back(input[i]);
+
+			// 2. if (not g1) push eps arc
+			if (fabs(input[i].n1() * input[iNext].n0()) < MVCAG1_Error)
+			{
+				auto
+					& arc0 = input[i],
+					& arc1 = input[iNext];
+
+
+				// 2-1. get tangent at each arc endpoint;
+				Point tangent0 =
+					arc0.ccw ?
+					/*rotate_p90(arc0.x1() - arc0.c.c).normalize():
+					rotate_m90(arc0.x1() - arc0.c.c).normalize();*/
+					rotate_p90(arc0.n1()):
+					rotate_m90(arc0.n1());
+				Point tangent1 =
+					arc1.ccw ?
+					rotate_p90(arc1.n0()):
+					rotate_m90(arc1.n0());/*
+					rotate_p90(arc1.x0() - arc1.c.c).normalize():
+					rotate_m90(arc1.x0() - arc1.c.c).normalize();*/
+
+				// 2-2. get ccw of new arc
+				CircularArc newArc;
+				newArc.ccw = ((tangent0 ^ tangent1) > 0);
+
+				// 2-3. fill in infos
+				if (newArc.ccw)
+				{
+					newArc.n0() = rotate_m90(tangent0);
+					newArc.n1() = rotate_m90(tangent1);
+				}
+				else
+				{
+					newArc.n0() = rotate_p90(tangent0);
+					newArc.n1() = rotate_p90(tangent1);
+				}
+				
+				newArc.c.c = arc0.x1();
+				newArc.c.r = MVCAG1_EPS_ARC_RAD;
+
+				newArc.x0() = newArc.c.c + (newArc.c.r * newArc.n0()); 
+				newArc.x1() = newArc.c.c + (newArc.c.r * newArc.n1());
+				// note that the endpoints won't exactly match...
+				// we need to carve some of the original arcs if we need that...
+				// currently rad was picked so that the eps-arc endpoints arc considered the same point for Point-operator==
+
+
+				// 2-4. push
+				output.push_back(newArc);
+
+			}
+		}
+	}
+
+	/*
+	given a G0 vector<arc> (with continuous end points), change it to vec<as>, so that it is an valid MS input
+	I guess it should be
+		1. x mono
+		2. y mono
+		3. no curvatur ext
+		4. curvature monotone
+	=> simply devide arcs with x,y ext and make an arcspline with it.
+
+	referenced : ArcSpline::ArcSpline(BezierCrv & Crv)
+	ccw and normals... see => CircularArc::CircularArc(Point & i, Point & e, Point & t)
+	Assumes that
+		arc.ccw is local ccw
+
+	Notes about proper input of mink sum:
+	seems like arc should all be counter-clock-wise (globally)
+		but this does not mean that ccw value should be true
+	Arcspline:
+		should set 5: ccw, n0, n1, xquad, yquad
+	Order of arcs in "input" does not seem to matter. (see model: square swept circle)
+	Convex/Concave arcs are both okay, as long as they are globally counterclockwise (see model o=0)
+
+	*/
+	void _Convert_VectorCircularArc_To_MsInput(INPUT vector<CircularArc>& input, OUTPUT vector<ArcSpline>& output, double rotationDegree )
+	{
+		Point
+			n0(1, 0),
+			n1(0, 1),
+			n2(-1, 0),
+			n3(0, -1);
+
+		double extremeAngle[4] = { 0, PI / 2 , PI, - PI / 2 };
+
+		for (auto arcToBeRotated : input)
+		{
+			auto arc = cd::rotateArc(arcToBeRotated, rotationDegree);
+			//ArcSpline ins; // to be inserted to ouput
+			// check x, y monotone
+
+			//// dbg : see if model has to be globally clock-wise
+			//arc = flipArc(arc);
+			//// ~dbg : result: it should be 
+
+			// 1. build radians
+			vector<double> radians;
+			
+			// 1-1. end p
+			bool localCCW = arc.ccw;
+			double theta0 = atan2(arc.n0().y(), arc.n0().x());
+			double theta1 = atan2(arc.n1().y(), arc.n1().x());
+			if (localCCW)
+				while (theta1 < theta0)
+					theta1 += PI * 2;
+			else
+				while (theta1 > theta0)
+					theta1 -= PI * 2;
+
+			radians.push_back(theta0);
+			radians.push_back(theta1);
+
+			// 1-2. extreme p
+			for (int i = 0; i < 4; i++)
+			{
+				double temp = extremeAngle[i];
+				if (localCCW)
+				{
+					while (temp < theta0)
+						temp += PI * 2;
+					if (temp < theta1)
+						radians.push_back(temp);
+				}
+				else
+				{
+					while (temp > theta0)
+						temp -= PI * 2;
+					if (temp > theta1)
+						radians.push_back(temp);
+				}
+
+			}
+
+			// 1-3. sort
+			if(localCCW)
+				sort(radians.begin(), radians.end(), std::less<double>());
+			else
+				sort(radians.begin(), radians.end(), std::greater<double>());
+
+			// 2 build arc spline
+			for (int i = 0; i < radians.size() - 1; i++)
+			{
+				auto& theta0 = radians[i];
+				auto& theta1 = radians[i+1];
+				auto cutArc = cd::constructArc(arc, theta0, theta1);
+				
+				//setting strange ccw from (CircularArc::CircularArc(Point & i, Point & e, Point & t))
+				{
+					if (!counterclockwise(cutArc.n[0], cutArc.n[1]))
+					{
+						cutArc.ccw = false;
+
+						auto tempP = cutArc.n[0];
+						cutArc.n[0] = cutArc.n[1];
+						cutArc.n[1] = tempP;
+						//std::swap(cutArc.n[0], cutArc.n[1]);
+					}
+					else
+						cutArc.ccw = true;
+					cutArc.boundary = false;
+				}
+				ArcSpline asTemp;
+				asTemp.Arcs.push_back(cutArc);
+
+				// from ArcSpline::ArcSpline(BezierCrv & Crv)
+				asTemp.ccw = cutArc.ccw;
+				Vector test = asTemp.Arcs.front().n[0] + asTemp.Arcs.back().n[1];
+				asTemp.xQuardrants = (test.P[0] > 0);
+				asTemp.yQuardrants = (test.P[1] > 0);
+				asTemp.n[0] = asTemp.ccw ? asTemp.Arcs.front().n[0] : asTemp.Arcs.back().n[0];
+				asTemp.n[1] = asTemp.ccw ? asTemp.Arcs.back().n[1]  : asTemp.Arcs.front().n[1];
+
+				output.push_back(asTemp);
+			}
+
+
+
+
+
+		}
+	}
 
 	/*	Def: Reduce the difference btw "output of MS" & "input of vrIN"
 		Par:

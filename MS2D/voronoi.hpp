@@ -77,8 +77,8 @@ namespace planning
 		void end();
 	};
 
-#define OUTPUT_TO_FILE (ms::t0 == planning::output_to_file::m0 && ms::t1 == planning::output_to_file::m1)
-
+#define OUTPUT_TO_FILE (ms::t0 == planning::output_to_file::m0 && ms::t1 == planning::output_to_file::m1) 
+	
 
 
 	/* Def : class passed as vornoi part's input
@@ -174,6 +174,10 @@ namespace planning
 	CircularArc				flipArc(CircularArc& in);
 	template<class f> bool	isZero(f a);
 
+
+	void _Convert_VectorCircularArc_G0(INPUT vector<CircularArc>& input, OUTPUT vector<CircularArc>& output, INPUT int globalCCW_Option = -1);
+	void _Convert_VectorCircularArc_G1(INPUT vector<CircularArc>& input, OUTPUT vector<CircularArc>& output);
+	void _Convert_VectorCircularArc_To_MsInput(INPUT vector<CircularArc>& input, OUTPUT vector<ArcSpline>& output, INPUT double rotationDegree = 0);
 	void _Convert_MsOut_To_VrIn(vector<deque<ArcSpline>>& INPUT msOut, vector<bool>& INPUT isBoundary, VR_IN& OUTPUT vrIn);
 	void _Medial_Axis_Transformation(VR_IN& INPUT in);
 	Point getTouchingDiskCenter(Point p, Point q, Point v);

@@ -32,4 +32,11 @@ ccw of models_approx is strange : tag maccw
 	ccw doesn't match w/ cross-product.
 
 normals of arcs resulting from bezierCuver->biarc() is swapped.
+
+//////////////////////////////////
+
+overlaptTest does not take care of all cases : tag overlap
+
+case 2, 2, 0:
+	sth wrong with grid
 	

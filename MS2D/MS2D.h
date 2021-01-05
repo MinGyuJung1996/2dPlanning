@@ -30,7 +30,9 @@ namespace ms {
 	static const double N_HIGH_PRESCISION = 1e-8;
 
 	// PI
-	static const double PI = 3.14159265358979323846264;
+	static const double PI		=		3.14159265358979323846264;
+	static const double PI2		= 2 *	3.14159265358979323846264;
+	static const double PI_half	= 0.5 * 3.14159265358979323846264;
 
 	// Draw Resolution (For Circular Arc)
 	// RES : The number of Points used to draw single Circular Arc
@@ -270,7 +272,7 @@ namespace ms {
 		//생성자 및 소멸자
 		CircularArc() = default;
 		CircularArc(CircularArc &arc, Point &p);
-		CircularArc(Point &i, Point &e, Point &t);
+		CircularArc(Point &i, Point &e, Point &t);	// THIS FUNCTION IS DANGEROUS => NEVER USE IT.
 		CircularArc(Point &_c, double _r, Vector normal1, Vector normal2);
 		virtual ~CircularArc();
 
@@ -289,7 +291,7 @@ namespace ms {
 		bool isOuterBoundary(int _case);
 		std::pair<CircularArc, CircularArc> subDiv(double t);
 		void draw();
-		void draw2();
+		void draw2(float z = 0.0f);
 
 	public:
 		/*! \brief Arc를 포함하는 원 */
@@ -302,7 +304,7 @@ namespace ms {
 		Point n[2];
 
 		/*! \brief 시계반대방향이면 true, 아니면 false */
-		bool ccw;
+		bool ccw; //local-ccw // but this may differ in Minksum 
 
 		/* ccw of this arc in the output loop, */
 		bool globalccw = true;
@@ -326,6 +328,7 @@ namespace ms {
 		inline Point& n1() { return n[1]; }
 		inline Point& x0() { return x[0]; }
 		inline Point& x1() { return x[1]; }
+
 	};
 
 	typedef std::pair<CircularArc, CircularArc> biArc;
@@ -486,6 +489,10 @@ namespace ms {
 		friend std::ostream &operator <<(std::ostream &os, const ArcSpline &p);
 		//for extract statistics data
 		friend void circleTrimming(std::vector<ArcSpline> &input, std::vector<ArcSpline> &trimmed);
+
+		// code added for 2dplanning
+		friend bool collision(std::vector<ArcSpline>& lhs, std::vector<ArcSpline>& rhs, Point& p);
+		friend bool aabbtest(ArcSpline& lhs, ArcSpline& rhs, Point& p);
 	public:
 		//생성자 및 소멸자
 		ArcSpline();

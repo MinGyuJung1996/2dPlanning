@@ -81,6 +81,10 @@ namespace cd
 
 	CircularArc 
 		constructArc(Point& center, double rad, double radian0, double radian1);
+	CircularArc 
+		constructArc(CircularArc& arc, double radian0, double radian1);
+	CircularArc
+		constructArc(Point& center, Point& x0, Point& x1, bool ccw);
 
 	/**********************************************************************************
 	**  1. Main func
@@ -100,8 +104,13 @@ namespace cd
 
 	vector<CircularArc> 
 		getRotationSuperSet(Robot& robot, double degree);
+
 	vector<CircularArc>
-		getRotationBoundary(Robot& robot, double degree);
+		getRotationBoundary(Robot& robot, double degree, int grb_debug = 0);
+	vector<deque<CircularArc>>
+		trimRotationSupersetIntoLoops(vector<CircularArc>& superset, vector<CircularArc>& original, double rotationRadian, int grb_debug = 0);
+
+	
 	std::pair<vector<CircularArc>, vector<lineSegment>> 
 		getTranslationSuperSet(vector<CircularArc> arcs, Point translation);
 

@@ -9,6 +9,13 @@ TODO LIST
 
 	make class? instance? for Boundary
 
+	1. model prob? => write model info as arc and read it => then test
+	2. test even simpler model => circle
+	3/ symmetric p... inner loop problem? => comment seemed to be wrong, changed to 
+	4/ case 57 of overlapR => seems like it doesn't occur
+	5. _conv_vec_to_ms_in => add code which adds eps arc for not-g1 points
+
+
 Questions
 	mink result is not g1. Is original model g1?
 
