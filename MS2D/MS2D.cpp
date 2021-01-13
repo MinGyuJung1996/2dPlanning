@@ -15,9 +15,12 @@ extern double basis6[10001][7];
 const bool change7 = true; // change 7 model to scene-with-obstacles (6 + 7)
 const bool change0 = true; // change 0 to half size
 const bool override1 = true;
-std::vector<CircularArc> override1_model_data;
+const bool override7 = true;
+std::vector<CircularArc> Model_vca[8]; // model's circularArc representation (before calling postprocessing)
+bool Model_from_arc[8];					// true: read from circular arc file // false : read from bezier				
 
 #define useApproxInSymmetryCollision true
+#define useNewerVersionOfG1conveter false
 
 #define DEBUG
 
@@ -142,10 +145,10 @@ void initialize()
 
 	if (change7)
 	{
-		changeModel(   7, 0.3, 0.0, Point(-0.3, 0.0));
-		appendModel(6, 7, 0.3, 0.0, Point(0.02, 0.1));
-		appendModel(5, 7, 0.3, 0.0, Point(0.1, -0.3));
-		appendModel(3, 7, 0.3, 0.0, Point(-0.3, -0.4));
+		changeModel(   7, 0.3, 0.5, Point(-0.3, 0.0));
+		appendModel(6, 7, 0.3, 0.4, Point(0.04, 0.1));
+		appendModel(5, 7, 0.3, 0.0, Point(0.07, -0.3));
+		appendModel(4, 7, 0.3, 0.0, Point(-0.3, -0.4));
 
 		//Point a[4];
 		//auto trans = Point(0.3, 0);
@@ -295,7 +298,7 @@ void initialize()
 		// init step
 
 		int overridedIndex = 1;
-		double scaleFactor = 0.2;
+		double scaleFactor = 0.21;// 0.2;
 		ifstream ar ("arcModel.txt");
 		ifstream arr("arcModelRSV.txt");
 		ifstream crr("circModelRSV.txt");
@@ -374,8 +377,12 @@ void initialize()
 
 		// 3. make it G1
 		vector<CircularArc> g1;
-		planning::_Convert_VectorCircularArc_G1(g0, g1);
-		override1_model_data = g1;
+		if(useNewerVersionOfG1conveter)
+			planning::_Convert_VectorCircularArc_G1_new(g0, g1);
+		else
+			planning::_Convert_VectorCircularArc_G1(g0, g1);
+		Model_vca[overridedIndex] = g1;
+		Model_from_arc[overridedIndex] = true;
 
 
 		// 4. convert to AS
@@ -385,6 +392,251 @@ void initialize()
 		// 5. override
 		Models_Approx[overridedIndex] = asRSV;
 
+	}
+
+	// if(make object scene from files read)
+	if (override7)
+	{
+		/*
+		What is done:
+		1. set flag : Model_from_arc
+		2. set model data : Model_vca (will be used in post processing... optional since this is obstacles, not robot...)
+		3. convert model and save : Models_approx
+		4. also set disks : 
+
+		Notice that there can be up to 2~3 copies of the same model with different representation
+			=> Model_vca(vector<CircularArc>, original, read from file)
+			=> Models_approx(vector<ArcSpline>, modified(segmented) to be an input of minkowski sum)
+			=> Models_approx_rotated(rotate Model_vca and then segment)
+		*/
+
+		// 1. alias
+
+		int ovIdx = 7;
+
+		Model_from_arc[ovIdx] = true;
+		auto& sceneOriginal		= Model_vca[ovIdx];
+		auto& sceneProcessed	= Models_Approx[ovIdx];
+		auto& sceneCircles		= InteriorDisks_Imported[ovIdx];
+
+		sceneOriginal.resize(0);
+		sceneProcessed.resize(0);
+		sceneCircles.resize(0);
+
+		using namespace std;
+
+		// 2. read files
+
+		// 2-1. LAMBDA to read files and process it
+		/*
+		LAMBDA
+		Def: do
+		1. read from given input file names
+		2. make model g0
+		3. make model g1
+
+		After calling this func, we can make instances of these models with append model
+		*/
+		auto readArcModelAndProcessIt = [](const char* arcIn, const char* circIn, vector<CircularArc>& arcOut, vector<Circle>& circOut) 
+		{
+			// 1. fstream
+
+			ifstream ais(arcIn);
+			ifstream cis(circIn);
+
+			size_t asz, csz;
+			ais >> asz;
+			cis >> csz;
+
+			
+			// 2. read circles;
+			for (int i = 0; i < csz; i++)
+			{
+				double cx, cy, cr;
+				cis >> cx >> cy >> cr;
+
+				circOut.push_back(Circle(Point(cx, cy), cr));
+			}
+
+			// 3. read arcs
+			vector<CircularArc> temp;
+			set<int> case_c;
+			char type;
+			double cx, cy, cr, t0, t1, ccw;
+			for (int i = 0; i < asz; i++)
+			{
+				ais >> type;
+				switch (type)
+				{
+				case 'a':
+					// the text line contains info : circle, theta0, theta1, ccw_info 
+					{
+						ais >> cx >> cy >> cr >> t0 >> t1 >> ccw;
+
+						if (ccw)
+							while (t1 < t0)
+								t1 += PI * 2;
+						else
+							while (t1 > t0)
+								t1 -= PI * 2;
+						temp.push_back(cd::constructArc(Point(cx, cy), cr, t0, t1));
+					}
+					break;
+				case 'c':
+					// given : radius
+					// connect prev.x1() and next.x0(), with a striaght line (approximated radius cr)
+					ais >> cr >> ccw;
+					temp.push_back(CircularArc());
+					temp[i].c.r = cr;
+					temp[i].ccw = ccw;
+					case_c.insert(i); // process after other arcs are done.
+					break;
+				case 'l':
+					// given : two points on the arc, radius, and which side of the chord the center lies
+					//	devised to easily approximate straight lines
+					//		connect Point x0(cx,cy) and Point x1(t0,t1) to form a line (approximated with radius cr)
+					// its center lies in the left (view-direction = tangent at cx,cy) if (ccw == true)
+					// cr : should be at least bigger than half of distance btw x0 and x1
+					//		but no upper-bound of cr (but too big cr leads to numerical errors in mink/voronoi)
+					// code is kinda messy as it reuses variables for case 'a'
+					{
+						ais >> cx >> cy >> t0 >> t1 >> cr >> ccw;
+						Point x0(cx, cy);
+						Point x1(t0, t1);
+
+						//// get center with pythagoras
+						//Point dx = x1 - x0;
+						//double bsquare = (dx.length2()) / 4;
+						//double asquare = cr * cr - bsquare;
+						//double a = sqrt(asquare); // dist from circle_center to chord
+
+						//// get normal direction using ccw
+						//Point normal;
+						//if (ccw)
+						//	normal = cd::rotatePoint(dx, 90).normalize();
+						//else
+						//	normal = cd::rotatePoint(dx, -90).normalize();
+
+						//Point center = (x1 + x0) * 0.5 + normal * a;
+
+						//cd::constructArc(center, x0, x1, ccw);
+
+						temp.push_back(cd::constructArc(x0, x1, cr, ccw));
+					}
+					break;
+				default:
+					break;
+				}
+			}
+
+			// 3-2. take care of case c
+			for (auto idx : case_c)
+			{
+				auto prev = (idx - 1) % asz;
+				auto next = (idx + 1) % asz;
+				Point x0 = temp[prev].x1();
+				Point x1 = temp[next].x0();
+				temp[idx] = cd::constructArc(x0, x1, temp[idx].c.r, temp[idx].ccw);
+			}
+
+			// processing of temp is done at this point.
+
+
+			// 4. re-order temp (make it G0-continuous)
+			vector<CircularArc> g0;
+			planning::_Convert_VectorCircularArc_G0(temp, g0, 1);
+
+			// 5. make g0 G1-continuous by adding eps-arcs
+			vector<CircularArc>& g1 = arcOut;
+			if (useNewerVersionOfG1conveter)
+				planning::_Convert_VectorCircularArc_G1_new(g0, g1);
+			else
+				planning::_Convert_VectorCircularArc_G1(g0, g1);
+
+		};
+
+		// 2-2. Load L-shaped model
+		vector<CircularArc> arcObjectL;
+		vector<Circle> circObjectL;
+		readArcModelAndProcessIt("Objects/L-shape/arc.txt", "Objects/L-shape/circ.txt", arcObjectL, circObjectL);
+
+		// 2-3. Load L-shaped model 2
+		vector<CircularArc> arcObjectL2;
+		vector<Circle> circObjectL2;
+		readArcModelAndProcessIt("Objects/L-shape2/arc.txt", "Objects/L-shape2/circ.txt", arcObjectL2, circObjectL2);
+
+		// 2-4. Load L-shaped model 3
+		vector<CircularArc> arcObjectL3;
+		vector<Circle> circObjectL3;
+		readArcModelAndProcessIt("Objects/L-shape3/arc.txt", "Objects/L-shape3/circ.txt", arcObjectL3, circObjectL3);
+
+		// 2-5. Load square
+		vector<CircularArc> arcObjectSq;
+		vector<Circle> circObjectSq;
+		readArcModelAndProcessIt("Objects/Square-shape/arc.txt", "Objects/Square-shape/circ.txt", arcObjectSq, circObjectSq);
+
+
+		// 3. instantiate loaded models to build sceneOriginal/sceneCircles
+
+		// 3-1. LAMBDA which instantiate vectors from section 2.
+		auto appendModelToScene = [&sceneOriginal, &sceneCircles](vector<CircularArc>& arcs, vector<Circle>& circs, double scale, double rotationDegree, Point translation)
+		{
+			for (auto& arc : arcs)
+				sceneOriginal.push_back(cd::translateArc(cd::rotateArc(cd::scaleArc(arc, scale), rotationDegree), translation));
+
+			for (auto& circ : circs)
+			{
+				auto rad = scale * circ.r;
+				auto center = cd::rotatePoint(scale * circ.c, rotationDegree) + translation;
+				sceneCircles.push_back(Circle(center, rad));
+			}
+		};
+
+		Point uniformTranslation = Point(0.15, 0.05);
+
+		//appendModelToScene(arcObjectL, circObjectL, 0.3, 0, Point(-0.3, -0.3));
+		//appendModelToScene(arcObjectL, circObjectL, 0.4, 180, Point(0.3, 0.3));
+		appendModelToScene(arcObjectL3, circObjectL3, 1.3, -90, uniformTranslation + Point(-0.1, +0.1));
+		appendModelToScene(arcObjectL2, circObjectL2, 0.4, -90, uniformTranslation + Point(-0.1, +0.1));
+		appendModelToScene(arcObjectL3, circObjectL3, 1.3, +90, uniformTranslation + Point(-0.5, +0.03));
+		appendModelToScene(arcObjectL2, circObjectL2, 0.4, +90, uniformTranslation + Point(-0.5, +0.03));
+		appendModelToScene(arcObjectSq, circObjectSq, 0.8,  +0, uniformTranslation + Point(+0.07, - 0.3));
+		appendModelToScene(arcObjectSq, circObjectSq, 0.4, +55, uniformTranslation + Point(-0.53, 0.3));
+
+
+
+		// 4. build vec<AS> sceneProcessed(input to MinkSum)
+		planning::_Convert_VectorCircularArc_To_MsInput(sceneOriginal, sceneProcessed);
+
+	}
+
+	// set voronoiBoundary;
+	// should be properly ordered(G0-continuous)
+	{
+		double r = 2;
+		CircularArc a(Point(0, 0), r, Point(+1, +0), Point(+0, +1));
+		CircularArc b(Point(0, 0), r, Point(+0, +1), Point(-1, +0));
+		CircularArc c(Point(0, 0), r, Point(-1, +0), Point(+0, -1));
+		CircularArc d(Point(0, 0), r, Point(+0, -1), Point(+1, +0));
+
+		// test
+		double l = 1.3;
+		double eps = 0.01;
+		Point
+			q1(+l, +l),
+			q2(-l, +l),
+			q3(-l, -l),
+			q4(+l, -l);
+		a = cd::constructArc(q1, q2, Point(-1, eps).normalize());
+		b = cd::constructArc(q2, q3, Point(-eps, -1).normalize());
+		c = cd::constructArc(q3, q4, Point(+1, -eps).normalize());
+		d = cd::constructArc(q4, q1, Point(+eps, +1).normalize());
+
+
+		planning::voronoiBoundary.push_back(a);
+		planning::voronoiBoundary.push_back(b);
+		planning::voronoiBoundary.push_back(c);
+		planning::voronoiBoundary.push_back(d);
 	}
 
 	postProcess(ModelInfo_CurrentModel.first, ModelInfo_CurrentModel.second);
@@ -467,9 +719,9 @@ void postProcess(int FirstModel, int SecondModel)
 			// 3. build M_R and M_R_A
 			
 			// if (this is the case where original bezier curve does not exists)
-			if (override1 && FirstModel == 1)
+			if (Model_from_arc[FirstModel])
 			{
-				planning::_Convert_VectorCircularArc_To_MsInput(override1_model_data, Models_Rotated_Approx[i], i);
+				planning::_Convert_VectorCircularArc_To_MsInput(Model_vca[FirstModel], Models_Rotated_Approx[i], i);
 			}
 			else
 			{

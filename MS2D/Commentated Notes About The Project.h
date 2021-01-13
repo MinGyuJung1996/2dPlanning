@@ -1,23 +1,26 @@
 #pragma once
 /*
 TODO LIST
-	simplify objects
+	(DONE) simplify objects
 	encapsulate minkowski-sum
-	make collision-detection
-	support inner loops inside minkwoskisum
+	(DONE) make collision-detection (ver. arc not bez)
+	(DONE) support inner loops inside minkwoskisum
 	build sweep-volume, kernel
 
 	make class? instance? for Boundary
 
-	1. model prob? => write model info as arc and read it => then test
-	2. test even simpler model => circle
-	3/ symmetric p... inner loop problem? => comment seemed to be wrong, changed to 
-	4/ case 57 of overlapR => seems like it doesn't occur
-	5. _conv_vec_to_ms_in => add code which adds eps arc for not-g1 points
+	(DONE) 1. model prob? => write model info as arc and read it => then test
+	(DONE) 2. test even simpler model => circle
+	(DONE) 3. symmetric p... inner loop problem? => comment seemed to be wrong, changed to right implementation
+	(DONE?) 4. case 57 of overlapR => seems like it doesn't occur
+	(DONE) 5. _conv_vec_to_ms_in => add code which adds eps arc for not-g1 points => done
+	6. voronoi.hpp => add some func prot in .cpp
+	7. generalize GRID
+	8. voronoi's edge direction
 
 
 Questions
-	mink result is not g1. Is original model g1?
+	mink result is not g1. Is original model g1? => yes
 
 
 */

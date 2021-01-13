@@ -92,6 +92,7 @@ namespace ms {
 		//debug 
 
 		//~debug
+		
 
 		
 		last = now;
@@ -241,17 +242,23 @@ namespace ms {
 			}
 		}
 		//~debug
+
+		// dbg_out
+		static int minkInterest = -1;
+		if (planning::keyboardflag['2'] && !planning::keyboardflag_last['2']) minkInterest = minkInterest + 1;
+		if (planning::keyboardflag['3'] && !planning::keyboardflag_last['3']) minkInterest = minkInterest + 10;
+		if (planning::keyboardflag['4'] && !planning::keyboardflag_last['4']) minkInterest = minkInterest + 100;
+		if (planning::keyboardflag['5'] && !planning::keyboardflag_last['5']) minkInterest = minkInterest - 1;
+		if (planning::keyboardflag['6'] && !planning::keyboardflag_last['6']) minkInterest = minkInterest - 10;
+		if (planning::keyboardflag['7'] && !planning::keyboardflag_last['7']) minkInterest = minkInterest - 100;
+		cout << "mink interest arc no. :" << minkInterest << endl;
+		// ~debug
 		
 		// DRAW MINK
 		if(planning::drawMinkowski)
 		for (int i = 0; i < (int)Model_Result.size(); i++) {
-			if (ModelInfo_Boundary[i])
-				glColor3d(0.0, 0.0, 0.0);
-			//glColor3d(i % 2, i / 2 % 2, 0.0);
-			else
-			{
-				glColor3d(0.0, 0.0, 1.0);
-			}
+
+			int arcNo = 0;
 
 			for (int j = 0; j < (int)Model_Result[i].size(); j++)
 			{
@@ -259,7 +266,18 @@ namespace ms {
 				{
 					dbg if (c > cnt) break;
 					dbg c++;
+
+					if (arcNo == minkInterest)
+						glColor3d(0.7, 1, 0);
+					else
+					{
+						if (ModelInfo_Boundary[i])
+							glColor3d(0.0, 0.0, 0.0);
+						else
+							glColor3d(0.0, 0.0, 1.0);
+					}
 					Model_Result[i][j].Arcs[k].draw();
+					arcNo++;
 				}
 				dbg if (c > cnt) break;
 			}
@@ -319,10 +337,14 @@ namespace ms {
 			auto temp = RES;
 			RES = 100;
 			double r = 2;
-			CircularArc a(Point(0, 0), r, Point(+1, +0), Point(+0, +1)); a.draw();
-			CircularArc b(Point(0, 0), r, Point(+0, +1), Point(-1, +0)); b.draw();
-			CircularArc c(Point(0, 0), r, Point(-1, +0), Point(+0, -1)); c.draw();
-			CircularArc d(Point(0, 0), r, Point(+0, -1), Point(+1, +0)); d.draw();
+			//CircularArc a(Point(0, 0), r, Point(+1, +0), Point(+0, +1)); a.draw();
+			//CircularArc b(Point(0, 0), r, Point(+0, +1), Point(-1, +0)); b.draw();
+			//CircularArc c(Point(0, 0), r, Point(-1, +0), Point(+0, -1)); c.draw();
+			//CircularArc d(Point(0, 0), r, Point(+0, -1), Point(+1, +0)); d.draw();
+			for (auto& arc : planning::voronoiBoundary)
+			{
+				arc.draw();
+			}
 			RES = temp;
 		}
 
@@ -597,7 +619,12 @@ namespace ms {
 			}
 		}
 		
+		// keyboardflag
+		for (size_t i = 0; i < 256; i++)
+		{
+			planning::keyboardflag_last[i] = planning::keyboardflag[i];
 
+		}
 		glutSwapBuffers();
 	}
 
@@ -843,16 +870,16 @@ namespace ms {
 			// ~dbg
 
 			// dbg : write rectangle to file
-			static bool write = false;
+			static bool write = true;
 			ofstream aR ;
 			ofstream aRR;
 			ofstream cRR;
 
 			if (write)
 			{
-				aR.open ("arcsRect.txt");
-				aRR.open("arcsRectRSV.txt");
-				cRR.open("circRectRSV.txt");
+				aR.open ("arcModel.txt");
+				aRR.open("arcModelRSV.txt");
+				cRR.open("circModelRSV.txt");
 
 
 				auto writeArc = [&](CircularArc& c)	//write arc to file
@@ -1018,29 +1045,29 @@ namespace ms {
 		{
 			clock_t now = clock();
 
-			// if last_drawn's rotation = 0, show it for 1second.
-			if (ModelInfo_CurrentFrame == numofframe - 1) {
-				while (clock() - now < 500);
-			}
+// if last_drawn's rotation = 0, show it for 1second.
+if (ModelInfo_CurrentFrame == numofframe - 1) {
+	while (clock() - now < 500);
+}
 
-			if (planning::forwardTime)
-				ModelInfo_CurrentFrame++;
-			if (ModelInfo_CurrentFrame == numofframe)
-			{
-				ModelInfo_CurrentModel.second = (ModelInfo_CurrentModel.second + 1) % 8;
-				ModelInfo_CurrentFrame = 0;
-			}
+if (planning::forwardTime)
+ModelInfo_CurrentFrame++;
+if (ModelInfo_CurrentFrame == numofframe)
+{
+	ModelInfo_CurrentModel.second = (ModelInfo_CurrentModel.second + 1) % 8;
+	ModelInfo_CurrentFrame = 0;
+}
 
-			// debug
-			CircularArc test;
-			test.convex = false;
-			CircularArc B(test);
-			CircularArc C;
-			C = test;
-			cout << "convexity test " << test.convex << B.convex << C.convex << endl;
-			// ~debug
+// debug
+CircularArc test;
+test.convex = false;
+CircularArc B(test);
+CircularArc C;
+C = test;
+cout << "convexity test " << test.convex << B.convex << C.convex << endl;
+// ~debug
 
-			glutPostRedisplay();
+glutPostRedisplay();
 		};
 
 
@@ -1053,21 +1080,21 @@ namespace ms {
 		//override model0
 		{
 			double
-				r0 = 100,
+				r0 = 10,
 				r1 = 0.1;
 
 			Point // from 1st quadrant, in ccw dir
-				p0( 0.2,  0.5),
-				p1(-0.2,  0.5),
+				p0(0.2, 0.5),
+				p1(-0.2, 0.5),
 				p2(-0.2, -0.5),
-				p3( 0.2, -0.5);
+				p3(0.2, -0.5);
 			Point
 				c0(0, -r0),
 				c1(+r0, 0),
 				c2(0, +r0),
 				c3(-r0, 0);
-			
-			vector<CircularArc> 
+
+			vector<CircularArc>
 				vec;
 
 			// semi-straight arcs
@@ -1087,7 +1114,7 @@ namespace ms {
 
 			ArcSpline as;
 			as.Arcs = vec;
-			vector<ArcSpline> asvec; 
+			vector<ArcSpline> asvec;
 			asvec.push_back(as);
 
 			Models_Approx[0] = asvec;
@@ -1115,6 +1142,264 @@ namespace ms {
 
 		glutMainLoop();
 		return 0;
+	}
+
+
+	namespace renderMinkVoronoiGlobal
+	{
+		// as GLUT needs global variables...
+		// not the best implementaion, but these part will only be used for testing/error-checking
+
+		std::vector<decltype(ms::Model_Result)> MRs;
+		std::vector<decltype(ms::ModelInfo_Boundary)> MIBs;
+		std::vector<std::vector<planning::output_to_file::v_edge>> v_edges;
+		decltype(planning::voronoiBoundary) voronoiBoundary;
+		int& sliceIdx = ms::t2;
+	}
+	/*
+	similar struct to main funcs
+
+	Def: when called, render minkowskisum and voronoi diagram
+	Just to check calculation's correctness.
+	*/
+	void renderMinkVoronoi(
+		int argc,
+		char* argv[],
+		std::vector<decltype(ms::Model_Result)>& MRs,
+		std::vector<decltype(ms::ModelInfo_Boundary)>& MIBs,
+		std::vector<std::vector<planning::output_to_file::v_edge>>& v_edges,
+		decltype(planning::voronoiBoundary)& voronoiBoundary
+		)
+	{
+		wd = 1200, ht = 800;
+
+		//inefficiency... copy data
+		renderMinkVoronoiGlobal::MRs = MRs;
+		renderMinkVoronoiGlobal::MIBs = MIBs;
+		renderMinkVoronoiGlobal::v_edges = v_edges;
+		renderMinkVoronoiGlobal::voronoiBoundary = voronoiBoundary;
+
+
+		auto reshapeFunc = [](GLint w, GLint h) ->void
+		{
+			double ratioWH = double(wd)/ht;
+			if (w < h * ratioWH) {
+				wd = w;
+				ht = w / ratioWH;
+				//glViewport(wd * 1 / 3, 0, wd * 2 / 3, ht);
+			}
+			else {
+				wd = h * ratioWH;
+				ht = h;
+				//glViewport(wd * 1 / 3, 0, wd * 2 / 3, ht);
+			}
+		};
+		auto    idleFunc = []() -> void
+		{
+			//manage speed
+			static clock_t lastTime = clock();
+			while (clock() - lastTime < 10 * 1000 / ms::numofframe)
+			{
+
+			}
+			lastTime = clock();
+
+			if(planning::keyboardflag['f'])
+				renderMinkVoronoiGlobal::sliceIdx++;
+			if (renderMinkVoronoiGlobal::sliceIdx >= ms::numofframe) renderMinkVoronoiGlobal::sliceIdx = 0;
+			glutPostRedisplay();
+		};
+		auto displayFunc = [](void) -> void
+		{
+			using namespace renderMinkVoronoiGlobal;
+			glClearColor(1.0, 1.0, 1.0, 1.0);
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+			setup_viewvolume();
+			setup_transform();
+
+			// Rendering code....
+			glLineWidth(2.0f);
+			glPointSize(2.8f);
+			glColor3f(0.0f, 0.0f, 0.0f);
+
+			// build temp
+
+			auto sceneIdx = 7;
+			auto robotIdx = 1;
+			
+			// VIEWPORT 0 (Upper-Left) : draw scene
+			glViewport(0, 0, wd * 1 / 3, ht / 2);
+			auto& scene = Models_Approx[sceneIdx];
+			glColor3f(0, 0, 0);
+			for (auto& as : scene)
+				for (auto& arc : as.Arcs)
+					arc.draw();
+			
+			// VIEWPORT 1 (Lower-Left) : darw robot
+			glViewport(0, ht / 2, wd * 1 / 3, ht / 2);
+			auto& robot = Models_Approx[robotIdx];
+			glColor3f(0, 0, 0);
+			for(auto& as: robot)
+				for (auto& arc : as.Arcs)
+				{
+					cd::rotateArc(arc, sliceIdx).draw();
+				}
+			
+			// VIEWPORT 2 (RIGHT) : draw mink/voronoi
+			glViewport(wd * 1 / 3, 0, wd * 2 / 3, ht);
+			auto& MR		= renderMinkVoronoiGlobal::MRs[sliceIdx];
+			auto& MIB		= renderMinkVoronoiGlobal::MIBs[sliceIdx];
+			auto& voronoi	= renderMinkVoronoiGlobal::v_edges[sliceIdx];
+			auto& boundary	= renderMinkVoronoiGlobal::voronoiBoundary;
+
+			// 1. draw mink
+			{
+				size_t length = MR.size();
+				for (size_t i = 0; i < length; i++)
+				{
+					if (MIB[i])
+						glColor3f(0, 0, 0);
+					else
+						glColor3f(0, 0, 1);
+
+					for (auto& as : MR[i])
+						as.draw();
+				}
+			}
+
+			// 2. draw voronoi
+			{
+				glColor3f(1, 0, 1);
+				glBegin(GL_LINES);
+				for (auto& ve : voronoi)
+				{
+					glVertex2dv(ve.v0.P);
+					glVertex2dv(ve.v1.P);
+				}
+				glEnd();
+			}
+
+			// 3. draw Boundary for voronoi edges
+			glColor3f(0, 0, 0);
+			for (auto& arc : boundary)
+				arc.draw();
+
+			glutSwapBuffers();
+		};
+
+		glutInit(&argc, argv);
+		glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA);
+		glutInitWindowSize(wd, ht);
+		glutCreateWindow("Data Check");
+		glutReshapeFunc(reshapeFunc);
+		glutDisplayFunc(displayFunc);
+		glutMouseFunc(mouse_callback);
+		glutKeyboardFunc(keyboard_callback);
+		glutIdleFunc(idleFunc);
+
+		glEnable(GL_DEPTH_TEST);
+
+		glutMainLoop();
+	}
+
+	namespace renderPathGlobal
+	{
+		double* pathPtr;
+		int pathSize;
+		int pathIdx = 0;
+	}
+
+	void renderPath(
+		int argc, 
+		char* argv[],
+		vector<double>& path
+		)
+	{
+		using namespace renderPathGlobal;
+
+		zoom = 1.0;
+		wd = ht = 600;
+
+		pathPtr = &(path[0]);
+		pathSize = (path.size() / 3);
+
+		auto reshapeFunc = [](GLint w, GLint h) ->void
+		{
+			double ratioWH = double(wd) / ht;
+			if (w < h * ratioWH) {
+				wd = w;
+				ht = w / ratioWH;
+			}
+			else {
+				wd = h * ratioWH;
+				ht = h;
+			}
+		};
+		auto    idleFunc = []() -> void
+		{
+			//manage speed
+			int millisecondPerFrame = 100;
+			static clock_t lastTime = clock();
+			while (clock() - lastTime < millisecondPerFrame)
+			{
+
+			}
+			lastTime = clock();
+
+			// change pathIdx
+			if (planning::keyboardflag['f'])
+				pathIdx++;
+			if (pathIdx >= pathSize) pathIdx = 0;
+
+			glutPostRedisplay();
+		};
+		auto displayFunc = []()
+		{
+			glClearColor(1.0, 1.0, 1.0, 1.0);
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+			setup_viewvolume();
+			setup_transform();
+
+			// Rendering code....
+			glLineWidth(2.0f);
+			glPointSize(2.8f);
+			glColor3f(0.0f, 0.0f, 0.0f);
+			glViewport(0, 0, wd, ht);
+
+			auto sceneIdx = 7;
+			auto robotIdx = 1;
+
+			// 1. draw scene
+			auto& scene = Models_Approx[sceneIdx];
+			for (auto& as : scene)
+				as.draw();
+
+			// 2. draw robot
+			auto& robot = Models_Approx[robotIdx];
+			Point translation(pathPtr[3 * pathIdx + 0], pathPtr[3 * pathIdx + 1]);
+			double rotationDegree = pathPtr[3 * pathIdx + 2];
+			for (auto& as : robot)
+				for (auto& arc : as.Arcs)
+				{
+					cd::translateArc(cd::rotateArc(arc, rotationDegree), translation).draw();
+				}
+
+			glutSwapBuffers();
+		};
+
+		glutInit(&argc, argv);
+		glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA);
+		glutInitWindowSize(wd, ht);
+		glutCreateWindow("2D planning");
+		glutReshapeFunc(reshapeFunc);
+		glutDisplayFunc(displayFunc);
+		glutMouseFunc(mouse_callback);
+		glutKeyboardFunc(keyboard_callback);
+		glutIdleFunc(idleFunc);
+
+		glEnable(GL_DEPTH_TEST);
+
+		glutMainLoop();
 	}
 
 }

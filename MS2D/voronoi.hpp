@@ -31,12 +31,14 @@ namespace planning
 
 	extern std::vector<ms::Circle> circlesToDraw;
 
-	extern bool keyboardflag[256];	
+	extern bool keyboardflag[256];
+	extern bool keyboardflag_last[256];
 	extern double rfbTerminationEps; //originally 1e-18
 	extern double rfbTerminationEps2; // origirnally 2.5e-3;
 
 	extern int lineSegCnt;
-
+	
+	extern std::vector<ms::CircularArc> voronoiBoundary;
 
 	using namespace std;
 	using namespace ms;
@@ -177,6 +179,7 @@ namespace planning
 
 	void _Convert_VectorCircularArc_G0(INPUT vector<CircularArc>& input, OUTPUT vector<CircularArc>& output, INPUT int globalCCW_Option = -1);
 	void _Convert_VectorCircularArc_G1(INPUT vector<CircularArc>& input, OUTPUT vector<CircularArc>& output);
+	void _Convert_VectorCircularArc_G1_new(INPUT vector<CircularArc>& input, OUTPUT vector<CircularArc>& output);
 	void _Convert_VectorCircularArc_To_MsInput(INPUT vector<CircularArc>& input, OUTPUT vector<ArcSpline>& output, INPUT double rotationDegree = 0);
 	void _Convert_MsOut_To_VrIn(vector<deque<ArcSpline>>& INPUT msOut, vector<bool>& INPUT isBoundary, VR_IN& OUTPUT vrIn);
 	void _Medial_Axis_Transformation(VR_IN& INPUT in);

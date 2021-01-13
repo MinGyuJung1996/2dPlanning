@@ -54,8 +54,12 @@ namespace cd
 
 	// All of them generate new instances.
 
+	CircularArc
+		scaleArc(CircularArc& arc, double scale);
 	CircularArc	
-		rotateArc(CircularArc& arc, double rotation);
+		rotateArc(CircularArc& arc, double degree);
+	Point
+		rotatePoint(Point& p, double rotationDegree);
 	Point		
 		rotatePoint(Point& p, double cosine, double sine);
 	CircularArc 
@@ -85,6 +89,10 @@ namespace cd
 		constructArc(CircularArc& arc, double radian0, double radian1);
 	CircularArc
 		constructArc(Point& center, Point& x0, Point& x1, bool ccw);
+	CircularArc 
+		constructArc(Point& x0, Point& x1, Point& t0);
+	CircularArc
+		constructArc(Point& x0, Point& x1, double r, bool ccw, bool chooseSmallerArc = true);
 
 	/**********************************************************************************
 	**  1. Main func

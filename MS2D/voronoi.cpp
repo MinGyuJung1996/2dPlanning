@@ -1,6 +1,7 @@
 #include "voronoi.hpp"
 #include <filesystem>
 #include "collision detection.hpp"
+#include <iomanip>
 
 namespace planning
 {
@@ -22,12 +23,14 @@ namespace planning
 	std::vector<ms::Circle> circlesToDraw;
 
 	bool keyboardflag[256];
+	bool keyboardflag_last[256];
 
 	// Error/Epsilon values used.
 	double rfbTerminationEps = 1e-18; //originally 1e-18
 	double rfbTerminationEps2 = 2.5e-3; // origirnally 2.5e-3;
 	const double RVCA_EndpointError = 1e-8;
 
+	vector<ms::CircularArc> voronoiBoundary;
 
 	namespace output_to_file
 	{
@@ -377,6 +380,7 @@ namespace planning
 			fout.close();
 		}
 	}
+
 
 #pragma region math functions
 
@@ -1460,6 +1464,35 @@ namespace planning
 		return p*p;
 	}
 
+	/*
+	Def: 
+		given an arc, get its theta values t0, t1 of n0, n1, 
+		so that traveling from x(0) to x(1) shows a continuous theta
+	Retrun:
+		ret.first  := double in [-pi,  + pi]
+		ret.second := double in [-3pi, +3pi]
+
+		if (ccw) ret.2nd > ret.1st
+		else 1st > 2nd
+	Assume:
+		Correct n0, n1, and ccw
+	*/
+	pair<double, double> getArcTheta_cont(CircularArc& arc)
+	{
+		double
+			theta0 = atan2(arc.n0().y(), arc.n0().x()),
+			theta1 = atan2(arc.n1().y(), arc.n1().x());
+
+		if (arc.ccw)
+			while (theta1 < theta0)
+				theta1 = theta1 + PI2;
+		else
+			while (theta1 > theta0)
+				theta1 = theta1 - PI2;
+
+		return { theta0, theta1 };
+	}
+
 	/* Def : test if endpoint in a cycle share a max touching
 	*/
 	void testValidCycle(vector<CircularArc> cycle, bool draw = true)
@@ -1726,8 +1759,8 @@ namespace planning
 				auto& arc = output[i];
 
 				// 4-1-1. find if arc contains pi/2;
-				auto theta0 = atan2(arc.x0().y(), arc.x0().x());
-				auto theta1 = atan2(arc.x1().y(), arc.x1().x());
+				auto theta0 = atan2(arc.n0().y(), arc.n0().x());
+				auto theta1 = atan2(arc.n1().y(), arc.n1().x());
 				auto thetaP = PI / 2;
 				if (arc.ccw)
 				{
@@ -1747,6 +1780,8 @@ namespace planning
 
 				// 4-1-2. record which was max y
 				bool halfPiInside = arc.ccw ? theta1 >= thetaP : thetaP >= theta1; // equal case can be evaluated as the same way, so use >=
+				// dbg_out
+				cout << "halfPiInside : " << halfPiInside << endl;
 				if (halfPiInside)
 				{
 					double y = arc.c.c.y() + arc.c.r;
@@ -1779,13 +1814,16 @@ namespace planning
 
 			// 4-2. with maxY, find current globalCCW info.
 			bool currentGlobalCCW = false;
+			// dbg_out
+			cout << "locPos : " << localPosition << endl;
+			cout << "bestY : " << bestY << endl;
 			if (localPosition == 2)
 			{
 				// 4-2-1. the max y point is in the middle of an arc.
 				//	At max-y-point, inner region is on -y dir, so lets just see tangent direction
 				//	Tangent direction is decided by local-ccw of bestIdx;
 				//	Also, in this case arc is convex, so just directly assign ccw
-				currentGlobalCCW = output[bestY].ccw;
+				currentGlobalCCW = output[bestIdx].ccw;
 			}
 			else
 			{
@@ -1845,6 +1883,10 @@ namespace planning
 
 			// 4-3. check wheter current global-ccw matches with the request.
 			bool requestCCW = globalCCW_Option != 0;
+			//dbg
+			cout << "req: " << requestCCW << endl;
+			cout << "curccw : " << currentGlobalCCW << endl;
+			//~dbg_out
 			if (requestCCW ^ currentGlobalCCW)
 			{
 				// 4-3-1. flip order in output;
@@ -1929,12 +1971,164 @@ namespace planning
 				// we need to carve some of the original arcs if we need that...
 				// currently rad was picked so that the eps-arc endpoints arc considered the same point for Point-operator==
 
+				//// dbg : use whole-circle at non-g1 point
+				//newArc.c.r = 0;
+				//newArc.x0() = newArc.x1() = Point(0,0);
+				//newArc.n0() = Point(-1, -1e-20);
+				//newArc.n1() = Point(-1, 1e-20);
+				//newArc.ccw = true;
+				//// ~dbg
 
 				// 2-4. push
 				output.push_back(newArc);
 
 			}
 		}
+	}
+
+	
+	/*
+	Def: similar to older version of convert_g1, but more strictly g0 by cutting original arcs 
+
+	If an eps-arc is put, original arc's x0 or x1 (which is the relevant) also shrinks so that it is more g0
+
+	Experiment:
+		for the case where I used an arc with radius 100, the newer version was slightly better or eqaul...
+		but as radius 10 was used (in this case the straight line's curvedness could be seen with human sense), older version was better.
+	*/
+	void _Convert_VectorCircularArc_G1_new(INPUT vector<CircularArc>& input, OUTPUT vector<CircularArc>& output)
+	{
+		if (input.size() < 2) return;
+
+		// controll
+
+		const double MVCAG1_Error = 1 - 1e-4;
+		const double SHIFT_LEN = 0.01; // notice that this is somewhat a hyperparameter
+
+		// 1. build info about input
+
+		//vector<bool> insertNext; // insertNext[i] == true := put small arc btw arc_i and arc_(i+1) 
+		vector<bool> trim0(input.size(), false);	// cut a little bit of arc_i near that arc's x0
+		vector<bool> trim1(input.size(), false);	// cut a little bit of arc_i near that arc's x1
+
+		for (size_t i = 0, length = input.size(); i < length; i++)
+		{
+			auto iNext = (i + 1) % length;
+			// if(g1)
+			if (fabs(input[i].n1() * input[iNext].n0()) < MVCAG1_Error)
+			{
+				trim1[i] = true;
+				trim0[iNext] = true;
+
+				//dbg
+				cout << "found none g1 conn" << endl;
+			}
+		}
+
+		// 2. build arcs
+		for (size_t i = 0, length = input.size(); i < length; i++)
+		{
+			auto iNext = (i + 1) % length;
+
+			// 2-1. trim original arc by changing arc's theta
+			auto inserted = input[i];
+			auto thetas = getArcTheta_cont(inserted);
+			auto
+				theta0 = thetas.first,
+				theta1 = thetas.second;
+			auto
+				signed_shift_theta = SHIFT_LEN / inserted.c.r;
+
+			// 2-1-1. if (ccw) theta0 inc / theta1 decrease
+			if (inserted.ccw)
+			{
+				// do nothing
+			}
+			else
+			{
+				// flip sign simply
+				signed_shift_theta *= -1;
+			}
+
+			// 2-1-2. d(theta)
+			if (trim0[i])
+			{
+				theta0 += signed_shift_theta;
+			}
+			if (trim1[i])
+			{
+				theta1 -= signed_shift_theta;
+			}
+
+			// 2-1-3. check erroroneous case : TODO simplify with XOR
+			bool unsolvable = false;
+			if (inserted.ccw)
+			{
+				if (theta0 > theta1)
+					unsolvable = true;
+			}
+			else
+			{
+				if (theta0 < theta1)
+					unsolvable = true;
+			}
+
+			if (unsolvable)
+			{
+				// currently just prints error
+				cerr << "ERROR: in CVAG1, original arc may be trimmed too much. ccw : " << inserted.ccw << endl;
+				cerr << fixed << setprecision(20);
+				cerr << "before : " << thetas.first << "   " << thetas.second << endl;
+				cerr << "after  : " << theta0 << "    " << theta1 << endl;
+			}
+
+			// 2-1-4. build trimmed & insert
+			{
+				inserted.n0() = Point(cos(theta0), sin(theta0));
+				inserted.n1() = Point(cos(theta1), sin(theta1));
+				inserted.x0() = inserted.c.c + inserted.c.r * inserted.n0();
+				inserted.x1() = inserted.c.c + inserted.c.r * inserted.n1();
+				if (unsolvable)
+					inserted.ccw = !inserted.ccw; // this is just too make bug-case work better... should not be executed with good-input.
+			}
+
+			output.push_back(inserted);
+
+			// 2-2. build eps-arc
+			// if(should insert eps-arc next)
+			if (trim1[i])
+			{
+				// eps-arc :
+				//	its endpoints : trimmed ends of arcs that weren't g1;
+				//  use tangent at inserted.x1(). to compute center.
+				
+				Point
+					eps_start,
+					eps_end,
+					tangent_start;
+
+				tangent_start = inserted.ccw ? rotate_p90(inserted.n1()) : rotate_m90(inserted.n1());
+				eps_start = inserted.x1();
+
+				// have to calculate eps_end similar to 2-1, but for the arc that comes next;
+				{
+					auto& nextArc = input[iNext];
+					auto theta0 = atan2(nextArc.n0().y(), nextArc.n0().x());
+					auto signed_shift_theta = SHIFT_LEN / nextArc.c.r;
+					if (nextArc.ccw)
+						theta0 += signed_shift_theta;
+					else
+						theta0 -= signed_shift_theta;
+					auto normal = Point(cos(theta0), sin(theta0));
+					eps_end = nextArc.c.c + nextArc.c.r * normal;
+				}
+
+				output.push_back(cd::constructArc(eps_start, eps_end, tangent_start));
+			
+			}
+
+		}
+
 	}
 
 	/*
@@ -2072,12 +2266,14 @@ namespace planning
 			msOut		: model_Result glo var.
 			isBoundary	: it's actually, a bool wheter it is the "outer" boundary (not inner loop)
 			vrIn		: just empty VR_IN should be okay.
+		Assume:
+			Vector<CircularArc> voronoiBoundary is already set.
 	*/
 	void _Convert_MsOut_To_VrIn(vector<deque<ArcSpline>>& INPUT msOut, vector<bool>& INPUT isBoundary, VR_IN& OUTPUT vrIn)
 	{
-		// 1. count number of outer boundaries
-		int nBoundary = 0;
+		// 1. count number of outer boundaries & check valid input
 		{
+		int nBoundary = 0;
 			for (auto i : isBoundary)
 				if (i) nBoundary++;
 			if (PRINT_ERRORS && nBoundary == 0) cerr << "ERROR 0 : There is no outer Boundary in Convert_MsOut_To_VrIn" << endl;
@@ -2091,8 +2287,57 @@ namespace planning
 		for (size_t i = 0; i < length; i++)
 		{
 			
-			if (!isBoundary[i]) // ignore inner loops, since we are doing motion planning
-				continue;
+			if (!isBoundary[i]) 
+			{
+				// // ignore inner loops, since we are doing motion planning => this is changed
+				// continue;
+
+				// similar to below else-case. just flip local/global direction
+				// should be simplified to 
+				//		convertMS_cw
+				//		if(!boundary) flip
+				//		(other stuff...)
+				{
+					// 2-1. build vrIn.Arcs & arcsPerLoop
+					vector<CircularArc> temp;
+					convertMsOutput_Clockwise(msOut[i], temp);
+					//vector<CircularArc> temp2;
+					//for(auto& as : msOut[i])
+					//	for (auto& arc : as.Arcs)
+					//	{
+					//		temp2.push_back(arc);
+					//	}
+					//_Convert_VectorCircularArc_G0(temp2, temp, 1);
+					// 2-1-1. flip if boundary
+					/*reverse(temp.begin(), temp.end());
+					for (auto& arc : temp)
+						arc = flipArc(arc);*/
+
+					vrIn.arcs.insert(vrIn.arcs.end(), temp.begin(), temp.end());
+					vrIn.arcsPerLoop.push_back(temp.size());
+
+					// 2-2. build vrIn.left
+					vrIn.left.resize(vrIn.arcs.size());
+					vrIn.left[leftOffset] = vrIn.left.size() - 1; // left[first element of this loop] = last element.
+					for (size_t j = 1, length = temp.size(); j < length; j++)
+					{
+						vrIn.left[leftOffset + j] = leftOffset + j - 1; // left[element] = element - 1 
+					}
+
+					// 2-3. build vrIn.color
+					vrIn.color.resize(vrIn.arcs.size());
+					auto color = double(i) / length;
+					for (size_t j = 0, length = temp.size(); j < length; j++)
+					{
+						vrIn.color[j] = color;
+					}
+
+					// 2-4. update llop variables.
+					leftOffset = vrIn.arcs.size();
+
+				}
+
+			}
 			else
 			{
 
@@ -2128,25 +2373,35 @@ namespace planning
 		// 3. add boundary(ccw) for 
 		if(true)
 		{
-			double r = 2;
-			CircularArc a(Point(0, 0), r, Point(+1, +0), Point(+0, +1));
-			CircularArc b(Point(0, 0), r, Point(+0, +1), Point(-1, +0));
-			CircularArc c(Point(0, 0), r, Point(-1, +0), Point(+0, -1));
-			CircularArc d(Point(0, 0), r, Point(+0, -1), Point(+1, +0));
+			//double r = 2;
+			//CircularArc a(Point(0, 0), r, Point(+1, +0), Point(+0, +1));
+			//CircularArc b(Point(0, 0), r, Point(+0, +1), Point(-1, +0));
+			//CircularArc c(Point(0, 0), r, Point(-1, +0), Point(+0, -1));
+			//CircularArc d(Point(0, 0), r, Point(+0, -1), Point(+1, +0));
+			//auto s = vrIn.arcs.size();
+			//vrIn.arcs.push_back(a);
+			//vrIn.arcs.push_back(b);
+			//vrIn.arcs.push_back(c);
+			//vrIn.arcs.push_back(d);
+			//vrIn.left.push_back(s + 3);	// left(a) = d
+			//vrIn.left.push_back(s + 0);	// left(b) = a
+			//vrIn.left.push_back(s + 1);	// left(c) = b
+			//vrIn.left.push_back(s + 2); // left(d) = c
+			//vrIn.color.push_back(1);
+			//vrIn.color.push_back(1);
+			//vrIn.color.push_back(1);
+			//vrIn.color.push_back(1);
+			//vrIn.arcsPerLoop.push_back(4);
+
 			auto s = vrIn.arcs.size();
-			vrIn.arcs.push_back(a);
-			vrIn.arcs.push_back(b);
-			vrIn.arcs.push_back(c);
-			vrIn.arcs.push_back(d);
-			vrIn.left.push_back(s + 3);	// left(a) = d
-			vrIn.left.push_back(s + 0);	// left(b) = a
-			vrIn.left.push_back(s + 1);	// left(c) = b
-			vrIn.left.push_back(s + 2); // left(d) = c
-			vrIn.color.push_back(1);
-			vrIn.color.push_back(1);
-			vrIn.color.push_back(1);
-			vrIn.color.push_back(1);
-			vrIn.arcsPerLoop.push_back(4);
+			size_t length = voronoiBoundary.size();
+			for (size_t i = 0; i < length; i++)
+			{
+				vrIn.arcs.push_back(voronoiBoundary[i]);
+				vrIn.left.push_back(s + ((i - 1) % length));
+				vrIn.color.push_back(1);
+			}
+			vrIn.arcsPerLoop.push_back(length);
 		}
 
 
@@ -2611,6 +2866,7 @@ namespace planning
 			}
 			if (planning::output_to_file::flag)
 			{
+				// bifur point
 				planning::output_to_file::bifur_point p;
 				p.p = q;
 				for (int i = 0; i < 3; i++)
@@ -2618,6 +2874,32 @@ namespace planning
 					p.idx.push_back(cycle[i].originalIndex);
 				}
 				planning::output_to_file::bifur_points[t2].push_back(p);
+
+				// v_edge x 3
+				{
+					planning::output_to_file::v_edge v;
+					v.v0 = p0;
+					v.v1 = q;
+					v.idx[0] = cycle[0].originalIndex;
+					v.idx[1] = cycle[1].originalIndex;
+					planning::output_to_file::v_edges[t2].push_back(v);
+				}
+				{
+					planning::output_to_file::v_edge v;
+					v.v0 = p1;
+					v.v1 = q;
+					v.idx[0] = cycle[1].originalIndex;
+					v.idx[1] = cycle[2].originalIndex;
+					planning::output_to_file::v_edges[t2].push_back(v);
+				}
+				{
+					planning::output_to_file::v_edge v;
+					v.v0 = p2;
+					v.v1 = q;
+					v.idx[0] = cycle[2].originalIndex;
+					v.idx[1] = cycle[0].originalIndex;
+					planning::output_to_file::v_edges[t2].push_back(v);
+				}
 			}
 			return;
 		}

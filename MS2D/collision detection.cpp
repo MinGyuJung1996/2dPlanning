@@ -43,6 +43,20 @@ namespace cd
 	/**********************************************************************************/
 	
 	/*
+	Def : scale arc with the center as origin.
+	*/
+	CircularArc	scaleArc(CircularArc& arc, double scale)
+	{
+		CircularArc ret = arc;
+		ret.c.c = ret.c.c * scale;
+		ret.c.r = ret.c.r * scale;
+		ret.x0() = ret.x0() * scale;
+		ret.x1() = ret.x1() * scale;
+
+		return ret;
+	}
+
+	/*
 	Def : rotate "arc" around the origin with "rotation" degrees
 	*/
 	CircularArc rotateArc(CircularArc& arc, double degree)
@@ -58,6 +72,21 @@ namespace cd
 		ret.n[0] = rotatePoint(ret.n[0], c, s);
 		ret.n[1] = rotatePoint(ret.n[1], c, s);
 
+		return ret;
+	}
+
+	/*
+	Def : rotate Point with an angle
+	*/
+	Point rotatePoint(Point& p, double rotationDegree)
+	{
+		double rotationRadian = DEG_TO_RAD * rotationDegree;
+		auto cosine = cos(rotationRadian);
+		auto sine	= sin(rotationRadian);
+
+		Point ret;
+		ret.x() = cosine * p.x() - sine * p.y();
+		ret.y() = cosine * p.y() + sine * p.x();
 		return ret;
 	}
 
@@ -211,6 +240,63 @@ namespace cd
 		arc.ccw = ccw;
 
 		return arc;
+	}
+
+
+	/*
+	Def : given two endpoints of an arc, and a tangent at one of its endpoints, this uniquely decides and arc. return it.
+
+	Does almost the same thing with the constructor(of same argument type) of "CircularArc"
+		But that constructor was buggy, so this is used.
+	*/
+	CircularArc constructArc(Point& x0, Point& x1, Point& t0)
+	{
+		CircularArc ret;
+		Circle c(x0, x1, t0);
+		ret.c = c;
+		ret.x0() = x0;
+		ret.x1() = x1;
+		ret.n0() = c.localDirection(x0);
+		ret.n1() = c.localDirection(x1);
+		if (!counterclockwise(ret.n[0], ret.n[1]))
+			ret.ccw = false;
+		else
+			ret.ccw = true;
+		ret.boundary = false;
+
+		return ret;
+	}
+
+	/*
+	Def : given two endpoints of an arc, radius, and its ccw, construct an arc which is shorter(there are 2 possible arcs under this configuration)
+		The center of the circle can lies in both the left/right side of the chord(p,q).
+		We choose left/right placement of the center, so that the arc is smaller. (this can be changed by altering chooseSmallerArc)
+		Since the function's purpose is to make an arc that is almost a straight line.
+	Desc :
+	p, q, r => 2 circles can be possible. 4 arcs can be possible
+	counterclockwise info and chooseSmallerArc will decide which arc is used.
+
+	Assume : 
+	radius > dist(p,q)/2
+	*/
+	CircularArc constructArc(Point& x0, Point& x1, double r, bool ccw, bool chooseSmallerArc)
+	{
+		// get center with pythagoras
+		Point dx = x1 - x0;
+		double bsquare = (dx.length2()) / 4;
+		double asquare = r * r - bsquare;
+		double a = sqrt(asquare); // dist from circle_center to chord
+
+		// get normal direction using ccw
+		Point normal;
+		if (ccw ^ chooseSmallerArc)
+			normal = cd::rotatePoint(dx, -90).normalize();
+		else
+			normal = cd::rotatePoint(dx, 90).normalize();
+
+		Point center = (x1 + x0) * 0.5 + normal * a;
+
+		return constructArc(center, x0, x1, ccw);
 	}
 
 	/**********************************************************************************/

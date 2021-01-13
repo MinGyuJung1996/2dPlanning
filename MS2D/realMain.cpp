@@ -5,13 +5,26 @@ namespace ms
 {
 	int main(int argc, char *argv[]);
 	int main2(int argc, char* argv[]);
+	void renderMinkVoronoi(
+		int argc,
+		char* argv[],
+		std::vector<decltype(ms::Model_Result)>& MRs,
+		std::vector<decltype(ms::ModelInfo_Boundary)>& MIBs,
+		std::vector<std::vector<planning::output_to_file::v_edge>>& v_edges,
+		decltype(planning::voronoiBoundary)& voronoiBoundary
+		);
+	void renderPath(
+		int argc,
+		char* argv[],
+		std::vector<double>& path
+		);
 }
 
 namespace graphSearch
 {
 
 	int main(int argc, char** argv);
-	int main2();
+	int main2(int argc, char* argv[]);
 }
 
 int main(int argc, char *argv[]) {
@@ -160,8 +173,10 @@ int main(int argc, char *argv[]) {
 
 	//cout << "fake func" << endl;
 	
-	//graphSearch::main2();
+	graphSearch::main2(argc, argv);
+	
 	//graphSearch::main(0, NULL);
+	
 	ms::main(argc, argv);
 
 	system("pause");
@@ -169,23 +184,28 @@ int main(int argc, char *argv[]) {
 
 namespace graphSearch
 {
+
+
 	/*
 	Def:
 		Computes Voronoi Edges for each slice, and store them in a vector<vector<v_edge>> v_edges.
 		Each Voronoi Edge can be referenced by v_edges[Slice_Number][Edge_Number_In_That_Slice];
 	*/
-	int main2()
+	int main2(int argc, char* argv[])
 	{
 		// 1. build v_edges
 
 		ms::initialize();	// read data from files.
-		ms::ModelInfo_CurrentModel = std::make_pair(0, 7);
+		ms::ModelInfo_CurrentModel = std::make_pair(1, 7);
 		ms::postProcess(ms::ModelInfo_CurrentModel.first, ms::ModelInfo_CurrentModel.second); // process arcs to satisfy conditions.
 		planning::output_to_file::flag = true; // flag to enable : gathering data inside global var, during v-diagram construction.
 		planning::output_to_file::v_edges.resize(0); //empty
 		planning::output_to_file::v_edges.resize(ms::numofframe); //pre-allocate
 		planning::output_to_file::bifur_points.resize(0); // dummy
 		planning::output_to_file::bifur_points.resize(ms::numofframe); //dummy
+		planning::drawVoronoiSingleBranch = false; //disable drawing for now.
+		std::vector<decltype(ms::Model_Result)> MRs(ms::numofframe);		// data collected for checking
+		std::vector<decltype(ms::ModelInfo_Boundary)> MIBs(ms::numofframe); // data collected for checking
 		for (size_t i = 0, length = ms::numofframe /* = 360*/; i < length; i++)
 		{
 			ms::t2 = i;
@@ -194,6 +214,10 @@ namespace graphSearch
 			planning::VR_IN vrin;
 			planning::_Convert_MsOut_To_VrIn(ms::Model_Result, ms::ModelInfo_Boundary, vrin);
 			planning::_Medial_Axis_Transformation(vrin);
+
+			// save data for checking
+			MRs[i] = ms::Model_Result;
+			MIBs[i] = ms::ModelInfo_Boundary;
 
 			//// dbg_out
 			//std::cout << "voronoi " << i << " "
@@ -224,6 +248,31 @@ namespace graphSearch
 
 		// 4~. do sth with the path....
 
+		// 4-1. Just to check whether mink/vor was constructed properly.
+		//ms::renderMinkVoronoi(argc, argv, MRs, MIBs, v_edges, planning::voronoiBoundary);
+
+		// 4-2. render robot's path
+		std::vector<double> dummy_path;
+		{
+			// just a fake path to check program pipeline.
+			for (int i = 0; i < 100; i++)
+			{
+				double x = -0.7 + 1.4 / 100.0 * i;
+				double y = -0.5 + (i / 100.0) * (i / 100.0);
+				double z = log10(i + 1) * 180;
+
+				dummy_path.push_back(x);
+				dummy_path.push_back(y);
+				dummy_path.push_back(z);
+			}
+		}
+		ms::renderPath(argc, argv, dummy_path);
+
 		return 0;
 	}
+}
+
+namespace ms
+{
+
 }
