@@ -1347,7 +1347,7 @@ glutPostRedisplay();
 			lastTime = clock();
 
 			// change pathIdx
-			if (planning::keyboardflag['f'])
+			if (!planning::keyboardflag['f'])
 				pathIdx++;
 			if (pathIdx >= pathSize) pathIdx = 0;
 

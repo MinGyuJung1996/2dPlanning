@@ -249,6 +249,7 @@ namespace graphSearch
 		// 4~. do sth with the path....
 
 		// 4-1. Just to check whether mink/vor was constructed properly.
+		// uncomment below to begin renderLoop for mink/voronoi calculated above.
 		//ms::renderMinkVoronoi(argc, argv, MRs, MIBs, v_edges, planning::voronoiBoundary);
 
 		// 4-2. render robot's path
