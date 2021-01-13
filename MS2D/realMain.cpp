@@ -29,7 +29,7 @@ namespace graphSearch
 
 	int main(int argc, char** argv);
 	void searchTest();
-	int main2();
+	int main2(int argc, char* argv[]);
 }
 
 int main(int argc, char *argv[]) {
@@ -176,10 +176,11 @@ int main(int argc, char *argv[]) {
 	//cout << "fake func" << endl;
 
 	graphSearch::searchTest();
-	graphSearch::main2();
+	graphSearch::main2(argc, argv);
+	
 	//graphSearch::main(0, NULL);
 	
-	ms::main(argc, argv);
+	//ms::main(argc, argv);
 
 	system("pause");
 }
@@ -260,14 +261,15 @@ namespace graphSearch
 		//ms::renderMinkVoronoi(argc, argv, MRs, MIBs, v_edges, planning::voronoiBoundary);
 
 		// 4-2. render robot's path
+		// Path found on step 3 should be used instead of dummy_path
 		std::vector<double> dummy_path;
 		{
 			// just a fake path to check program pipeline.
 			for (int i = 0; i < 100; i++)
 			{
-				double x = -0.7 + 1.4 / 100.0 * i;
-				double y = -0.5 + (i / 100.0) * (i / 100.0);
-				double z = log10(i + 1) * 180;
+				double x = -0.7 + 1.4 / 100.0 * i; // x-coord of Robot center
+				double y = -0.5 + (i / 100.0) * (i / 100.0); // y-coord of Robot center
+				double z = log10(i + 1) * 180;	// should be rotation in degrees
 
 				dummy_path.push_back(x);
 				dummy_path.push_back(y);
@@ -286,58 +288,6 @@ namespace graphSearch
 								 {0.,10.}, {1., 10.}, {10., 10.} };
 		int layerEdgeIndeces[12][2] = { {0,1}, {1,2}, {3,4}, {4,5}, {6,7}, {7,8},
 										{0,3}, {1,4}, {2,5}, {3,6}, {4,7}, {5,8} };
-		vector<v_edge> layer0;
-		vector<v_edge> layer1;
-		for (int i = 0; i < 12; ++i)
-		{
-			int idxP = layerEdgeIndeces[i][0];
-			int idxQ = layerEdgeIndeces[i][1];
-			ms::Point p(coords2d[idxP][0], coords2d[idxP][1]);
-			ms::Point q(coords2d[idxQ][0], coords2d[idxQ][1]);
-			v_edge currEdge;
-			currEdge.v0 = p;
-			currEdge.v1 = q;
-			currEdge.idx[0] = -1;
-			currEdge.idx[1] = -1;
-			layer0.push_back(currEdge);
-			layer1.push_back(currEdge);
-		}
-		vector<vector<v_edge>> v_edges;
-		v_edges.push_back(layer0);
-		v_edges.push_back(layer1);
-
-		vector<Vertex> vecVertices;
-		map<Vertex, int, VertexLessFn> mapLookup;
-		Graph theGr = create_VorGraph(v_edges, vecVertices, mapLookup);
-		Vertex ptnSrc(0, 0, 0);
-		Vertex ptnDst(10, 10, 360.);
-		std::vector<Vertex> path = invoke_AStar(theGr, vecVertices, mapLookup, ptnSrc, ptnDst);
-		if (path.empty())
-		{
-			cout << "Path not found" << endl;
-		}
-		else
-		{
-			for (auto v : path)
-			{
-				cout << v << endl;
-			}
-		}
-
-	}
-}
-
-namespace ms
-{
-
-
-	void searchTest()
-	{
-		double coords2d[9][2] = {{0.,0.}, {1., 0.}, {10., 0.},
-								 {0.,1.}, {1., 1.}, {10., 1.},
-								 {0.,10.}, {1., 10.}, {10., 10.}};
-		int layerEdgeIndeces[12][2] = { {0,1}, {1,2}, {3,4}, {4,5}, {6,7}, {7,8},
-									    {0,3}, {1,4}, {2,5}, {3,6}, {4,7}, {5,8} };
 		vector<v_edge> layer0;
 		vector<v_edge> layer1;
 		for (int i = 0; i < 12; ++i)
