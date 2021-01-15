@@ -16,7 +16,10 @@ TODO LIST
 	(DONE) 5. _conv_vec_to_ms_in => add code which adds eps arc for not-g1 points => done
 	6. voronoi.hpp => add some func prot in .cpp
 	7. generalize GRID
-	8. voronoi's edge direction
+	8. voronoi's max-t-disk direction
+	9. voronoi's error... maybe only computing v-edge from different object may reduce this?
+	10. Robot should be rotated 180 degree in rendering
+	11. Robot should be used in rendering (instead of RSV right now)
 
 
 Questions

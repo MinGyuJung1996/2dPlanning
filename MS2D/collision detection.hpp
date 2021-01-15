@@ -134,5 +134,7 @@ namespace cd
 	bool 
 		testCircularArc(CircularArc& lhs, CircularArc& rhs);	//TODO
 
+	extern int trsiInterestIdx;
+
 };
 

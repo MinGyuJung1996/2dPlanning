@@ -865,12 +865,12 @@ namespace ms {
 			// ~dbg_out
 
 			// dbg : test info
-			ms::t2 = 1;
+			//ms::t2 = 1;
 			cout << "****** Model : " << ModelInfo_CurrentModel.second << "   /   Rotation(degree) :  " << ms::t2 << endl;
 			// ~dbg
 
 			// dbg : write rectangle to file
-			static bool write = true;
+			static bool write = false;
 			ofstream aR ;
 			ofstream aRR;
 			ofstream cRR;
@@ -932,10 +932,10 @@ namespace ms {
 
 				}
 
-				//dbg_out : draw circ
-				circle0.draw();
-				circle1.draw();
-				circle2.draw();
+				////dbg_out : draw circ
+				//circle0.draw();
+				//circle1.draw();
+				//circle2.draw();
 
 				// dbg_out
 				cout << "before trimming size : " << sweep.size() << endl;
@@ -944,25 +944,28 @@ namespace ms {
 			// VIEWPORT 1
 			glViewport(wd / 2, 0, wd / 2, ht);
 			{
-				auto sweep2 = cd::getRotationBoundary(temp, double(ms::t2), 2);
+				auto sweep2 = cd::getRotationBoundary(temp, double(ms::t2), 0);
 				// dbg_out
 				cout << "divArc size : " << sweep2.size() << endl;
 				glColor3f(0, 0, 0);
+				glLineWidth(2.0f);
 				//debug
 				static int interest = 0, cpressed = 0, vpressed = 0;
 				{
-					if (planning::keyboardflag['c'] && !cpressed)
+					if (planning::keyboardflag['c'] != cpressed)
 					{
 						interest++;
-						cpressed = 1;
+						cd::trsiInterestIdx++;
 					}
-					if (!planning::keyboardflag['c']) cpressed = 0;
-					if (planning::keyboardflag['v'] && !vpressed)
+					cpressed = planning::keyboardflag['c'];
+					if (planning::keyboardflag['v'] != vpressed)
 					{
 						interest--;
-						vpressed = 1;
+						cd::trsiInterestIdx--;
 					}
-					if (!planning::keyboardflag['v']) vpressed = 0;
+					vpressed = planning::keyboardflag['v'];
+
+					if(sweep2.size() > 0)
 					interest = interest % sweep2.size();
 				}
 				for (size_t i = 0, length = sweep2.size(); i < length; i++)
@@ -1045,29 +1048,29 @@ namespace ms {
 		{
 			clock_t now = clock();
 
-// if last_drawn's rotation = 0, show it for 1second.
-if (ModelInfo_CurrentFrame == numofframe - 1) {
-	while (clock() - now < 500);
-}
-
-if (planning::forwardTime)
-ModelInfo_CurrentFrame++;
-if (ModelInfo_CurrentFrame == numofframe)
-{
-	ModelInfo_CurrentModel.second = (ModelInfo_CurrentModel.second + 1) % 8;
-	ModelInfo_CurrentFrame = 0;
-}
-
-// debug
-CircularArc test;
-test.convex = false;
-CircularArc B(test);
-CircularArc C;
-C = test;
-cout << "convexity test " << test.convex << B.convex << C.convex << endl;
-// ~debug
-
-glutPostRedisplay();
+			// if last_drawn's rotation = 0, show it for 1second.
+			if (ModelInfo_CurrentFrame == numofframe - 1) {
+				while (clock() - now < 500);
+			}
+			
+			if (planning::forwardTime)
+			ModelInfo_CurrentFrame++;
+			if (ModelInfo_CurrentFrame == numofframe)
+			{
+				ModelInfo_CurrentModel.second = (ModelInfo_CurrentModel.second + 1) % 8;
+				ModelInfo_CurrentFrame = 0;
+			}
+			
+			// debug
+			CircularArc test;
+			test.convex = false;
+			CircularArc B(test);
+			CircularArc C;
+			C = test;
+			cout << "convexity test " << test.convex << B.convex << C.convex << endl;
+			// ~debug
+			
+			glutPostRedisplay();
 		};
 
 
@@ -1077,6 +1080,7 @@ glutPostRedisplay();
 		glutCreateWindow("RSV");
 		initialize();
 		t2 = t1 = t0 = 0;
+		t1 = 1;
 		//override model0
 		{
 			double

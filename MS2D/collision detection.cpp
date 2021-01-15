@@ -952,6 +952,8 @@ namespace cd
 	std::tuple<Point, Point, int> 
 		_tRSI_getCircleIntersecion(Circle& lhs, Circle& rhs);
 
+	DEBUG int trsiInterestIdx = 0;
+
 	/*
 	Def:
 
@@ -1066,6 +1068,16 @@ namespace cd
 					nCircleInter  = get<2>(circInter);
 					nInter = 0;
 
+					// dbg_out
+					if (i == 9 && j == 11)
+					{
+						cout << "Circ inter result : " << endl;
+						cout << temp[0] << endl;
+						cout << temp[1] << endl;
+						cout << "nCircInter : " << nCircleInter << endl;
+					}
+					//~dbg
+
 					// 2-2. check if circles intersection points are valid for arcs
 					for (size_t k = 0; k < nCircleInter; k++)
 					{
@@ -1099,11 +1111,11 @@ namespace cd
 
 						// 2-2-3. save info
 						// if (intersection point is valid for both arcs)
+						t0[k] = theta0;
+						t1[k] = theta1;
 						if (valid0 && valid1)
 						{
 							nInter++;
-							t0[k] = theta0;
-							t1[k] = theta1;
 							valid[k] = true;
 
 							//// 2-2-3. swap if ... => changed imple => so that 2-3 becomes easier
@@ -1129,9 +1141,40 @@ namespace cd
 						// basically, the arc is divided into 3 : (start, inter0), (inter0, inter1), (inter1, end)
 						// if (opposite sides arcs is convex ) leave (start,  inter0) (inter1, end)
 						// if (opposite sides arcs is concave) leave (inter0, inter1)
+
+						//dbg_out
+						if (i == 11 || j == 11)
+						{
+							if (valid[0] || valid[1])
+							{
+								cout << "i , j, v0, v1: " << i << "   " << j << "        " << valid[0] << "   " << valid[1] << endl;
+								//arc0.c.draw();
+								cout << "ccw arc0 arc1 : " << arc0.ccw << arc1.ccw << endl;
+								cout << "convex arc0 arc1 : " << arc0.convex << arc1.convex << endl;
+								cout << "arc0 tb te : " << t0[0] << "  " << t0[1] << endl;
+								cout << "arc1 tb te : " << t1[0] << "  " << t1[1] << endl;
+							}
+						}
+						//~dbg
 						
 						// 2-3-1. take care of arc0
 						{
+							// two intersection points divides circle into two arcs.
+							// but, with only the intersection points, we don't know which one of the arcs fall inside the other circle.
+							// Below code assumes that traveling in the ccw/cw direction of the arc, from tn[0] to tn[1], is inside the opposite circle.
+							// But actually, that may not hold.
+							// flag needed to flip.
+							bool arcT0T1NotInOpposite;
+							{
+								double thetaAvg = (t0[0] + t0[1]) * 0.5;
+								auto normal = Point(cos(thetaAvg), sin(thetaAvg));
+								auto queryPoint = arc0.c.c + arc0.c.r * normal;
+								if ((arc1.c.c - queryPoint).length2() <= arc1.c.r * arc1.c.r)
+									arcT0T1NotInOpposite = false;
+								else
+									arcT0T1NotInOpposite = true;
+							}
+
 							// get reverseParamOrdering
 							if (arc0.ccw)
 							{
@@ -1155,17 +1198,17 @@ namespace cd
 								if (valid[0])
 								{
 									if (reverseParamOrdering[0])
-										inter[i].insert(arcIntersection(t0[0], false));
+										inter[i].insert(arcIntersection(t0[0], false ^ arcT0T1NotInOpposite));
 									else
-										inter[i].insert(arcIntersection(t0[0], true));
+										inter[i].insert(arcIntersection(t0[0], true ^ arcT0T1NotInOpposite));
 								}
 
 								if (valid[1])
 								{
 									if (reverseParamOrdering[0])
-										inter[i].insert(arcIntersection(t0[1], true));
+										inter[i].insert(arcIntersection(t0[1], true ^ arcT0T1NotInOpposite));
 									else
-										inter[i].insert(arcIntersection(t0[1], false));
+										inter[i].insert(arcIntersection(t0[1], false ^ arcT0T1NotInOpposite));
 								}
 							}
 							else // concave opponent
@@ -1173,17 +1216,17 @@ namespace cd
 								if (valid[0])
 								{
 									if (reverseParamOrdering[0])
-										inter[i].insert(arcIntersection(t0[0], true));
+										inter[i].insert(arcIntersection(t0[0], true ^ arcT0T1NotInOpposite));
 									else
-										inter[i].insert(arcIntersection(t0[0], false));
+										inter[i].insert(arcIntersection(t0[0], false ^ arcT0T1NotInOpposite));
 								}
 
 								if (valid[1])
 								{
 									if (reverseParamOrdering[0])
-										inter[i].insert(arcIntersection(t0[1], false));
+										inter[i].insert(arcIntersection(t0[1], false ^ arcT0T1NotInOpposite));
 									else
-										inter[i].insert(arcIntersection(t0[1], true));
+										inter[i].insert(arcIntersection(t0[1], true ^ arcT0T1NotInOpposite));
 								}
 							}
 							// Note : this could also be simplified... as below
@@ -1197,67 +1240,78 @@ namespace cd
 
 						// 2-3-2. take care of arc1 (similar to that of arc0, just change : t0 -> t1, i->j, arc0<->arc1, rPO[0] -> rPO[1],  )
 						{
-						// get reverseParamOrdering
-						if (arc1.ccw)
-						{
-							if (t1[0] < t1[1])
-								reverseParamOrdering[1] = false;
+							bool arcT0T1NotInOpposite;
+							{
+								double thetaAvg = (t1[0] + t1[1]) * 0.5;
+								auto normal = Point(cos(thetaAvg), sin(thetaAvg));
+								auto queryPoint = arc1.c.c + arc1.c.r * normal;
+								if ((arc0.c.c - queryPoint).length2() <= arc0.c.r * arc0.c.r)
+									arcT0T1NotInOpposite = false;
+								else
+									arcT0T1NotInOpposite = true;
+							}
+							
+							// get reverseParamOrdering
+							if (arc1.ccw)
+							{
+								if (t1[0] < t1[1])
+									reverseParamOrdering[1] = false;
+								else
+									reverseParamOrdering[1] = true;
+							}
 							else
-								reverseParamOrdering[1] = true;
-						}
-						else
-						{
-							if (t1[0] < t1[1])
-								reverseParamOrdering[1] = true;
-							else
-								reverseParamOrdering[1] = false;
-						}
-						// Note : simply rPO[1] = (t1[0] < t1[1]) ^ arc1.ccw; is possible... but not good for interpretation.
+							{
+								if (t1[0] < t1[1])
+									reverseParamOrdering[1] = true;
+								else
+									reverseParamOrdering[1] = false;
+							}
+							// Note : simply rPO[1] = (t1[0] < t1[1]) ^ arc1.ccw; is possible... but not good for interpretation.
 
-						// if (opposite is convex)
-						if (arc0.convex)
-						{
+							// if (opposite is convex)
+							if (arc0.convex)
+							{
+								if (valid[0])
+								{
+									if (reverseParamOrdering[1])
+										inter[j].insert(arcIntersection(t1[0], false ^ arcT0T1NotInOpposite));
+									else
+										inter[j].insert(arcIntersection(t1[0], true ^ arcT0T1NotInOpposite));
+								}
+
+								if (valid[1])
+								{
+									if (reverseParamOrdering[1])
+										inter[j].insert(arcIntersection(t1[1], true ^ arcT0T1NotInOpposite));
+									else
+										inter[j].insert(arcIntersection(t1[1], false ^ arcT0T1NotInOpposite));
+								}
+							}
+							else // concave opponent
+							{
+								if (valid[0])
+								{
+									if (reverseParamOrdering[1])
+										inter[j].insert(arcIntersection(t1[0], true ^ arcT0T1NotInOpposite));
+									else
+										inter[j].insert(arcIntersection(t1[0], false ^ arcT0T1NotInOpposite));
+								}
+
+								if (valid[1])
+								{
+									if (reverseParamOrdering[1])
+										inter[j].insert(arcIntersection(t1[1], false ^ arcT0T1NotInOpposite));
+									else
+										inter[j].insert(arcIntersection(t1[1], true ^ arcT0T1NotInOpposite));
+								}
+							}
+							// Note : this could also be simplified... as below
+							/*
 							if (valid[0])
-							{
-								if (reverseParamOrdering[1])
-									inter[j].insert(arcIntersection(t1[0], false));
-								else
-									inter[j].insert(arcIntersection(t1[0], true));
-							}
-
+								inter[j].insert(arcIntersection(t1[0], reverseParamOrdering[1] ^ arc0.convex));
 							if (valid[1])
-							{
-								if (reverseParamOrdering[1])
-									inter[j].insert(arcIntersection(t1[1], true));
-								else
-									inter[j].insert(arcIntersection(t1[1], false));
-							}
-						}
-						else // concave opponent
-						{
-							if (valid[0])
-							{
-								if (reverseParamOrdering[1])
-									inter[j].insert(arcIntersection(t1[0], true));
-								else
-									inter[j].insert(arcIntersection(t1[0], false));
-							}
-
-							if (valid[1])
-							{
-								if (reverseParamOrdering[1])
-									inter[j].insert(arcIntersection(t1[1], false));
-								else
-									inter[j].insert(arcIntersection(t1[1], true));
-							}
-						}
-						// Note : this could also be simplified... as below
-						/*
-						if (valid[0])
-							inter[j].insert(arcIntersection(t1[0], reverseParamOrdering[1] ^ arc0.convex));
-						if (valid[1])
-							inter[j].insert(arcIntersection(t1[1], !(reverseParamOrdering[1] ^ arc0.convex)))
-						*/
+								inter[j].insert(arcIntersection(t1[1], !(reverseParamOrdering[1] ^ arc0.convex)))
+							*/
 						}
 
 						// TODO : see if above 2-3-1,2 works. If so use simpler imple.
@@ -1315,10 +1369,13 @@ namespace cd
 						// if (left_intersetcion points left && right_intersection points right) = (both endpoints are not sure about trimming this segment)
 						// here "points" mean that pointing to the to-be-trimmed part
 						// also arcParam is said to be traveled from left-to-right in comments below.
-						if ((!(it0->trimForward) && it1->trimForward) || DEBUG true)
+						if ((!(it0->trimForward) && it1->trimForward))
 						{
 							divArcs.push_back(constructArc(superset[i], it0->interParam, it1->interParam));
+
+							
 						}
+
 
 						it0++;
 						it1++;
@@ -1332,10 +1389,10 @@ namespace cd
 					// 3-3. take care of (start, intersection0)
 
 					// 3-3-1. if (not trimmed) add it to vector
-					if (is.begin()->trimForward || DEBUG true)
+					if (is.begin()->trimForward)
 						divArcs.push_back(constructArc(superset[i], arcParam[i].first, is.begin()->interParam));
 					// 3-3-2. if (trimmed) trim neighbors without intersections
-					else DEBUG if (false)
+					else
 					{
 						LOOP int currentArc = i;
 						LOOP int currentEnd = 0;
@@ -1358,15 +1415,30 @@ namespace cd
 								break;
 						}
 					}
+
+					//dbg_out : trimForward set strange case.
+					if (i == trsiInterestIdx)
+					{
+						glLineWidth(5.0f);
+						glColor3f(1, 0, 1);
+						auto a = superset[i];
+						a.draw();
+						cout << "trsiIdx : " << trsiInterestIdx << endl;
+						cout << "is.size() : " << is.size() << endl;
+						cout << a.x0() << endl;
+						cout << a.x1() << endl;
+					}
+
+					//~dbg
 				
 					// 3-4. take care of (intersection_last, end)
 					auto iterLast = is.end();
 					iterLast--;
 					// 3-4-1. if (not trimmed) add it to vector
-					if (!(iterLast->trimForward) || DEBUG true)
+					if (!(iterLast->trimForward))
 						divArcs.push_back(constructArc(superset[i], iterLast->interParam, arcParam[i].second));
 					// 3-4-2. if (trimmed) trim neighbors without intersections
-					else DEBUG if (false)
+					else
 					{
 						LOOP int currentArc = i;
 						LOOP int currentEnd = 1;
