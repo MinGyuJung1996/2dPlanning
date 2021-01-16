@@ -112,7 +112,7 @@ Graph create_VorGraph(	vector<vector<v_edge>>& vorGr,
 	vector<Edge> vecEdges; // edge is a pair of indexes in vecVertices 
 	vector<Cost> vecWeights; // weight of an edge is its length
 
-	double zStep = 360./(vorGr.size()-1); 
+	double zStep = 360./vorGr.size(); 
 	double currZ = 0.;
 	set<int> setPrevSliceIdx;
 	set<int> setCurrSliceIdx;
