@@ -248,6 +248,18 @@ namespace graphSearch
 
 		//Graph theGr = create_VorGraph(v_edges);
 		//std::vector<v_edge> path = invoke_AStar(theGr);
+		std::vector<std::vector<v_edge>> v_edges_sparced;
+		std::vector<std::vector<v_edge>>::iterator iterEdgesLayer = v_edges.begin();
+		for ( size_t i = 0; i < v_edges.size(); ++i, ++iterEdgesLayer)
+			//if (0 == (i % 10)) // filter out intermediate layers
+				v_edges_sparced.push_back(*iterEdgesLayer);
+
+		vector<Vertex> vecVertices;
+		map<Vertex, int, VertexLessFn> mapLookup;
+		Graph theGr = create_VorGraph(v_edges_sparced, vecVertices, mapLookup);
+		Vertex ptnSrc(-0.70296182284311681, -0.30610712038352472, 0.0);
+		Vertex ptnDst(0.76932775901415118, 0.36524457774288216, 320.0);
+		std::vector<Vertex> path = invoke_AStar(theGr, vecVertices, mapLookup, ptnSrc, ptnDst);
 
 
 		// 3. call functions from namespace graphSearch (AStarOnVorDiag.cpp)
@@ -262,21 +274,22 @@ namespace graphSearch
 
 		// 4-2. render robot's path
 		// Path found on step 3 should be used instead of dummy_path
-		std::vector<double> dummy_path;
+		std::vector<double> renderedPath;
 		{
 			// just a fake path to check program pipeline.
-			for (int i = 0; i < 100; i++)
+			//for (int i = 0; i < 100; i++)
+			for(auto v : path)
 			{
-				double x = -0.7 + 1.4 / 100.0 * i; // x-coord of Robot center
-				double y = -0.5 + (i / 100.0) * (i / 100.0); // y-coord of Robot center
-				double z = log10(i + 1) * 180;	// should be rotation in degrees
+				//double x = -0.7 + 1.4 / 100.0 * i; // x-coord of Robot center
+				//double y = -0.5 + (i / 100.0) * (i / 100.0); // y-coord of Robot center
+				//double z = log10(i + 1) * 180;	// should be rotation in degrees
 
-				dummy_path.push_back(x);
-				dummy_path.push_back(y);
-				dummy_path.push_back(z);
+				renderedPath.push_back(v.x);
+				renderedPath.push_back(v.y);
+				renderedPath.push_back(v.z);
 			}
 		}
-		ms::renderPath(argc, argv, dummy_path);
+		ms::renderPath(argc, argv, renderedPath);
 
 		return 0;
 	}
@@ -312,7 +325,7 @@ namespace graphSearch
 		map<Vertex, int, VertexLessFn> mapLookup;
 		Graph theGr = create_VorGraph(v_edges, vecVertices, mapLookup);
 		Vertex ptnSrc(0, 0, 0);
-		Vertex ptnDst(10, 10, 360.);
+		Vertex ptnDst(10, 10, 180.);
 		std::vector<Vertex> path = invoke_AStar(theGr, vecVertices, mapLookup, ptnSrc, ptnDst);
 		if (path.empty())
 		{
