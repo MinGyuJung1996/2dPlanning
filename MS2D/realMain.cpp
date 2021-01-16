@@ -176,7 +176,7 @@ int main(int argc, char *argv[]) {
 	//cout << "fake func" << endl;
 
 	//graphSearch::searchTest();
-	//graphSearch::main2(argc, argv);
+	graphSearch::main2(argc, argv);
 	
 	//graphSearch::main(0, NULL);
 	

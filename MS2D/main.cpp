@@ -1202,15 +1202,29 @@ namespace ms {
 		{
 			//manage speed
 			static clock_t lastTime = clock();
-			while (clock() - lastTime < 10 * 1000 / ms::numofframe)
+			double timeInterval = 1000.0 / 36; // 10.0 * 1000 / ms::numofframe; //milliseconds
+			while (clock() - lastTime < timeInterval)
 			{
 
 			}
 			lastTime = clock();
 
-			if(planning::keyboardflag['f'])
+			// managing input
+			if(planning::keyboardflag['f'])	// toggle with f
 				renderMinkVoronoiGlobal::sliceIdx++;
+
+			static bool lastG = false, lastH = false;
+			if (planning::keyboardflag['g'] != lastG)
+				renderMinkVoronoiGlobal::sliceIdx++;
+			if (planning::keyboardflag['h'] != lastH)
+				renderMinkVoronoiGlobal::sliceIdx--;
+			lastG = planning::keyboardflag['g'];
+			lastH = planning::keyboardflag['h'];
+
 			if (renderMinkVoronoiGlobal::sliceIdx >= ms::numofframe) renderMinkVoronoiGlobal::sliceIdx = 0;
+			if (renderMinkVoronoiGlobal::sliceIdx < 0 ) renderMinkVoronoiGlobal::sliceIdx = ms::numofframe - 1;
+
+			cout << "Current slice Number : " << renderMinkVoronoiGlobal::sliceIdx << endl;
 			glutPostRedisplay();
 		};
 		auto displayFunc = [](void) -> void
@@ -1353,7 +1367,19 @@ namespace ms {
 			// change pathIdx
 			if (!planning::keyboardflag['f'])
 				pathIdx++;
+			static bool lastG = false, lastH = false;s
+			if (planning::keyboardflag['g'] != lastG)
+				pathIdx++;
+			if (planning::keyboardflag['h'] != lastH)
+				pathIdx--;
+			lastG = planning::keyboardflag['g'];
+			lastH = planning::keyboardflag['h'];
+
+
 			if (pathIdx >= pathSize) pathIdx = 0;
+			if (pathIdx < 0) pathIdx = pathSize - 1;
+
+			cout << "Current PathIdx : " << pathIdx << endl;
 
 			glutPostRedisplay();
 		};
@@ -1385,9 +1411,23 @@ namespace ms {
 			for (auto& as : robot)
 				for (auto& arc : as.Arcs)
 				{
-					cd::translateArc(cd::rotateArc(arc, rotationDegree), translation).draw();
+					cd::translateArc(cd::rotateArc(arc, rotationDegree + 180.0), translation).draw();
 				}
+			glPointSize(4.0f);
+			glBegin(GL_POINTS);
+			glVertex3d(translation.P[0], translation.P[1], -0.5);
+			glEnd();
 
+			// 3. draw path
+			glBegin(GL_LINE_STRIP);
+			for (size_t i = 0; i < pathSize; i++)
+			{
+				double ratio = (pathPtr[3 * i + 2]) / 360.0;
+				glColor3f(1 - ratio, ratio, 0);
+				glVertex2d(pathPtr[3 * i + 0], pathPtr[3 * i + 1]);
+			}
+			glEnd();
+			
 			glutSwapBuffers();
 		};
 
