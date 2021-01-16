@@ -1367,7 +1367,7 @@ namespace ms {
 			// change pathIdx
 			if (!planning::keyboardflag['f'])
 				pathIdx++;
-			static bool lastG = false, lastH = false;s
+			static bool lastG = false, lastH = false;
 			if (planning::keyboardflag['g'] != lastG)
 				pathIdx++;
 			if (planning::keyboardflag['h'] != lastH)

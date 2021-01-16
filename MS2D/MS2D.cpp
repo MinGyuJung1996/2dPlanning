@@ -925,6 +925,7 @@ void minkowskisum(int frame, int figure2)
 	}
 
 	// dbg_out
+	if (false)
 	{
 		using namespace std;
 		int i = 5, j = 4;
