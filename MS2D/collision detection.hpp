@@ -70,6 +70,10 @@ namespace cd
 	***********************************************************************************/
 	pair<double, double>
 		getParameterOfArc(CircularArc& arc);
+	double
+		getParameterOfArc(CircularArc& arc, Point& normal);
+	double
+		getParameterOfArc(CircularArc& arc, Point& normal, double theta0);
 
 	bool
 		less(double a, double b); // used as function pointer
@@ -130,11 +134,82 @@ namespace cd
 	bool 
 		testSuperset(superSet& ss, Obstacle& obs);				//TODO
 	bool 
-		testLineSegment(lineSegment& lhs, CircularArc& rhs);	//TODO
+		test_LineSegment_CircularArc(lineSegment& lhs, CircularArc& rhs);
 	bool 
-		testCircularArc(CircularArc& lhs, CircularArc& rhs);	//TODO
+		test_CircularArc_CircularArc(CircularArc& lhs, CircularArc& rhs);	//TODO
+	bool
+		test_LineElement_LineSegment(Point& x, Point& p, Point& q);
+	bool
+		test_CircleElement_CircularArc(Point& x, CircularArc& a);
 
 	extern int trsiInterestIdx;
 
+	/***********************************************************************************
+	** 4. For refinement of vornoi edges
+	***********************************************************************************/
+
+	class aabb
+	{
+	public:
+		inline double& xmin() { return bound[0]; }
+		inline double& xmax() { return bound[1]; }
+		inline double& ymin() { return bound[2]; }
+		inline double& ymax() { return bound[3]; }
+
+		inline bool 
+			isLeafNode() { return child.size() == 0; }
+		inline int& 
+			data() { return idx; }
+		bool 
+			testLineSegment(Point& p, Point& q);
+
+	public:
+		vector<aabb> 
+			child;
+
+	private:
+		double 
+			bound[4];
+		int 
+			idx = -1; //leaf node : contains idx of primitive(arc)
+	};
+
+	
+	class lineSegmentCollisionTester
+	{
+		// alias
+		using ve		= planning::output_to_file::v_edge;
+		using VR_IN		= planning::VR_IN;
+		using container = vector<ve>; // just in case of type change. (uses it-1, so need random-access-iter?)
+		using iter		= container::iterator;
+
+	public:
+
+		bool
+			optionCheckCompleteInclusionOfLineSegment = true;
+
+	public:
+		// construct/destructor := does nothing. (call initialize instead) 
+		lineSegmentCollisionTester() = default;
+		~lineSegmentCollisionTester() = default;
+
+		void 
+			initialize(VR_IN& vrin);
+		bool 
+			test(iter& it0, iter& it1);
+
+
+
+	private:
+		vector<CircularArc> data;	//contains all arcs;
+		vector<CircularArc> voronoiBoundary; // Meaningful? Since Voronoi boundary is for computational performance, They really don't exist in the scene.
+		aabb rootObstacleBVH;
+
+	private:
+		void 
+			recursivelyBuildBVH(aabb& currentNode, vector<int>& arcIndices);
+		bool 
+			recursivelyTestBVH_lineSegment(aabb& currentNode, lineSegment& ls);
+	};
 };
 

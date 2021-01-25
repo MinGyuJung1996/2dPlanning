@@ -20,6 +20,7 @@ TODO LIST
 	9. voronoi's error... maybe only computing v-edge from different object may reduce this?
 	10. Robot should be rotated 180 degree in rendering
 	11. Robot should be used in rendering (instead of RSV right now)
+	12. make voronoiBoundary's arcs more smaller(for better BV)
 
 
 Questions

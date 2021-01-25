@@ -1446,4 +1446,321 @@ namespace ms {
 		glutMainLoop();
 	}
 
+
+	namespace renderRefinementCollisionTestGlobal
+	{
+		// as GLUT needs global variables...
+		// not the best implementaion, but these part will only be used for testing/error-checking
+
+		std::vector<decltype(ms::Model_Result)> MRs;
+		std::vector<decltype(ms::ModelInfo_Boundary)> MIBs;
+		std::vector<std::vector<planning::output_to_file::v_edge>> v_edges;
+		decltype(planning::voronoiBoundary) voronoiBoundary;
+		std::vector<planning::VR_IN> VRINs;
+		int& sliceIdx = ms::t2;
+
+		std::vector<cd::lineSegmentCollisionTester> testers;
+	}
+	/*
+	almost a copy of renderMinkVoronoi,
+	just that it renders overlayed collision test results.
+
+
+	*/
+	void renderRefinementCollisionTest(
+		int argc,
+		char* argv[],
+		std::vector<decltype(ms::Model_Result)>& MRs,
+		std::vector<decltype(ms::ModelInfo_Boundary)>& MIBs,
+		std::vector<std::vector<planning::output_to_file::v_edge>>& v_edges,
+		decltype(planning::voronoiBoundary)& voronoiBoundary,
+		std::vector<planning::VR_IN> VRINs
+		)
+	{
+		wd = 1200, ht = 800;
+
+		//inefficiency... copy data
+		renderRefinementCollisionTestGlobal::MRs = MRs;
+		renderRefinementCollisionTestGlobal::MIBs = MIBs;
+		renderRefinementCollisionTestGlobal::v_edges = v_edges;
+		renderRefinementCollisionTestGlobal::voronoiBoundary = voronoiBoundary;
+		renderRefinementCollisionTestGlobal::VRINs = VRINs;
+
+		// build testers;
+		renderRefinementCollisionTestGlobal::testers.resize(ms::numofframe);
+		auto t0 = clock();
+		for (int i = 0; i < ms::numofframe; i++)
+		{
+			renderRefinementCollisionTestGlobal::testers[i].initialize(VRINs[i]);
+		}
+		auto t1 = clock();
+		cout << "BVH 360 constrcution : " << t1 - t0 << endl;
+
+		ms::t2 = 185;
+
+		auto reshapeFunc = [](GLint w, GLint h) ->void
+		{
+			double ratioWH = double(wd) / ht;
+			if (w < h * ratioWH) {
+				wd = w;
+				ht = w / ratioWH;
+				//glViewport(wd * 1 / 3, 0, wd * 2 / 3, ht);
+			}
+			else {
+				wd = h * ratioWH;
+				ht = h;
+				//glViewport(wd * 1 / 3, 0, wd * 2 / 3, ht);
+			}
+		};
+		auto    idleFunc = []() -> void
+		{
+			//manage speed
+			static clock_t lastTime = clock();
+			double timeInterval = 1000.0 / 36; // 10.0 * 1000 / ms::numofframe; //milliseconds
+			while (clock() - lastTime < timeInterval)
+			{
+
+			}
+			lastTime = clock();
+
+			// managing input
+			if (planning::keyboardflag['f'])	// toggle with f
+				renderRefinementCollisionTestGlobal::sliceIdx++;
+
+			static bool lastG = false, lastH = false;
+			if (planning::keyboardflag['g'] != lastG)
+				renderRefinementCollisionTestGlobal::sliceIdx++;
+			if (planning::keyboardflag['h'] != lastH)
+				renderRefinementCollisionTestGlobal::sliceIdx--;
+			lastG = planning::keyboardflag['g'];
+			lastH = planning::keyboardflag['h'];
+
+			if (renderRefinementCollisionTestGlobal::sliceIdx >= ms::numofframe) renderRefinementCollisionTestGlobal::sliceIdx = 0;
+			if (renderRefinementCollisionTestGlobal::sliceIdx < 0) renderRefinementCollisionTestGlobal::sliceIdx = ms::numofframe - 1;
+
+			cout << "Current slice Number : " << renderRefinementCollisionTestGlobal::sliceIdx << endl;
+			glutPostRedisplay();
+		};
+		auto displayFunc = [](void) -> void
+		{
+			using namespace renderRefinementCollisionTestGlobal;
+			glClearColor(1.0, 1.0, 1.0, 1.0);
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+			setup_viewvolume();
+			setup_transform();
+
+			// Rendering code....
+			glLineWidth(2.0f);
+			glPointSize(2.8f);
+			glColor3f(0.0f, 0.0f, 0.0f);
+
+			// build temp
+
+			auto sceneIdx = 7;
+			auto robotIdx = 1;
+
+			// VIEWPORT 0 (Upper-Left) : draw scene
+			glViewport(0, 0, wd * 1 / 3, ht / 2);
+			auto& scene = Models_Approx[sceneIdx];
+			glColor3f(0, 0, 0);
+			for (auto& as : scene)
+				for (auto& arc : as.Arcs)
+					arc.draw();
+
+			// VIEWPORT 1 (Lower-Left) : darw robot
+			glViewport(0, ht / 2, wd * 1 / 3, ht / 2);
+			auto& robot = Models_Approx[robotIdx];
+			glColor3f(0, 0, 0);
+			for (auto& as : robot)
+				for (auto& arc : as.Arcs)
+				{
+					cd::rotateArc(arc, sliceIdx).draw();
+				}
+
+			// VIEWPORT 2 (RIGHT) : draw mink/voronoi
+			glViewport(wd * 1 / 3, 0, wd * 2 / 3, ht);
+			auto& MR = renderRefinementCollisionTestGlobal::MRs[sliceIdx];
+			auto& MIB = renderRefinementCollisionTestGlobal::MIBs[sliceIdx];
+			auto& voronoi = renderRefinementCollisionTestGlobal::v_edges[sliceIdx];
+			auto& boundary = renderRefinementCollisionTestGlobal::voronoiBoundary;
+
+			// 1. draw mink
+			{
+				size_t length = MR.size();
+				for (size_t i = 0; i < length; i++)
+				{
+					if (MIB[i])
+						glColor3f(0, 0, 0);
+					else
+						glColor3f(0, 0, 1);
+
+					for (auto& as : MR[i])
+						as.draw();
+				}
+			}
+
+			// 2. draw voronoi
+			if(planning::keyboardflag['8'])
+			{
+				glColor3f(1, 0, 1);
+				glBegin(GL_LINES);
+				for (auto& ve : voronoi)
+				{
+					glVertex3d(ve.v0.x(), ve.v0.y(), -0.5);
+					glVertex3d(ve.v1.x(), ve.v1.y(), -0.5);
+				}
+				glEnd();
+			}
+
+			// 3. draw Boundary for voronoi edges
+			glColor3f(0, 0, 0);
+			for (auto& arc : boundary)
+				arc.draw();
+
+			// 4. test collision
+			{
+				using namespace renderRefinementCollisionTestGlobal;
+				using ve = planning::output_to_file::v_edge;
+				static int t = 650;
+				static bool last9 = false, last0 = false;
+				{
+					if (planning::keyboardflag['9'] != last9)
+						t += 10;
+					if (planning::keyboardflag['0'] != last0)
+						t -= 10;
+
+					last9 = planning::keyboardflag['9'];
+					last0 = planning::keyboardflag['0'];
+
+					if (t >= renderRefinementCollisionTestGlobal::v_edges[ms::t2].size())
+						t = renderRefinementCollisionTestGlobal::v_edges[ms::t2].size() - 1;
+
+					if (t < 0)
+						t = 0;
+				}
+				vector<ve> ves = renderRefinementCollisionTestGlobal::v_edges[ms::t2];
+				vector<bool> added(ves.size(), false);
+
+				// build testve
+				vector<ve> testve;
+				testve.push_back(ves[t]);
+				added[t] = true;
+
+				int n = 1000;
+				for (int i = 0; i < n; i++)
+				{
+					Point& p = testve.back().v1;
+
+					int closestidx = -1;
+					double closestDist = 1e100;
+
+					for (int j = 0; j < ves.size(); j++)
+					{
+						if (added[j])
+							continue;
+
+						double dist = (ves[j].v0 - p).length2();
+						if (dist < closestDist)
+						{
+							closestidx = j;
+							closestDist = dist;
+						}
+
+						dist = (ves[j].v1 - p).length2();
+						if (dist < closestDist)
+						{
+							closestidx = j;
+							closestDist = dist;
+						}
+					}
+
+					if (closestidx == -1 || sqrt(closestDist) >0.01)
+						break;
+					else
+					{
+						if((ves[closestidx].v0 - p).length2() < (ves[closestidx].v1 - p).length2())
+							testve.push_back(ves[closestidx]);
+						else
+						{
+							auto temp = ves[closestidx];
+							swap(temp.v0, temp.v1);
+							testve.push_back(temp);
+						}
+						added[closestidx] = true;
+					}
+				}
+
+				// do collision
+				auto t0 = clock();
+
+				//DEBUG : adhoc to test
+				cout << ms::t2 % 2 << endl;
+				if (ms::t2 % 2 == 0 && testve.size() > 15)
+				{
+					cout << testve.size() << endl;
+					testve.erase(testve.begin(), testve.begin() + 5);
+					testve.erase(testve.end() - 5, testve.end());
+					cout << testve.size() << endl;
+
+				}
+				else if (ms::t2 % 2 == 0 && testve.size() > 5)
+				{
+					cout << testve.size() << endl;
+					testve.erase(testve.begin(), testve.begin() + 1);
+					testve.erase(testve.end() - 1, testve.end());
+					cout << testve.size() << endl;
+				}
+
+				bool lineCol = testers[ms::t2].test(testve.begin(), testve.end());
+				auto t1 = clock();
+
+				if (lineCol)
+					glColor3f(1, 0, 0);
+				else
+					glColor3f(0, 0, 1);
+
+				auto p0 = testve.front().v0;
+				auto p1 = testve.back().v1;
+				
+				glBegin(GL_LINES);
+				glVertex2dv(p0.P);
+				glVertex2dv(p1.P);
+
+				glLineWidth(5.0f);
+				glColor3f(0, 1, 0);
+				for (auto& v : testve)
+				{
+					glVertex2dv(v.v0.P);
+					glVertex2dv(v.v1.P);
+				}
+				glLineWidth(2.0f);
+				glEnd();
+
+				cout << "collisionTest case : " << t << endl;
+				cout << "collisionTest result : " << lineCol << endl;
+				cout << "collisionTest time : " << t1 - t0 << endl;
+				cout << "testve.size() : " << testve.size() << endl;
+				cout << "p0 : " << testve.front().v0 << endl;
+			}
+
+
+
+			glutSwapBuffers();
+		};
+
+		glutInit(&argc, argv);
+		glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA);
+		glutInitWindowSize(wd, ht);
+		glutCreateWindow("Data Check");
+		glutReshapeFunc(reshapeFunc);
+		glutDisplayFunc(displayFunc);
+		glutMouseFunc(mouse_callback);
+		glutKeyboardFunc(keyboard_callback);
+		glutIdleFunc(idleFunc);
+
+		glEnable(GL_DEPTH_TEST);
+
+		glutMainLoop();
+	}
+
 }

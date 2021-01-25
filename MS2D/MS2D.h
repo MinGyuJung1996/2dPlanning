@@ -306,11 +306,15 @@ namespace ms {
 		/*! \brief 시계반대방향이면 true, 아니면 false */
 		bool ccw; //local-ccw // but this may differ in Minksum 
 
-		/* ccw of this arc in the output loop, */
-		bool globalccw = true;
-
 		/*! \brief Arc가 Boundary에서 ccw라는 것이 보증되면 true */
 		bool boundary;
+
+		/********************************************************/
+		// What Mg Jung added are below
+		/********************************************************/
+
+		/* ccw of this arc in the output loop, */
+		bool globalccw = true;
 
 		bool convex = true;
 

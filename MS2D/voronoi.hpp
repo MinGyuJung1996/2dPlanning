@@ -91,6 +91,14 @@ namespace planning
 		vector<int>			left;
 		vector<double>		color;
 		vector<int>			arcsPerLoop;
+
+		inline bool isBoundaryArc(int i)
+		{
+			if (color[i] == 1.0)
+				return true;
+			else
+				return false;
+		}
 	};
 
 	/* Def : represents a point on a curve.

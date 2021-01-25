@@ -2399,7 +2399,7 @@ namespace planning
 			{
 				vrIn.arcs.push_back(voronoiBoundary[i]);
 				vrIn.left.push_back(s + ((i - 1) % length));
-				vrIn.color.push_back(1);
+				vrIn.color.push_back(1.0);
 			}
 			vrIn.arcsPerLoop.push_back(length);
 		}

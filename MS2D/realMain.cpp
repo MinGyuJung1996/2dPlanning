@@ -22,6 +22,15 @@ namespace ms
 		char* argv[],
 		std::vector<double>& path
 		);
+	void renderRefinementCollisionTest(
+		int argc,
+		char* argv[],
+		std::vector<decltype(ms::Model_Result)>& MRs,
+		std::vector<decltype(ms::ModelInfo_Boundary)>& MIBs,
+		std::vector<std::vector<planning::output_to_file::v_edge>>& v_edges,
+		decltype(planning::voronoiBoundary)& voronoiBoundary,
+		std::vector<planning::VR_IN> VRINs
+		);
 }
 
 namespace graphSearch
@@ -209,12 +218,13 @@ namespace graphSearch
 		planning::drawVoronoiSingleBranch = false; //disable drawing for now.
 		std::vector<decltype(ms::Model_Result)> MRs(ms::numofframe);		// data collected for checking
 		std::vector<decltype(ms::ModelInfo_Boundary)> MIBs(ms::numofframe); // data collected for checking
+		std::vector<planning::VR_IN> VRINs(ms::numofframe);
 		for (size_t i = 0, length = ms::numofframe /* = 360*/; i < length; i++)
 		{
 			ms::t2 = i;
 			ms::minkowskisum(i, 7);
 
-			planning::VR_IN vrin;
+			planning::VR_IN& vrin = VRINs[i];
 			planning::_Convert_MsOut_To_VrIn(ms::Model_Result, ms::ModelInfo_Boundary, vrin);
 			planning::_Medial_Axis_Transformation(vrin);
 
@@ -271,6 +281,7 @@ namespace graphSearch
 		// 4-1. Just to check whether mink/vor was constructed properly.
 		// uncomment below to begin renderLoop for mink/voronoi calculated above.
 		//ms::renderMinkVoronoi(argc, argv, MRs, MIBs, v_edges, planning::voronoiBoundary);
+		ms::renderRefinementCollisionTest(argc, argv, MRs, MIBs, v_edges, planning::voronoiBoundary, VRINs);
 
 		// 4-2. render robot's path
 		// Path found on step 3 should be used instead of dummy_path
@@ -293,6 +304,8 @@ namespace graphSearch
 
 		return 0;
 	}
+
+	
 
 	void searchTest()
 	{

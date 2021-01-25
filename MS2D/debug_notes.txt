@@ -45,3 +45,8 @@ case 2, 2, 0:
 bugs that might not be fixed (not sure)
 	case where some assignment operator of Point class fails => changing rotation angle of obstacle resolved this for now.
 	topolgy stuff with big radius arcs, in the result of minkSum => this results into wrong voronoi output => refining the model fixed it for now.
+
+///////////////////////////////////////
+
+collision tester / slice 265, test-case=650
+	

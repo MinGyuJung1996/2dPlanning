@@ -152,6 +152,41 @@ namespace cd
 		return make_pair(theta0, theta1);
 	}
 
+	/*
+	Def: get theta value of normal inside the interval of theta of arc
+	*/
+	double
+		getParameterOfArc(CircularArc& arc, Point& normal)
+	{
+		auto theta0 = atan2(arc.n0().y(), arc.n0().x());
+		
+		return getParameterOfArc(arc, normal, theta0);
+	}
+
+	/*
+	Def: get theta value of normal inside the interval of theta of arc, when theta0 is precalculated(common-case)
+	*/
+	double
+		getParameterOfArc(CircularArc& arc, Point& normal, double theta0)
+	{
+		auto theta1 = atan2(normal.y(), normal.x());
+
+		if (arc.ccw)
+		{
+			//theta 1 should be larger
+			if (theta1 < theta0)
+				theta1 += PI2;
+		}
+		else
+		{
+			// clockwise: theta is decreasing
+			if (theta1 > theta0)
+				theta1 -= PI2;
+		}
+
+		return theta1;
+	}
+
 	// used as function pointer
 	bool
 		less(double a, double b) { return a <= b; };
@@ -159,6 +194,8 @@ namespace cd
 	// used as function pointer
 	bool
 		greater(double a, double b) { return a >= b; };
+
+
 
 	/**********************************************************************************
 	**  0-3. helper func(abstraction)
@@ -2222,9 +2259,9 @@ namespace cd
 		for (auto& o : obs)
 		{
 			for (auto& i : ss.first)
-				if (testCircularArc(i, o)) return true;
+				if (test_CircularArc_CircularArc(i, o)) return true;
 			for (auto& i : ss.second)
-				if (testLineSegment(i, o)) return true;
+				if (test_LineSegment_CircularArc(i, o)) return true;
 		}
 
 		//TODO
@@ -2233,19 +2270,65 @@ namespace cd
 
 	/*
 	Def :
+
+	Assume:
+		When the circle and lien meets tangentially, false is returned (as the purpose of this was to check penetration into inner-region)
+		p1 =/= p0
 	*/
 	bool 
-		testLineSegment(lineSegment& lhs, CircularArc& rhs)
+		test_LineSegment_CircularArc(lineSegment& lhs, CircularArc& rhs)
 	{
-		//TODO
+		// ALIAS
+		auto
+			& p0 = lhs.first,
+			& p1 = lhs.second;
+
+		
+		// calculate stuff.
+		double
+			lineLength = sqrt((p1 - p0).length2());
+		if (lineLength <= 1e-1000) return false; //error check
+
+		Point
+			tangent = (p1 - p0) / lineLength,
+			normal = rotatePoint(tangent, 90.0);
+
+		double
+			lineOffset = p0 * normal,
+			circleOffset = rhs.c.c * normal,
+			d = fabs(lineOffset- circleOffset);
+
+		// 1. if(center-line dist > r) return false;
+		if (d >= rhs.c.r) return false;
+
+		// 2. get line-circle intersection and check if it is inside both of (lineSeg, circularArc)
+		Point intersectionCandidate[2];
+		Point midIntersection = (lineOffset - circleOffset) * normal + rhs.c.c; // midPoint of two intersections;
+
+		double l = sqrt(rhs.c.r * rhs.c.r - d * d);
+		intersectionCandidate[0] = midIntersection - (l * tangent);
+		intersectionCandidate[1] = midIntersection + (l * tangent);
+
+		// 3. now check if intersectionCandidate is actually a part of lineSeg & Arc
+		for (int i = 0; i < 2; i++)
+		{
+			Point& inter = intersectionCandidate[i];
+
+			bool insideLS = test_LineElement_LineSegment(inter, p0, p1);
+			bool insideCA = test_CircleElement_CircularArc(inter, rhs);
+
+			if (insideLS && insideCA)
+				return true;
+		}
 		return false;
+
 	}
 
 	/*
-	Def :
+	Def : NOT DONE
 	*/
 	bool 
-		testCircularArc(CircularArc& lhs, CircularArc& rhs)
+		test_CircularArc_CircularArc(CircularArc& lhs, CircularArc& rhs)
 	{
 		// 1. check if circle overlaps;
 		auto centerDist = sqrt((lhs.c.c - rhs.c.c).length2());
@@ -2258,4 +2341,482 @@ namespace cd
 		//TODO
 		return false;
 	}
-}
+
+	///*
+	//Def : 
+	//	given a point x 
+	//	and a line segment with endpoints p, q.
+	//	If the three points are known to be collinear (x is in the line defined by p and q)
+	//	Return true iff x is between p, q
+	//Assume :
+	//	Three points are collinear.
+	//	For the case of x == p or x == q, the answer could be both true or false.
+	//		This is to reduce calculation
+	//		And for the purpose of this function(p and q are on voronoi edge), it is not likely to happen.
+	//		And as it is floating-point arithmetic, exact-match case is trivial.
+	//	Do not insert p == q case.
+	//*/
+	//bool
+	//	test_LineElement_LineSegment(Point& x, Point& p, Point& q)
+	//{
+	//	//if (lineSegment not parallel to y-axis)
+	//	if (p.x() != q.x())
+	//	{
+	//		bool flag0 = x.x() < p.x();
+	//		bool flag1 = x.x() < q.x();
+	//		return flag0 ^ flag1;
+	//	}
+	//	else
+	//	{
+	//		bool flag0 = x.y() < p.y();
+	//		bool flag1 = x.y() <= q.y(); //just-in-case of p==q==x case;
+	//		return flag0 ^ flag1;
+	//	}
+	//}
+
+
+	/*
+	Def : 
+		newer implementation version of above.
+		uses some errors to rule out those cases where x is almost p or q
+	*/
+	double EPS_test_LineElement_LineSegment = 1e-3;
+	bool
+		test_LineElement_LineSegment(Point& x, Point& p, Point& q)
+	{
+
+		if (q.x() < p.x())
+		{
+			double
+				eps = (p.x() - q.x()) * EPS_test_LineElement_LineSegment;
+			if (x.x() < p.x() - eps &&
+				x.x() > q.x() + eps)
+				return true;
+			else
+				return false;
+		}
+		else if (q.x() > p.x())
+		{
+			double
+				eps = (q.x() - p.x()) * EPS_test_LineElement_LineSegment;
+			if (x.x() < q.x() - eps &&
+				x.x() > p.x() + eps)
+				return true;
+			else
+				return false;
+		}
+		else // p.x == q.x
+		{
+			double 
+				eps = fabs(q.y() - p.y()) * EPS_test_LineElement_LineSegment;
+
+			if (x.y() < q.y() - eps &&
+				x.y() > p.y() + eps)
+				return true;
+			if (x.y() > q.y() - eps &&
+				x.y() < p.y() + eps)
+				return true;
+
+			return false;
+		}
+	}
+
+	/*
+	Def :
+		given a point x and an arc a,
+		assume that they are on a circle.
+		Return true iff x is on the arc.
+	Assume :
+		x is on a.c
+		a.c.r != 0;
+	
+	*/
+#define ErrorCheck_test_CircleElement_CircularArc true
+	bool 
+		test_CircleElement_CircularArc(Point& x, CircularArc& a)
+	{
+		if (ErrorCheck_test_CircleElement_CircularArc)
+		{
+			bool
+				test0 = (a.c.r == 0.0);
+
+			if (test0)
+			{
+				cerr << "POTENTIAL ERROR in test_CircleElement_CircularArc" << endl;
+			}
+		}
+
+		Point n = x - a.c.c;
+		auto t = getParameterOfArc(a);
+		double
+			& theta0 = t.first,
+			& theta1 = t.second,
+			thetax = getParameterOfArc(a, n, theta0);
+
+		return (theta0 < thetax) ^ (theta1 < thetax);
+
+	}
+
+
+	/***********************************************************************************
+	** 4. For refinement of vornoi edges
+	***********************************************************************************/
+
+	/*
+	Def : Use seperating axis test to check whether lineSegment (p,q) intersects with box;
+
+	Desc :
+	Project to 3 axis and check overlap.
+		1. x
+		2. y
+		3. perp(q-p)
+	If no overlap in any axis, return false;
+	If all has overlap, return true;
+
+	Real-time rendering 3rd ed page 745.
+	*/
+	bool aabb::testLineSegment(Point& p, Point& q)
+	{
+		// 1. make origin = AABB center;
+		Point aabbCenter(xmin() + xmax(), ymin() + ymax());
+		aabbCenter = aabbCenter * 0.5;
+		Point c = (p + q) * 0.5 - aabbCenter;
+		Point w = (q - p) * 0.5;
+		Point h = Point(xmax() - xmin(), ymax() - ymin()) * 0.5;
+
+		// 2. do test
+
+		// if(|cx| > |wx| + hx)
+		if (fabs(c.x()) > fabs(w.x()) + h.x())
+			return false;
+
+		// if(|cy| > |wy| + hy)
+		if (fabs(c.y()) > fabs(w.y()) + h.y())
+			return false;
+
+		// if(|cxwy - cywx| > hx|wy| + hy|wx|)
+		if (fabs(c.x() * w.y() - c.y() * w.x()) > h.x() * fabs(w.y()) + h.y() * fabs(w.x()))
+			return false;
+
+		return true;
+	}
+
+
+
+	/*
+	Def : initialize "data" and build BVH for fast col-det
+
+	Assume :
+		arcs are x,y monotone.
+	*/
+	void 
+		lineSegmentCollisionTester::initialize(VR_IN& vrin)
+	{
+		// 1. set data
+		data = vrin.arcs;
+
+		// 2. set boundary
+		for (int i = vrin.arcs.size() - 1; i >= 0; i--)
+		{
+			if (vrin.isBoundaryArc(i))
+				voronoiBoundary.push_back(vrin.arcs[i]);
+			else
+				break;
+		}
+
+		// 3. build BVH
+		vector<int> indices;
+		for (int i = 0; i < data.size(); i++)
+			indices.push_back(i);
+
+		recursivelyBuildBVH(rootObstacleBVH, indices);
+
+	}
+
+	/*
+	Def : 
+		The half-open-interval [it0, it1) of v_edges defines a single strip of v-edges, which will be reduced to a single line segment.
+		The function returns true iff the line segment has a collision with any circular arcs in the scene(obstacles or boundary)
+
+	Desc :
+		2 cases.
+		1. The line segment needs to be tested for only those arcs that formed the vornoi-edges.
+			<==> the maximal touching disk at it0->v0 is divided into two areas, by the footpoint_from_center---circleCenter---the_other_footpoint. (hard to explain)
+				The new line segment lies in the same area with v0-v1 in this case.
+		2. The line segment needs to be tested for all of the arcs in the scene.
+
+	Assumes :
+		data contains v_edge with same order as VR_IN used to find v_edges.
+
+	Warning :
+		This function may become dangerous when :
+			bifurcation point is included in the reduced voronoi edge.
+		This function may become slower if :
+			it0~it1 is too long
+				=> test(Point& p, Point& q) instead.
+	*/
+	bool 
+		lineSegmentCollisionTester::test(iter& it0, iter& it1)
+	{
+		// 0. Alias;
+		Point
+			& lineSegmentBegin = it0->v0,
+			& lineSegmentEnd = (it1-1)->v1;
+		lineSegment
+			ls = make_pair(lineSegmentBegin, lineSegmentEnd);
+		
+		// 0.5 Taking care of special case
+		//	When the voronoi diagram has contact with the input circularArcs (This can happen in non-g1 points)
+		{
+
+		}
+
+		// 1. which case?
+		bool isEasyCase;
+		{
+
+			// 1.1 Align theta for each directions.
+
+			Point
+				dir0 = data[it0->idx[0]].c.c	- lineSegmentBegin,
+				dir1 = data[it0->idx[1]].c.c	- lineSegmentBegin,
+				dirv = it0->v1					- lineSegmentBegin,
+				dirx = lineSegmentEnd			- lineSegmentBegin;
+
+			// what if dir0.length2() == 0 ?
+			//	falsely falling into hardCase is always okay.
+			//	falsely falling into easy case? => possible.
+			//		can it intersect with arcs other than those that form MAT_LOOP? => possible
+			//		=> hard case.
+
+			double
+				theta0 = atan2(dir0.y(), dir0.x()),
+				theta1 = atan2(dir1.y(), dir1.x()),
+				thetav = atan2(dirv.y(), dirv.x()),
+				thetax = atan2(dirx.y(), dirx.x());
+
+			while (theta1 < theta0)
+				theta1 += PI2;
+			while (thetav < theta0)
+				thetav += PI2;
+			while (thetax < theta0)
+				thetax += PI2;
+
+			// 1.2. Travel starting from theta0 in ccw-dir,
+			//	Check whether thetav and thetax lies on the same side of theta1
+			bool
+				flag0 = thetav < theta1,
+				flag1 = thetax < theta1;
+
+			isEasyCase = !(flag0 ^ flag1);
+		}
+
+		//dbg_out
+		DEBUG
+			cout << "isEasyCase : " << isEasyCase << endl;
+
+
+		// 2. take care of easy case.
+		if (isEasyCase)
+		{
+			// 2.1 check collision for those arcs that made v_edges
+			for (auto it = it0; it != it1; it++)
+			{
+				if (test_LineSegment_CircularArc(ls, data[it->idx[0]]))
+					return true;
+				if (test_LineSegment_CircularArc(ls, data[it->idx[1]]))
+					return true;
+			}
+
+			return false;
+		}
+
+		// 3. hard case, test all using BVH.
+		return recursivelyTestBVH_lineSegment(rootObstacleBVH, ls);
+	}
+
+	/*
+	Def : "currentNode" should be a BV which contains arcs in "arcs"
+		find BV info, then do recursive calls.
+	Assumes :
+		x,y monotone arcs.
+
+	*/
+	void lineSegmentCollisionTester::recursivelyBuildBVH(aabb& currentNode, vector<int>& arcIndices)
+	{
+		// 0. trivial cases
+		int nArcs = arcIndices.size();
+
+		// error-case (not called recursively, but the case where root itself was empty)
+		if (nArcs == 0)
+			return; // actually don't add to child(call this func), if arcs.size() == 0
+
+		// leaf node case;
+		if (nArcs == 1)
+		{
+			currentNode.data() = arcIndices[0];
+			return;
+		}
+		
+		// 1. find BV
+		double
+			xmin = +1e+300,
+			xmax = -1e+300,
+			ymin = +1e+300,
+			ymax = -1e+300;
+
+		double
+			x0,
+			x1,
+			y0,
+			y1;
+
+		for (auto& arcIdx : arcIndices)
+		{
+			auto& arc = data[arcIdx];
+			x0 = arc.x0().x();
+			x1 = arc.x1().x();
+			y0 = arc.x0().y();
+			y1 = arc.x1().y();
+
+			// compare & update
+			if (x0 < xmin)
+				xmin = x0;
+			if (x0 > xmax)
+				xmax = x0;
+
+			if (x1 < xmin)
+				xmin = x1;
+			if (x1 > xmax)
+				xmax = x1;
+
+			if (y0 < ymin)
+				ymin = y0;
+			if (y0 > ymax)
+				ymax = y0;
+
+			if (y1 < ymin)
+				ymin = y1;
+			if (y1 > ymax)
+				ymax = y1;
+		}
+
+		currentNode.xmin() = xmin;
+		currentNode.xmax() = xmax;
+		currentNode.ymin() = ymin;
+		currentNode.ymax() = ymax;
+
+		// 2. divide into childs.
+
+		// 2-1. which child node an arc goes into? ==> compare arc.x0() with AABB center
+		constexpr int maxNumberOfChildern = 4;
+		vector<int> arcIndicesChild[maxNumberOfChildern];
+		double
+			xCenterAABB = (xmin + xmax) * 0.5,
+			yCenterAABB = (ymin + ymax) * 0.5;
+
+		for (auto& arcIdx : arcIndices)
+		{
+			auto& arc = data[arcIdx];
+			int flag0 = (arc.x0().x() < xCenterAABB);
+			int flag1 = (arc.x0().y() < yCenterAABB);
+			int idx = (flag1 * 2) + flag0;
+			arcIndicesChild[idx].push_back(arcIdx);
+		}
+
+		// 2-2. ERROR CHECK INFINITY LOOP (When all elements of arc goes into one child)
+		int numberOfChildren = 0;
+		for (int i = 0; i < maxNumberOfChildern; i++)
+		{
+			if (arcIndicesChild[i].size() != 0)
+				numberOfChildren++;
+		}
+
+		// 2-2-1. if so, intervene.
+		if (numberOfChildren == 1)
+		{
+			//notice that we ruled out the case when this is a leaf node.
+			// in this case, just divide the array into half
+			// -> since vr_in was well-ordered, this may be okay?
+
+			// empty all
+			for (auto& a : arcIndicesChild)
+				a.resize(0);
+
+			int half = nArcs / 2;
+
+			for (int i = 0; i < half; i++)
+			{
+				arcIndicesChild[0].push_back(i);
+			}
+
+			for (int i = half; i < nArcs; i++)
+			{
+				arcIndicesChild[1].push_back(i);
+			}
+
+			numberOfChildren = 2;
+		}
+
+		// at this point number of children >= 2 (guaranteed)
+
+		// 3. recursive call
+		currentNode.child.resize(numberOfChildren); //pre-allocate
+		int childIdx = 0;
+		for (int i = 0; i < maxNumberOfChildern; i++)
+		{
+			if (arcIndicesChild[i].size() == 0)
+				continue;
+			
+			auto& nextNode = currentNode.child[childIdx];
+			childIdx++;
+
+			recursivelyBuildBVH(nextNode, arcIndicesChild[i]);
+		}
+
+	}
+
+
+	/*
+	Def : test whether a lineSegment has a collision with arcs, using BVH
+	returns true iff soem arc has collision with ls
+	*/
+	bool lineSegmentCollisionTester::recursivelyTestBVH_lineSegment(aabb& currentNode, lineSegment& ls)
+	{
+		// 1. leaf case.
+		if (currentNode.isLeafNode())
+		{
+			auto
+				& arc = data[currentNode.data()];
+
+			return cd::test_LineSegment_CircularArc(ls, arc);
+		}
+
+		// 2. test current BV
+		// if(collision with BV)
+		if (currentNode.testLineSegment(ls.first, ls.second))
+		{
+			for (auto& child : currentNode.child)
+			{
+				// 2-1. if there is any collision find, return true
+				if (recursivelyTestBVH_lineSegment(child, ls))
+					return true;
+			}
+			return false;
+		}
+
+		// if(no collision with BV)
+		return false;
+	}
+
+	///*
+	//Def : 
+	//given a line segment defined by two point(p, q)
+	//return true iff (the line segment has collision with any object in the scene)
+
+	//*/
+	//bool vornoiCollisionTest(Point& p, Point& q, lineSegmentCollisionTester& tester, vector<v_edge>)
+
+
+
+} //end of namespace cd.
