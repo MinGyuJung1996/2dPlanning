@@ -2,6 +2,7 @@
 #include <fstream>
 #include "voronoi.hpp"
 #include "AStarOnVorDiag.h"
+#include "collision detection.hpp"
 
 using namespace std;
 
@@ -219,24 +220,41 @@ namespace graphSearch
 		std::vector<decltype(ms::Model_Result)> MRs(ms::numofframe);		// data collected for checking
 		std::vector<decltype(ms::ModelInfo_Boundary)> MIBs(ms::numofframe); // data collected for checking
 		std::vector<planning::VR_IN> VRINs(ms::numofframe);
+		auto mvStartTime = clock();
 		for (size_t i = 0, length = ms::numofframe /* = 360*/; i < length; i++)
 		{
 			ms::t2 = i;
 			ms::minkowskisum(i, 7);
+			// save data for checking
+			MRs[i] = ms::Model_Result;
+			MIBs[i] = ms::ModelInfo_Boundary;
 
 			planning::VR_IN& vrin = VRINs[i];
 			planning::_Convert_MsOut_To_VrIn(ms::Model_Result, ms::ModelInfo_Boundary, vrin);
 			planning::_Medial_Axis_Transformation(vrin);
 
-			// save data for checking
-			MRs[i] = ms::Model_Result;
-			MIBs[i] = ms::ModelInfo_Boundary;
 
 			//// dbg_out
 			//std::cout << "voronoi " << i << " "
 			//	<< planning::output_to_file::v_edges[i].size() << std::endl;
 		}
 		planning::output_to_file::flag = false;
+		auto mvEndTime = clock();
+		cout << "mink + voronoi time : "
+			<< double(mvEndTime - mvStartTime) / 1000 << "s" << endl;
+
+		
+		//// 1-2. build collisionTesters 
+		auto cdInitStartTime = clock();
+		std::vector<cd::lineSegmentCollisionTester> testers(ms::numofframe);
+		for (size_t i = 0; i < ms::numofframe; i++)
+		{
+			testers[i].initialize(VRINs[i]);
+		}
+		auto cdInitEndTime = clock();
+		cout << "collision tester init time : " 
+			//<< ms::numofframe << " : " 
+			<< double(cdInitEndTime - cdInitStartTime) / 1000 <<"s"<< endl;
 
 		///* test if result is same : print all v-edges to file and compare it*/
 		//std::ofstream fout("ve_out.txt");
@@ -281,7 +299,7 @@ namespace graphSearch
 		// 4-1. Just to check whether mink/vor was constructed properly.
 		// uncomment below to begin renderLoop for mink/voronoi calculated above.
 		//ms::renderMinkVoronoi(argc, argv, MRs, MIBs, v_edges, planning::voronoiBoundary);
-		ms::renderRefinementCollisionTest(argc, argv, MRs, MIBs, v_edges, planning::voronoiBoundary, VRINs);
+		//ms::renderRefinementCollisionTest(argc, argv, MRs, MIBs, v_edges, planning::voronoiBoundary, VRINs);
 
 		// 4-2. render robot's path
 		// Path found on step 3 should be used instead of dummy_path

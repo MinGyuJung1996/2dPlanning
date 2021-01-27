@@ -1491,6 +1491,8 @@ namespace ms {
 		auto t0 = clock();
 		for (int i = 0; i < ms::numofframe; i++)
 		{
+			cout << "********build BVH : " << i << endl;
+			//dbgBlock[0] = i;
 			renderRefinementCollisionTestGlobal::testers[i].initialize(VRINs[i]);
 		}
 		auto t1 = clock();
@@ -1583,23 +1585,52 @@ namespace ms {
 			auto& MIB = renderRefinementCollisionTestGlobal::MIBs[sliceIdx];
 			auto& voronoi = renderRefinementCollisionTestGlobal::v_edges[sliceIdx];
 			auto& boundary = renderRefinementCollisionTestGlobal::voronoiBoundary;
+			auto& vrin = renderRefinementCollisionTestGlobal::VRINs[sliceIdx];
+
+			static int interest = -1;
+			static bool lc, lv;
+			if (lc != planning::keyboardflag['c'])
+				interest++;
+			if (lv != planning::keyboardflag['v'])
+				interest--;
+			lc = planning::keyboardflag['c'];
+			lv = planning::keyboardflag['v'];
+			cout << "interest : " << interest << endl;
+
+			// 1.5 draw interest;
+			if (interest > -1 && interest < vrin.arcs.size())
+			{
+				glLineWidth(5.0f);
+				glColor3f(0, 1, 0);
+				auto& arc = vrin.arcs[interest];
+				arc.draw();
+				glLineWidth(2.0f);
+			}
 
 			// 1. draw mink
 			{
 				size_t length = MR.size();
 				for (size_t i = 0; i < length; i++)
 				{
-					if (MIB[i])
-						glColor3f(0, 0, 0);
-					else
-						glColor3f(0, 0, 1);
 
-					for (auto& as : MR[i])
-						as.draw();
+					for (size_t j = 0; j < MR[i].size(); j++)
+					{
+						if (j == interest)
+							glColor3f(0, 1, 0);
+						else
+						{
+							if (MIB[i])
+								glColor3f(0, 0, 0);
+							else
+								glColor3f(0, 0, 1);
+						}
+
+						MR[i][j].draw();
+					}
 				}
 			}
 
-			// 2. draw voronoi
+			// 2. draw voronoi edge
 			if(planning::keyboardflag['8'])
 			{
 				glColor3f(1, 0, 1);
@@ -1618,6 +1649,7 @@ namespace ms {
 				arc.draw();
 
 			// 4. test collision
+			if(planning::keyboardflag['5'])
 			{
 				using namespace renderRefinementCollisionTestGlobal;
 				using ve = planning::output_to_file::v_edge;
@@ -1743,7 +1775,94 @@ namespace ms {
 				cout << "p0 : " << testve.front().v0 << endl;
 			}
 
+			// test2
+			static double offset = 0.001;
+			static bool lz, lx;
+			if (lz != planning::keyboardflag['z'])
+				offset += 0.005;
+			if (lx != planning::keyboardflag['x'])
+				offset -= 0.005;
+			lz = planning::keyboardflag['z'];
+			lx = planning::keyboardflag['x'];
 
+			if(planning::keyboardflag['7'])
+			{
+				size_t length = 40;
+				double dist = 4.0 / length;
+				for (size_t i = 0; i < length; i++)
+				{
+					for (size_t j = 0; j < length; j++)
+					{
+						double x = i * dist - 2;
+						double y = j * dist - 2;
+
+						Point p = Point(x, y);
+						Point q1 = Point(x + dist, y-offset);
+						Point q2 = Point(x+offset, y + dist);
+
+						bool
+							res1 = testers[ms::t2].test(p, q1),
+							res2 = testers[ms::t2].test(p, q2);
+
+						glBegin(GL_LINES);
+						
+						if (res1)
+							glColor3f(1, 0, 0);
+						else
+							glColor3f(0, 0, 1);
+						glVertex2dv(p.P);
+						glVertex2dv(q1.P);
+
+						if (res2)
+							glColor3f(1, 0, 0);
+						else
+							glColor3f(0, 0, 1);
+						glVertex2dv(p.P);
+						glVertex2dv(q2.P);
+
+						glEnd();
+					}
+				}
+			}
+
+			// test3
+			if (planning::keyboardflag['6'])
+			{
+				int j = 16, i = 16;
+
+				size_t length = 40;
+				double dist = 4.0 / length;
+				{
+					double x = i * dist - 2;
+					double y = j * dist - 2;
+
+					Point p = Point(x, y);
+					Point q1 = Point(x + dist, y);
+					Point q2 = Point(x, y + dist);
+
+					bool
+						res1 = true, // testers[ms::t2].test(p, q1),
+						res2 = testers[ms::t2].test(p, q2);
+
+					glBegin(GL_LINES);
+
+					if (res1)
+						glColor3f(1, 0, 0);
+					else
+						glColor3f(0, 0, 1);
+					glVertex2dv(p.P);
+					glVertex2dv(q1.P);
+
+					if (res2)
+						glColor3f(1, 0, 0);
+					else
+						glColor3f(0, 0, 1);
+					glVertex2dv(p.P);
+					glVertex2dv(q2.P);
+
+					glEnd();
+				}
+			}
 
 			glutSwapBuffers();
 		};

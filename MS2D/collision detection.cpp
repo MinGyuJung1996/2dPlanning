@@ -2283,6 +2283,10 @@ namespace cd
 			& p0 = lhs.first,
 			& p1 = lhs.second;
 
+		////dbg_out
+		//cout << "Test_LS_CA : " << lhs.first << " , " << lhs.second << endl;
+		//cout << rhs << endl;
+		////~dbg
 		
 		// calculate stuff.
 		double
@@ -2554,6 +2558,13 @@ namespace cd
 		This function may become slower if :
 			it0~it1 is too long
 				=> test(Point& p, Point& q) instead.
+		Do not plug in : the case where it0->v0 and (it-1)->v1 are both a point on obstacle and voronoi (they are both an non-g1-point of obstacle),
+			The line connecting two points may be completely inside the loop
+				Therefore the collision test will return "NO_COLLISION"
+				But the line actually passes through the osbstacle.
+			So this is an error case...
+				but test(Point& p, Point& q) using general points (which has nothing to do with voronoi) is not compatible to judge complete-inclusion/exclusion in O(1) time...
+			So this is left to the caller side.
 	*/
 	bool 
 		lineSegmentCollisionTester::test(iter& it0, iter& it1)
@@ -2565,14 +2576,10 @@ namespace cd
 		lineSegment
 			ls = make_pair(lineSegmentBegin, lineSegmentEnd);
 		
-		// 0.5 Taking care of special case
-		//	When the voronoi diagram has contact with the input circularArcs (This can happen in non-g1 points)
-		{
-
-		}
 
 		// 1. which case?
 		bool isEasyCase;
+		bool v0isNonG1Point;
 		{
 
 			// 1.1 Align theta for each directions.
@@ -2583,32 +2590,43 @@ namespace cd
 				dirv = it0->v1					- lineSegmentBegin,
 				dirx = lineSegmentEnd			- lineSegmentBegin;
 
-			// what if dir0.length2() == 0 ?
+			// what if (distance(lsBegin, closestPointOnModel) == 0) ?
 			//	falsely falling into hardCase is always okay.
 			//	falsely falling into easy case? => possible.
 			//		can it intersect with arcs other than those that form MAT_LOOP? => possible
 			//		=> hard case.
 
 			double
-				theta0 = atan2(dir0.y(), dir0.x()),
-				theta1 = atan2(dir1.y(), dir1.x()),
-				thetav = atan2(dirv.y(), dirv.x()),
-				thetax = atan2(dirx.y(), dirx.x());
+				closestDist = sqrt(dir0.length2()) - data[it0->idx[0]].c.r; // be aware this might be negative due to numerical error.
 
-			while (theta1 < theta0)
-				theta1 += PI2;
-			while (thetav < theta0)
-				thetav += PI2;
-			while (thetax < theta0)
-				thetax += PI2;
+			// if (v0 is non-g1-point of model)
+			v0isNonG1Point = closestDist < epsNonG1PointVoronoiEdgeDistance;
+			if (v0isNonG1Point)
+				isEasyCase = false;
+			else
+			{
 
-			// 1.2. Travel starting from theta0 in ccw-dir,
-			//	Check whether thetav and thetax lies on the same side of theta1
-			bool
-				flag0 = thetav < theta1,
-				flag1 = thetax < theta1;
+				double
+					theta0 = atan2(dir0.y(), dir0.x()),
+					theta1 = atan2(dir1.y(), dir1.x()),
+					thetav = atan2(dirv.y(), dirv.x()),
+					thetax = atan2(dirx.y(), dirx.x());
 
-			isEasyCase = !(flag0 ^ flag1);
+				while (theta1 < theta0)
+					theta1 += PI2;
+				while (thetav < theta0)
+					thetav += PI2;
+				while (thetax < theta0)
+					thetax += PI2;
+
+				// 1.2. Travel starting from theta0 in ccw-dir,
+				//	Check whether thetav and thetax lies on the same side of theta1
+				bool
+					flag0 = thetav < theta1,
+					flag1 = thetax < theta1;
+
+				isEasyCase = !(flag0 ^ flag1);
+			}
 		}
 
 		//dbg_out
@@ -2628,10 +2646,57 @@ namespace cd
 					return true;
 			}
 
+			// notice that for easy case, complete-inclusion-case does not occur (as v0 is guaranteed to be outside of loop)
 			return false;
 		}
 
 		// 3. hard case, test all using BVH.
+		bool arcIntersectionsResult = recursivelyTestBVH_lineSegment(rootObstacleBVH, ls);
+		return arcIntersectionsResult;
+
+
+		// optionCheckCompleteInclusionOfLineSegment part => deprecated
+		//// 3.1 having intersection with arc ==> guaranteed collision
+		//if (arcIntersectionsResult)
+		//	return true;
+
+		//// if(should check complete inclusion case)
+		//if (optionCheckCompleteInclusionOfLineSegment)
+		//{
+		//	if (!v0isNonG1Point)
+		//		return false; // since v0 should be outside of model.
+		//	else
+		//	{
+
+		//	}
+		//}
+		//else
+		//{
+		//	return false;
+		//}
+	}
+
+
+	/*
+	Def : 
+		Returns true iff a line defined by two endpoint p and q has a collision with an object in the scene (scene is set with initialize())
+
+	Assumes :
+		At least one of p or q will be case-1(outside of objects)
+			A point will fall into 3 case
+				1. On the Outside of objects
+				2. On the Boundary of an object 
+				3. On the Inside of an objects
+			The function only checks collision with the obstacle's boundary.
+			If both of p and q are case-2 or case-3, the line may be inside the object but not having collision with the boundary.
+				Judging such case probably will take more than O(1) time.
+			Such case are assumed to be not given as an input to this function.
+				=> Rather devise a function that judges if a point is inside/outside of obstacles later, and use it as a combination with this function.
+	*/
+	bool
+		lineSegmentCollisionTester::test(Point& p, Point& q)
+	{
+		lineSegment ls = make_pair(p, q);
 		return recursivelyTestBVH_lineSegment(rootObstacleBVH, ls);
 	}
 
@@ -2642,21 +2707,16 @@ namespace cd
 		x,y monotone arcs.
 
 	*/
-	void lineSegmentCollisionTester::recursivelyBuildBVH(aabb& currentNode, vector<int>& arcIndices)
+	void 
+		lineSegmentCollisionTester::recursivelyBuildBVH(aabb& currentNode, vector<int>& arcIndices)
 	{
 		// 0. trivial cases
 		int nArcs = arcIndices.size();
 
-		// error-case (not called recursively, but the case where root itself was empty)
+		// 0-1. error-case (not called recursively, but the case where root itself was empty)
 		if (nArcs == 0)
 			return; // actually don't add to child(call this func), if arcs.size() == 0
 
-		// leaf node case;
-		if (nArcs == 1)
-		{
-			currentNode.data() = arcIndices[0];
-			return;
-		}
 		
 		// 1. find BV
 		double
@@ -2706,6 +2766,36 @@ namespace cd
 		currentNode.ymin() = ymin;
 		currentNode.ymax() = ymax;
 
+
+		////dbg_out
+		//if (true )//dbgBlock[0] == 185)
+		//{
+		//	if (find(arcIndices.begin(), arcIndices.end(), 38) != arcIndices.end())
+		//	{
+		//		cout << "arcIndices content : ";
+		//		for (auto i : arcIndices)
+		//			cout << i << " ";
+		//		cout << endl;
+
+		//		cout << "BV info : x : " << xmin << " , " << xmax << " :: y : " << ymin << ", " << ymax << endl;
+		//	}
+		//}
+		////~dbg
+
+		// 0-2. leaf node case;
+		if (nArcs == 1)
+		{
+			currentNode.data() = arcIndices[0];
+		////dbg_out
+		//	if (xmin < -0.4 && xmax > -0.4)
+		//	{
+		//		cout << "such an arc is : " << arcIndices[0] << endl;
+		//		cout << data[arcIndices[0]] << endl;
+		//	}
+		//// dbg
+			return;
+		}
+		
 		// 2. divide into childs.
 
 		// 2-1. which child node an arc goes into? ==> compare arc.x0() with AABB center
@@ -2747,12 +2837,12 @@ namespace cd
 
 			for (int i = 0; i < half; i++)
 			{
-				arcIndicesChild[0].push_back(i);
+				arcIndicesChild[0].push_back(arcIndices[i]);
 			}
 
 			for (int i = half; i < nArcs; i++)
 			{
-				arcIndicesChild[1].push_back(i);
+				arcIndicesChild[1].push_back(arcIndices[i]);
 			}
 
 			numberOfChildren = 2;
@@ -2786,10 +2876,15 @@ namespace cd
 		// 1. leaf case.
 		if (currentNode.isLeafNode())
 		{
-			auto
-				& arc = data[currentNode.data()];
+			if (currentNode.testLineSegment(ls.first, ls.second))
+			{
+				auto
+					& arc = data[currentNode.data()];
 
-			return cd::test_LineSegment_CircularArc(ls, arc);
+				return cd::test_LineSegment_CircularArc(ls, arc);
+			}
+
+			return false;
 		}
 
 		// 2. test current BV

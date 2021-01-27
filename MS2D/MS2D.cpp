@@ -1,6 +1,8 @@
 #include "voronoi.hpp"
 #include "collision detection.hpp"
 
+//double dbgBlock[100];
+
 namespace ms{
 
 	int RES = 100;
@@ -632,11 +634,39 @@ void initialize()
 		c = cd::constructArc(q3, q4, Point(+1, -eps).normalize());
 		d = cd::constructArc(q4, q1, Point(+eps, +1).normalize());
 
-
-		planning::voronoiBoundary.push_back(a);
-		planning::voronoiBoundary.push_back(b);
-		planning::voronoiBoundary.push_back(c);
-		planning::voronoiBoundary.push_back(d);
+		//planning::voronoiBoundary.push_back(a);
+		//planning::voronoiBoundary.push_back(b);
+		//planning::voronoiBoundary.push_back(c);
+		//planning::voronoiBoundary.push_back(d);
+		
+		
+		/* deprecated as it breaks voronoi near boundary*/
+		// make it smaller -> better for BVH
+		std::vector<CircularArc> temp;
+		temp.push_back(a);
+		temp.push_back(b);
+		temp.push_back(c);
+		temp.push_back(d);
+		
+		int nPiece = 2;
+		for (auto& arc : temp)
+		{
+			auto par = cd::getParameterOfArc(arc);
+			double& rad0 = par.first;
+			double& rad1 = par.second;
+			double drad = rad1 - rad0;
+			for (size_t i = 0; i < nPiece; i++)
+			{
+				double start = double(i) / nPiece;
+				double end = double(i+1) / nPiece;
+		
+				start = start * drad + rad0;
+				end   = end   * drad + rad0;
+		
+				planning::voronoiBoundary.push_back(cd::constructArc(arc, start, end));
+			}
+		}
+		
 	}
 
 	postProcess(ModelInfo_CurrentModel.first, ModelInfo_CurrentModel.second);

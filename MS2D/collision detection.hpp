@@ -185,8 +185,19 @@ namespace cd
 
 	public:
 
-		bool
-			optionCheckCompleteInclusionOfLineSegment = true;
+
+		// deprecated.
+		//bool
+		//	optionCheckCompleteInclusionOfLineSegment = true;
+		//		// if(true) test() will return true for complete-inclusion-case;
+		//		//	complete-inclusion case: a line segment has no intersection with any arcs, but is completely inside a model-loop.
+		//		// if(false) only test between lineSegment-circularArc affects the result of test().
+
+		double
+			epsNonG1PointVoronoiEdgeDistance = 1e-8; 
+				// a point on a voronoi edge is also considered to be on the input model of voronoi diagram calculator,
+				// if (distance between that point and its closest point on input model < epsNonG1PointVoronoiEdgeDistance)
+				// Used to check whether a point on v_edge is actually a non-g1-point in model.
 
 	public:
 		// construct/destructor := does nothing. (call initialize instead) 
@@ -196,7 +207,8 @@ namespace cd
 		void 
 			initialize(VR_IN& vrin);
 		bool 
-			test(iter& it0, iter& it1);
+			test(iter& it0, iter& it1),
+			test(Point& p, Point& q);
 
 
 

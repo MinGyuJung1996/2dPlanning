@@ -14,6 +14,8 @@
 //#include "glad/glad.h" //due to legacy stuff being unusable, (glvertex...), this part was commented.
 #include "GL/glut.h"
 
+static double dbgBlock[100];
+
 namespace ms {
 	extern int
 		&t0,
