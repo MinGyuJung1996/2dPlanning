@@ -32,6 +32,7 @@ bool Model_from_arc[8];					// true: read from circular arc file // false : read
 void initialize()
 {
 	fopen_s(&f, "time.txt", "w");
+
 	ModelInfo_CurrentModel.first  = 1; // 1
 	ModelInfo_CurrentModel.second = 6; // 6
 	Models_Imported[0] = import_Crv("impt1.txt");
@@ -205,6 +206,7 @@ void initialize()
 	//~debug
 
 
+
 	planning::output_to_file::objSize.resize(8);
 
 	for (int i = 0; i < 8; i++) {
@@ -212,18 +214,21 @@ void initialize()
 			Models_Imported[i][j].segmentation(Models[i]);
 		}
 
+		std::cout << "hello" << std::endl;
 		for (int j = 0; j < (int)Models[i].size(); j++) {
 			auto s = Models[i][j].integrityTest();
 			if (s.size() > 0)
 				Models[i].insert(Models[i].begin() + j + 1, s.begin(), s.end());
 		}
 
+		std::cout << "hello" << std::endl;
 		for (int j = 0; j < (int)Models[i].size(); j++) {
 			auto tempSpiral = ArcSpline(Models[i][j]); /* where bez -> arc */
 			auto input = tempSpiral.integrityTest();
 			Models_Approx[i].insert(Models_Approx[i].end(), input.begin(), input.end());
 		}
 
+		std::cout << "hello" << std::endl;
 		//build planning::output_to_file::objSize;
 		if (i != 7)
 		{

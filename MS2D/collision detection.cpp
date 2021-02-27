@@ -1388,6 +1388,26 @@ namespace cd
 			// for (all original arcs) show different behavior for number of intersection(0, 1, 2-or-more)
 			for (size_t i = 0; i < nArcs; i++)
 			{
+				//dbg_out : trimForward set strange case.
+				if (i == trsiInterestIdx)
+				{
+					glLineWidth(5.0f);
+					glColor3f(1, 0, 1);
+					auto a = superset[i];
+					a.draw();
+					cout << "******trsiIdx : " << trsiInterestIdx << endl;
+					cout << "is.size() : " << inter[i].size() << endl;
+					cout << a.x0() << endl;
+					cout << a.x1() << endl;
+					for (auto& intersection : inter[i])
+					{
+						cout << "param : " << intersection.interParam / PI * 180 
+							<< "     trimForward : " << intersection.trimForward
+							<< endl;
+					}
+				}
+				//~dbg
+
 				// 3-1. if this arc is referenced by another arc, just skip it
 				if (referenced[i]) continue;
 				referenced[i] = true;
@@ -1399,7 +1419,7 @@ namespace cd
 					// Notice that iter will be sorted with ccw/cw information in mind. If original arc was ccw, is.begin() would be the element with smallest arcParam.
 					//	Also trimForward's 'Forward' is equivalent to the forward direction of the set 'is'.
 					LOOP auto it0 = is.begin();
-					LOOP auto it1 = is.begin()++;
+					LOOP auto it1 = ++is.begin(); //bugfixed -> post-increment to pre-inc
 					while (it1 != is.end())
 					{
 						// 3-2-1. leave segments not guaranteed to be in the inner-region-of-object.
@@ -1453,20 +1473,6 @@ namespace cd
 						}
 					}
 
-					//dbg_out : trimForward set strange case.
-					if (i == trsiInterestIdx)
-					{
-						glLineWidth(5.0f);
-						glColor3f(1, 0, 1);
-						auto a = superset[i];
-						a.draw();
-						cout << "trsiIdx : " << trsiInterestIdx << endl;
-						cout << "is.size() : " << is.size() << endl;
-						cout << a.x0() << endl;
-						cout << a.x1() << endl;
-					}
-
-					//~dbg
 				
 					// 3-4. take care of (intersection_last, end)
 					auto iterLast = is.end();
@@ -1659,7 +1665,7 @@ namespace cd
 			if (trimThisLoop)
 				trimLoop[i] = true;
 			
-			//debug
+			//debug dbg_out
 			cout << trimThisLoop;
 		}
 		//debug
@@ -1670,6 +1676,7 @@ namespace cd
 		{
 			if (trimLoop[i]) continue;
 			// TODO
+
 		}
 
 		// 8. build return value.
@@ -1682,11 +1689,11 @@ namespace cd
 			}
 		}
 		
-		//debug
-		{
-			ret.resize(0);
-			ret.push_back(deque<CircularArc>(divArcs.begin(), divArcs.end()));
-		}
+		////debug
+		//{
+		//	ret.resize(0);
+		//	ret.push_back(deque<CircularArc>(divArcs.begin(), divArcs.end()));
+		//}
 
 		return ret;
 	}

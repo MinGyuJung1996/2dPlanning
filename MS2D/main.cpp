@@ -122,6 +122,62 @@ namespace ms {
 		glLoadIdentity();
 		gluOrtho2D(-zoom + tx, zoom + tx, -zoom + ty, zoom + ty);
 	}
+
+	void setup_veiwvolume2()
+	{
+		glMatrixMode(GL_PROJECTION);
+		glLoadIdentity();
+		double
+			fovyInDegrees = 30.0,
+			aspectRatio = 1.0, // x/y
+			znear = 0.01,
+			zfar = 10.0;
+		//gluPerspective(fovy, aspect, znear, zfar); // this breaks the code which turns bezier to arcs -> this seems like a v ery complicated bug... kind of circumvent it for now
+
+		double matrix[16];
+
+		// calculate perspective by myself // kind of from https://www.khronos.org/opengl/wiki/GluPerspective_code
+		{
+			// 1.
+			double ymax, xmax;
+			ymax = znear * tan(fovyInDegrees * PI / 360.0);
+			// ymin = -ymax;
+			// xmin = -ymax * aspectRatio;
+			xmax = ymax * aspectRatio;
+
+			// 2.
+			double
+				left = -xmax,
+				right = xmax,
+				bottom = -ymax,
+				top = ymax;
+
+			double temp, temp2, temp3, temp4;
+			temp = 2.0 * znear;
+			temp2 = right - left;
+			temp3 = top - bottom;
+			temp4 = zfar - znear;
+			matrix[0] = temp / temp2;
+			matrix[1] = 0.0;
+			matrix[2] = 0.0;
+			matrix[3] = 0.0;
+			matrix[4] = 0.0;
+			matrix[5] = temp / temp3;
+			matrix[6] = 0.0;
+			matrix[7] = 0.0;
+			matrix[8] = (right + left) / temp2;
+			matrix[9] = (top + bottom) / temp3;
+			matrix[10] = (-zfar - znear) / temp4;
+			matrix[11] = -1.0;
+			matrix[12] = 0.0;
+			matrix[13] = 0.0;
+			matrix[14] = (-temp * zfar) / temp4;
+			matrix[15] = 0.0;
+
+		}
+		glLoadMatrixd(matrix);
+	
+	}
 	void setup_transform()
 	{
 	}
@@ -1080,7 +1136,8 @@ namespace ms {
 		glutCreateWindow("RSV");
 		initialize();
 		t2 = t1 = t0 = 0;
-		t1 = 1;
+		t1 = 2;
+		t0 = 90;
 		//override model0
 		{
 			double
@@ -1464,7 +1521,6 @@ namespace ms {
 	/*
 	almost a copy of renderMinkVoronoi,
 	just that it renders overlayed collision test results.
-
 
 	*/
 	void renderRefinementCollisionTest(
@@ -1879,6 +1935,259 @@ namespace ms {
 
 		glEnable(GL_DEPTH_TEST);
 
+		glutMainLoop();
+	}
+
+
+	/*
+	Def : render loop to see configuration space obstacles in 3d.
+	*/
+	namespace renderCSObjectGlobal
+	{
+		std::vector<decltype(ms::Model_Result)> mink;
+		std::vector<decltype(ms::ModelInfo_Boundary)> isBoundary;
+		double camera[9]; // center-xyz, view-dir-xyz, up-xyz // notice that this is not a direct input to gluLookat
+	}
+	void renderCSObject(
+		int argc,
+		char* argv[],
+		std::vector<decltype(ms::Model_Result)>& MRs,
+		std::vector<decltype(ms::ModelInfo_Boundary)>& MIBs
+		)
+	{
+		// 0. init stuff
+		using namespace renderCSObjectGlobal;
+		mink = MRs;
+		isBoundary = MIBs;
+		wd = ht = 800;
+		double xtoy = 1.0;
+		{
+			camera[0] = 0.0;
+			camera[1] = 0.0;
+			camera[2] = 0.0;
+		
+			camera[3] = 0.0;
+			camera[4] = 1.0;
+			camera[5] = 0.0;
+			
+			camera[6] = 0.0;
+			camera[7] = 0.0;
+			camera[8] = 1.0;
+		}
+
+		// 0-1. init gl context
+		glutInit(&argc, argv);
+		glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
+		glutInitWindowSize(wd, ht);
+		glutCreateWindow("CS Obstacles");
+		
+		// 0-2 make lambdas.
+		auto reshapeFunc = [](GLint w, GLint h)
+		{
+			// later
+		};
+		auto idleFunc = []()
+		{
+			// later
+
+
+			
+			glutPostRedisplay();
+		};
+		auto mouseFunc = [](int button, int action, int x, int y)
+		{
+		
+		};
+		auto keyboardFunc = [](unsigned char a, int b, int c)
+		{
+			planning::keyboardflag[a] = !planning::keyboardflag[a];
+			// pressing a once will flip keybaord flag btw 0 and 1
+			// pressing it for a long time will make it oscillate 010101
+		};
+		auto displayFunc = []()
+		{
+			// 1. clear
+			glClearColor(0.0, 1.0, 1.0, 1.0);
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+			glColor3f(0.0f, 0.0f, 0.0f);
+			
+			// 2. set matrix
+			// 2-1. perspective;
+			setup_veiwvolume2();
+			
+			// 2-2. modelview
+			
+			glMatrixMode(GL_MODELVIEW);
+			glLoadIdentity();
+			gluLookAt(
+				camera[0], camera[1], camera[2],
+				camera[0] + camera[3], camera[1] + camera[4], camera[2] + camera[5],
+				camera[6], camera[7], camera[8]);
+			
+			// 3. set viewport and draw
+			//glViewport(wd * 1 / 3, 0, wd * 2 / 3, ht);
+			
+			// 3-1. VIEWPORT 0
+			glViewport(0, 0, wd, ht);
+
+			// 3-1-1. light
+			glEnable(GL_LIGHTING);
+			float ambLight[4] = { 0.1, 0.1, 0.1, 1.0 };
+			float difLight[4] = { 0.8, 0.8, 0.8, 1.0 };
+			float posLight[4] = { camera[0], camera[1], camera[2], 1.0 };
+			glLightfv(GL_LIGHT0, GL_AMBIENT, ambLight);
+			glLightfv(GL_LIGHT0, GL_DIFFUSE, difLight);
+			glLightfv(GL_LIGHT0, GL_POSITION, posLight);
+			glEnable(GL_LIGHT0);
+
+			float red[4] = { 1,0,0,1 };
+			glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, red);
+
+			// 3-1-2. real draw
+			//glColor3f(1, 0, 0);
+
+			//glNormal3f(0, -1, 0);
+			//glVertex3f(0, 1, 0.1);
+			//glVertex3f(0, 1, 0);
+			//glVertex3f(0.1, 1, 0);
+
+			double dz = 1.0 / 360.f;
+			double z;
+			int count = 0;
+			int RES = 3;
+			auto drawArcToQuads = [&](CircularArc& c)
+			{
+				for (int i = 0; i < RES; i++) {
+					Point p = c((double)i / RES);
+					Point q = c((double)(i + 1) / RES);
+
+					Point d = p - q;
+					d.normalize();
+
+					float normal[3] = { -d.y(), d.x(), 0.0 };
+
+					glBegin(GL_TRIANGLE_STRIP);
+					glNormal3fv(normal);
+					glVertex3f(p.x(), p.y(), z);
+					glVertex3f(p.x(), p.y(), z + dz);
+					glVertex3f(q.x(), q.y(), z);
+					glVertex3f(q.x(), q.y(), z + dz);
+					count++;
+					count++;
+					glEnd();
+
+				}
+			};
+
+
+			for (int i = 0; i <1 /* ms::numofframe*/; i++)
+			{
+				z = i / 360.0f;
+				for (auto& loops : mink)
+				{
+					for (auto& loop : loops)
+					{
+						for (auto& as : loop)
+							for (auto& arc : as.Arcs)
+							{
+								drawArcToQuads(arc);
+							}
+					}
+				}
+			}
+			cout << "tri count : " << count << endl;
+
+
+
+
+			
+			// 4. swap
+			glutSwapBuffers();
+
+			// 10. camera 
+			{
+				// 1. take care of camera
+				auto& key = planning::keyboardflag;
+				auto& key2 = planning::keyboardflag_last;
+
+				// 1-1. left
+				double leftDir[3];
+				leftDir[0] = -camera[4];
+				leftDir[1] = camera[3];
+				leftDir[2] = 0.0;
+
+				// 1-2. simple vec mult add for 3-arr-double
+				// x = x + y * m;
+				auto multAdd = [&](double* x, double* y, double m)
+				{
+					x[0] += m * y[0];
+					x[1] += m * y[1];
+					x[2] += m * y[2];
+				};
+				double mult = 0.03;
+				double dtheta = 6.0 * PI / 360.0;
+				double cdtheta = cos(dtheta);
+				double sdtheta = sin(dtheta);
+
+				char temp;
+
+				temp = 'w';
+				if (key[temp] != key2[temp])
+					multAdd(camera, camera + 3, mult);
+				temp = 's';
+				if (key[temp] != key2[temp])
+					multAdd(camera, camera + 3, -mult);
+				temp = 'a';
+				if (key[temp] != key2[temp])
+					multAdd(camera, leftDir, mult);
+				temp = 'd';
+				if (key[temp] != key2[temp])
+					multAdd(camera, leftDir, -mult);
+				temp = 'r';
+				if (key[temp] != key2[temp])
+					multAdd(camera, camera + 6, mult);
+				temp = 'f';
+				if (key[temp] != key2[temp])
+					multAdd(camera, camera + 6, -mult);
+
+				temp = 'j';
+				if (key[temp] != key2[temp])
+				{
+					double x = cdtheta * camera[3] - sdtheta * camera[4];
+					double y = sdtheta * camera[3] + cdtheta * camera[4];
+					camera[3] = x;
+					camera[4] = y;
+				}
+
+				temp = 'l';
+				if (key[temp] != key2[temp])
+				{
+					double x = +cdtheta * camera[3] + sdtheta * camera[4];
+					double y = -sdtheta * camera[3] + cdtheta * camera[4];
+					camera[3] = x;
+					camera[4] = y;
+				}
+
+				cout << "camera : " << camera[0] << " " << camera[1] << " " << camera[2] << " // "
+					<< camera[3] << " " << camera[4] << " " << camera[5] << " // "
+					<< camera[6] << " " << camera[7] << " " << camera[8] << " " << endl;
+				cout << key['w'] << key2['w'] << endl;
+			}
+
+			// 99. set keyboardFlagOld
+			for (int i = 0; i < 256; i++)
+				planning::keyboardflag_last[i] = planning::keyboardflag[i];
+		};
+		
+		// 0-3. set labmdas
+		glutReshapeFunc(reshapeFunc);
+		glutDisplayFunc(displayFunc);
+		glutMouseFunc(mouseFunc);
+		glutKeyboardFunc(keyboardFunc);
+		glutIdleFunc(idleFunc);
+		
+		glEnable(GL_DEPTH_TEST);
+		
 		glutMainLoop();
 	}
 
