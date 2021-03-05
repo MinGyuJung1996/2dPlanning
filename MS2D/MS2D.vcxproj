@@ -160,16 +160,19 @@
     <ClInclude Include="stb_image.h" />
     <ClInclude Include="stb_image_write.h" />
     <ClInclude Include="voronoi.hpp" />
+    <ClInclude Include="xyt-cs.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AStarOnVorDiag.cpp" />
     <ClCompile Include="collision detection.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="main2.cpp" />
     <ClCompile Include="MS2D.cpp" />
     <ClCompile Include="Bernstein.cpp" />
     <ClCompile Include="realMain.cpp" />
     <ClCompile Include="stb.cpp" />
     <ClCompile Include="voronoi.cpp" />
+    <ClCompile Include="xyt-cs.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="debug_notes.txt" />

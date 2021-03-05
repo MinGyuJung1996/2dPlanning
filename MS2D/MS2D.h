@@ -16,6 +16,10 @@
 
 static double dbgBlock[100];
 
+static const double PI		=		3.14159265358979323846264;
+static const double PI2		= 2 *	3.14159265358979323846264;
+static const double PI_half	= 0.5 * 3.14159265358979323846264;
+
 namespace ms {
 	extern int
 		&t0,
@@ -31,10 +35,10 @@ namespace ms {
 	static const double N_PRESCISION = 1e-8;
 	static const double N_HIGH_PRESCISION = 1e-8;
 
-	// PI
-	static const double PI		=		3.14159265358979323846264;
-	static const double PI2		= 2 *	3.14159265358979323846264;
-	static const double PI_half	= 0.5 * 3.14159265358979323846264;
+	//// PI
+	//static const double PI		=		3.14159265358979323846264;
+	//static const double PI2		= 2 *	3.14159265358979323846264;
+	//static const double PI_half	= 0.5 * 3.14159265358979323846264;
 
 	// Draw Resolution (For Circular Arc)
 	// RES : The number of Points used to draw single Circular Arc
@@ -334,6 +338,13 @@ namespace ms {
 		inline Point& n1() { return n[1]; }
 		inline Point& x0() { return x[0]; }
 		inline Point& x1() { return x[1]; }
+		inline double& cx() { return c.c.x(); }
+		inline double& cy() { return c.c.y(); }
+		inline double& cr() { return c.r; }
+		inline double atan0() { return atan2(n0().y(), n0().x()); }
+		inline double atan1() { return atan2(n1().y(), n1().x()); }
+		inline bool& lccw() { return ccw; } // local-ccw, might need some caution as mink-sum part it seems like he used gccw/lccw mixed for "bool ccw"
+		inline bool& cvx() { return convex; }
 
 	};
 

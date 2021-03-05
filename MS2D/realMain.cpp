@@ -32,12 +32,16 @@ namespace ms
 		decltype(planning::voronoiBoundary)& voronoiBoundary,
 		std::vector<planning::VR_IN> VRINs
 		);
+}
+
+namespace rendering3D
+{
 	void renderCSObject(
 		int argc,
 		char* argv[],
 		std::vector<decltype(ms::Model_Result)>& MRs,
 		std::vector<decltype(ms::ModelInfo_Boundary)>& MIBs
-		);
+	);
 }
 
 namespace graphSearch
@@ -305,7 +309,7 @@ namespace graphSearch
 		// uncomment below to begin renderLoop for mink/voronoi calculated above.
 		//ms::renderMinkVoronoi(argc, argv, MRs, MIBs, v_edges, planning::voronoiBoundary);
 		//ms::renderRefinementCollisionTest(argc, argv, MRs, MIBs, v_edges, planning::voronoiBoundary, VRINs);
-		ms::renderCSObject(argc, argv, MRs, MIBs);
+		rendering3D::renderCSObject(argc, argv, MRs, MIBs);
 
 		// 4-2. render robot's path
 		// Path found on step 3 should be used instead of dummy_path
