@@ -20,6 +20,19 @@ static const double PI		=		3.14159265358979323846264;
 static const double PI2		= 2 *	3.14159265358979323846264;
 static const double PI_half	= 0.5 * 3.14159265358979323846264;
 
+namespace ms
+{
+	class CircularArc;
+	class Circle;
+	class Point;
+}
+
+void
+	readArcModel(const char* arcIn, const char* circIn, std::vector<ms::CircularArc>& arcOut, std::vector<ms::Circle>& circOut);
+void
+	appendArcModel(std::vector<ms::CircularArc>& sceneOriginal, std::vector<ms::Circle>& sceneCircles, std::vector<ms::CircularArc>& arcs, std::vector<ms::Circle>& circs, double scale, double rotationDegree, ms::Point translation);
+
+
 namespace ms {
 	extern int
 		&t0,

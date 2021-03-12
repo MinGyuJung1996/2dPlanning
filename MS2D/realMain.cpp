@@ -42,6 +42,10 @@ namespace rendering3D
 		std::vector<decltype(ms::Model_Result)>& MRs,
 		std::vector<decltype(ms::ModelInfo_Boundary)>& MIBs
 	);
+	namespace main3
+	{
+		int main3(int argc, char* argv[]);
+	}
 }
 
 namespace graphSearch
@@ -195,6 +199,7 @@ int main(int argc, char *argv[]) {
 
 	//cout << "fake func" << endl;
 
+	rendering3D::main3::main3(argc, argv);
 	//graphSearch::searchTest();
 	graphSearch::main2(argc, argv);
 	

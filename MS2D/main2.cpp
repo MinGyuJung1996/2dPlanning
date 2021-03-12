@@ -3,6 +3,7 @@
 #include <iomanip>
 #include "voronoi.hpp"
 #include "collision detection.hpp"
+#include "xyt-cs.hpp"
 
 namespace rendering3D
 {
@@ -29,8 +30,8 @@ namespace rendering3D
 		double
 			fovyInDegrees = 30.0,
 			aspectRatio = 1.0, // x/y
-			znear = 0.01,
-			zfar = 10.0;
+			znear = 0.001,
+			zfar = 100.0;
 		//gluPerspective(fovy, aspect, znear, zfar); // this breaks the code which turns bezier to arcs -> this seems like a v ery complicated bug... kind of circumvent it for now
 
 		double matrix[16];
@@ -150,7 +151,7 @@ namespace rendering3D
 			elevation = 0.0;
 
 			
-			mult	= 0.03;
+			mult	= 0.5;
 			dphi	= 6.0 * PI / 360.0;
 			dtheta	= 6.0 * PI / 360.0;
 			cdtheta	= cos(dtheta);
@@ -166,10 +167,10 @@ namespace rendering3D
 			char temp;
 
 			// 1. tranlsate camera(wasd rf)
-			temp = 'w';
+			temp = 'r';
 			if (key[temp] != key2[temp])
 				multAdd(camera, camera + 3, mult);
-			temp = 's';
+			temp = 'f';
 			if (key[temp] != key2[temp])
 				multAdd(camera, camera + 3, -mult);
 			temp = 'a';
@@ -178,10 +179,10 @@ namespace rendering3D
 			temp = 'd';
 			if (key[temp] != key2[temp])
 				multAdd(camera, leftDir, -mult);
-			temp = 'r';
+			temp = 'w';
 			if (key[temp] != key2[temp])
 				multAdd(camera, camera + 6, mult);
-			temp = 'f';
+			temp = 's';
 			if (key[temp] != key2[temp])
 				multAdd(camera, camera + 6, -mult);
 
@@ -218,6 +219,18 @@ namespace rendering3D
 				elevation -= dphi;
 				if (elevation < phimin)
 					elevation = phimin;
+			}
+
+			// 3. camera speed;
+			temp = 'z';
+			if (key[temp] != key2[temp])
+			{
+				mult = mult * 2;
+			}
+			temp = 'x';
+			if (key[temp] != key2[temp])
+			{
+				mult = mult * 0.5;
 			}
 
 			//set cam-view-dir-with elevation (also called forward dir)
@@ -634,6 +647,8 @@ namespace rendering3D
 	namespace main3
 	{
 		cam3d cam;
+		vector<csSurf> out;
+		vector<vector<triNormal>*> drawingSets;
 
 		void reshapeFunc(GLint w, GLint h)
 		{
@@ -682,7 +697,61 @@ namespace rendering3D
 			float red[4] = { 1,0,0,1 };
 			glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, red);
 
+			// 2-3. draw tri;
 
+			//// case, evaluated until tess
+			//for (auto& surf : out)
+			//{
+			//	auto& s = surf.surface();
+			//	auto& n = surf.normals();
+
+			//	int I = s.size();
+			//	int J = s[0].size();
+
+			//	for (int i = 0; i < (I - 1); i++)
+			//	{
+			//		glBegin(GL_TRIANGLE_STRIP);
+			//		for (int j = 0; j < J; j++)
+			//		{
+			//			glNormal3dv(n[i+0][j].v3d());
+			//			glVertex3dv(s[i+0][j].v3d());
+			//			glNormal3dv(n[i+1][j].v3d());
+			//			glVertex3dv(s[i+1][j].v3d());
+			//		}
+			//		glEnd();
+			//	}
+
+			//}
+
+			// case, evaluated until drawingSet.
+			glBegin(GL_TRIANGLES);
+			for (auto& ds : drawingSets)
+			{
+				for (auto& tn : *ds)
+				{
+					glNormal3dv(tn.n0());
+					glVertex3dv(tn.x0());
+					glNormal3dv(tn.n1());
+					glVertex3dv(tn.x1());
+					glNormal3dv(tn.n2());
+					glVertex3dv(tn.x2());
+				}
+			}
+			glEnd();
+
+			// 2-4. draw -pi/pi
+
+			if (planning::keyboardflag['c'])
+			{
+				glBegin(GL_TRIANGLES);
+				glVertex3d(-100, -100, +3.14159297);
+				glVertex3d(100 , 0   , +3.14159297);
+				glVertex3d(0   , 100 , +3.14159297);
+				glVertex3d(-100, -100, -3.14159297);
+				glVertex3d(100 , 0   , -3.14159297);
+				glVertex3d(0   , 100 , -3.14159297);
+				glEnd();
+			}
 			// 4. swap
 			glutSwapBuffers();
 
@@ -693,8 +762,6 @@ namespace rendering3D
 			for (int i = 0; i < 256; i++)
 				planning::keyboardflag_last[i] = planning::keyboardflag[i];
 		};
-
-
 
 		int main3(int argc, char* argv[])
 		{
@@ -714,11 +781,55 @@ namespace rendering3D
 			vector<Circle> obsC;
 
 			{
+				robot.push_back(CircularArc(Point(1, 1), 0.5, Point(1, 0), Point(0, 1)));
+				robot.push_back(CircularArc(Point(1, 1), 0.5, Point(0, 1), Point(-1, 0)));
+				robot.push_back(CircularArc(Point(1, 1), 0.5, Point(-1, 0), Point(0, -1)));
+				robot.push_back(CircularArc(Point(1, 1), 0.5, Point(0,-1), Point(1, 0)));
 
+				obs = robot;
+
+				vector<CircularArc> arcObjectSq;
+				vector<Circle>	   circObjectSq;
+				readArcModel("Objects/Square-shape/arc.txt", "Objects/Square-shape/circ.txt", arcObjectSq, circObjectSq);
+
+				vector<CircularArc> arcObjectTri;
+				vector<Circle>     circObjectTri;
+				readArcModel("Objects/Tri-shape/arc.txt", "Objects/Tri-shape/circ.txt", arcObjectTri, circObjectTri);
+
+				appendArcModel(obs, obsC, arcObjectSq, circObjectSq, 1, 0, Point(-1.1, -1.3));
+				appendArcModel(obs, obsC, arcObjectTri, circObjectTri, 1, 0, Point(+1.1, -1.3));
 			}
 
-			// 3.
+			// 3. use calc
+			configSpaceCalculator csc;
+			csc.setRobot(robot);
+			csc.setObstacle(obs);
+			csc.setOutput(out);
 
+			csc.isInputProper();
+			csc.calculate();
+
+			// 4. tess
+			for (auto& surf : out)
+				surf.tessellation(10,10);
+
+			//5. cut tris and offset it. So that theta is in some range.
+			for (auto& surf : out)
+				drawingSets.push_back(surf.drawingSet());
+
+
+			// 10. register Func and start loop
+			glutReshapeFunc(reshapeFunc);
+			glutDisplayFunc(displayFunc);
+			glutMouseFunc(mouseFunc);
+			glutKeyboardFunc(keyboardFunc);
+			glutIdleFunc(idleFunc);
+
+			glEnable(GL_DEPTH_TEST);
+
+			glutMainLoop();
+
+			return 0;
 		}
 	}
 

@@ -3,6 +3,180 @@
 
 //double dbgBlock[100];
 
+#pragma region Code by MgJung
+/*
+Def : 
+	Read from CircularArc format
+Parameter :
+	fileName
+	fileName
+	vector to store arcs read
+	vector to store circles read
+Description :
+	Format of file is self-explanatory... see switch for detail.
+	a d c l 
+*/
+void readArcModel(const char* arcIn, const char* circIn, std::vector<ms::CircularArc>& arcOut, std::vector<ms::Circle>& circOut)
+{
+	using namespace std;
+	using namespace ms;
+	// 1. fstream
+	ifstream ais(arcIn);
+	ifstream cis(circIn);
+	
+	size_t asz, csz;
+	
+	// 2. read circles;
+	if(cis.is_open())
+	{ 
+		cis >> csz;
+		for (int i = 0; i < csz; i++)
+		{
+			double cx, cy, cr;
+			cis >> cx >> cy >> cr;
+		
+			circOut.push_back(Circle(Point(cx, cy), cr));
+		}
+	}
+	else
+	{
+		cout << "Did not open Circle file." << endl;
+	}
+
+	// 3. read arcs
+	if (!ais)
+	{
+		cerr << "!!!!!!ERROR : failed to open arc file : " << arcIn << endl;
+	}
+
+	ais >> asz;
+	vector<CircularArc>& temp = arcOut;
+	set<int> case_c;
+	char type;
+	double cx, cy, cr, t0, t1, ccw;
+	for (int i = 0; i < asz; i++)
+	{
+		ais >> type;
+		switch (type)
+		{
+		case 'a':
+			// the text line contains info : circle, theta0, theta1, ccw_info 
+			{
+				ais >> cx >> cy >> cr >> t0 >> t1 >> ccw;
+	
+				if (ccw)
+					while (t1 < t0)
+						t1 += PI * 2;
+				else
+					while (t1 > t0)
+						t1 -= PI * 2;
+				temp.push_back(cd::constructArc(Point(cx, cy), cr, t0, t1));
+			}
+			break;
+		case 'd':
+			// similar to a, just that the angles are in 'degrees' no 'radian' => simply change it;
+			{
+				ais >> cx >> cy >> cr >> t0 >> t1 >> ccw;
+
+				t0 = t0 / 180 * PI;
+				t1 = t1 / 180 * PI;
+
+				if (ccw)
+					while (t1 < t0)
+						t1 += PI * 2;
+				else
+					while (t1 > t0)
+						t1 -= PI * 2;
+				temp.push_back(cd::constructArc(Point(cx, cy), cr, t0, t1));
+			}
+		break;
+
+		case 'c':
+			// given : radius
+			// connect prev.x1() and next.x0(), with a striaght line (approximated radius cr)
+			ais >> cr >> ccw;
+			temp.push_back(CircularArc());
+			temp[i].c.r = cr;
+			temp[i].ccw = ccw;
+			case_c.insert(i); // process after other arcs are done.
+			break;
+		case 'l':
+			// given : two points on the arc, radius, and which side of the chord the center lies
+			//	devised to easily approximate straight lines
+			//		connect Point x0(cx,cy) and Point x1(t0,t1) to form a line (approximated with radius cr)
+			// its center lies in the left (view-direction = tangent at cx,cy) if (ccw == true)
+			// cr : should be at least bigger than half of distance btw x0 and x1
+			//		but no upper-bound of cr (but too big cr leads to numerical errors in mink/voronoi)
+			// code is kinda messy as it reuses variables for case 'a'
+			{
+				ais >> cx >> cy >> t0 >> t1 >> cr >> ccw;
+				Point x0(cx, cy);
+				Point x1(t0, t1);
+	
+				//// get center with pythagoras
+				//Point dx = x1 - x0;
+				//double bsquare = (dx.length2()) / 4;
+				//double asquare = cr * cr - bsquare;
+				//double a = sqrt(asquare); // dist from circle_center to chord
+	
+				//// get normal direction using ccw
+				//Point normal;
+				//if (ccw)
+				//	normal = cd::rotatePoint(dx, 90).normalize();
+				//else
+				//	normal = cd::rotatePoint(dx, -90).normalize();
+	
+				//Point center = (x1 + x0) * 0.5 + normal * a;
+	
+				//cd::constructArc(center, x0, x1, ccw);
+	
+				temp.push_back(cd::constructArc(x0, x1, cr, ccw));
+			}
+			break;
+		default:
+			break;
+		}
+	}
+	
+	// 3-2. take care of case c
+	for (auto idx : case_c)
+	{
+		auto prev = (idx - 1) % asz;
+		auto next = (idx + 1) % asz;
+		Point x0 = temp[prev].x1();
+		Point x1 = temp[next].x0();
+		temp[idx] = cd::constructArc(x0, x1, temp[idx].c.r, temp[idx].ccw);
+	}
+	
+	// processing of temp is done at this point.
+	
+}
+
+/*
+Def :
+	append to scene after applying transformation
+Parameter :
+	(Arc, Circle) vector of the scene
+	(Arc, Circle) vector of the object
+	(scale, rotation, translation) 3 transforms applied t object
+*/
+void appendArcModel(std::vector<ms::CircularArc>& sceneOriginal, std::vector<ms::Circle>& sceneCircles, std::vector<ms::CircularArc>& arcs, std::vector<ms::Circle>& circs, double scale, double rotationDegree, ms::Point translation)
+{
+	// 1. arc : apply transform & push_back
+	for (auto& arc : arcs)
+		sceneOriginal.push_back(cd::translateArc(cd::rotateArc(cd::scaleArc(arc, scale), rotationDegree), translation));
+
+	// 2. circ : apply transform & push_back
+	for (auto& circ : circs)
+	{
+		auto rad = scale * circ.r;
+		auto center = cd::rotatePoint(scale * circ.c, rotationDegree) + translation;
+		sceneCircles.push_back(ms::Circle(center, rad));
+	}
+};
+
+#pragma endregion
+
 namespace ms{
 
 	int RES = 100;
@@ -25,6 +199,15 @@ bool Model_from_arc[8];					// true: read from circular arc file // false : read
 #define useNewerVersionOfG1conveter false
 
 #define DEBUG
+
+/************************************************************************************************************
+**																										   **
+**									Code by MgJung(Enclosed By region)									   **
+**																										   **
+*************************************************************************************************************/
+
+		
+
 
 /*!
 *	\brief 필요한 데이터(B-Spline Model Data, Interior Disk Data)를 Import하고, 8개의 기본 모델에 대하여 Arc Spline으로 근사한다
@@ -446,37 +629,40 @@ void initialize()
 		*/
 		auto readArcModelAndProcessIt = [](const char* arcIn, const char* circIn, vector<CircularArc>& arcOut, vector<Circle>& circOut) 
 		{
-			// 1. fstream
-
-			ifstream ais(arcIn);
-			ifstream cis(circIn);
-
-			size_t asz, csz;
-			ais >> asz;
-			cis >> csz;
-
-			
-			// 2. read circles;
-			for (int i = 0; i < csz; i++)
+			// 1~3. migrated to readArcModel()
+			if (false)
 			{
-				double cx, cy, cr;
-				cis >> cx >> cy >> cr;
+				// 1. fstream
 
-				circOut.push_back(Circle(Point(cx, cy), cr));
-			}
+				ifstream ais(arcIn);
+				ifstream cis(circIn);
 
-			// 3. read arcs
-			vector<CircularArc> temp;
-			set<int> case_c;
-			char type;
-			double cx, cy, cr, t0, t1, ccw;
-			for (int i = 0; i < asz; i++)
-			{
-				ais >> type;
-				switch (type)
+				size_t asz, csz;
+				ais >> asz;
+				cis >> csz;
+
+
+				// 2. read circles;
+				for (int i = 0; i < csz; i++)
 				{
-				case 'a':
-					// the text line contains info : circle, theta0, theta1, ccw_info 
+					double cx, cy, cr;
+					cis >> cx >> cy >> cr;
+
+					circOut.push_back(Circle(Point(cx, cy), cr));
+				}
+
+				// 3. read arcs
+				vector<CircularArc> temp;
+				set<int> case_c;
+				char type;
+				double cx, cy, cr, t0, t1, ccw;
+				for (int i = 0; i < asz; i++)
+				{
+					ais >> type;
+					switch (type)
+					{
+					case 'a':
+						// the text line contains info : circle, theta0, theta1, ccw_info 
 					{
 						ais >> cx >> cy >> cr >> t0 >> t1 >> ccw;
 
@@ -489,23 +675,23 @@ void initialize()
 						temp.push_back(cd::constructArc(Point(cx, cy), cr, t0, t1));
 					}
 					break;
-				case 'c':
-					// given : radius
-					// connect prev.x1() and next.x0(), with a striaght line (approximated radius cr)
-					ais >> cr >> ccw;
-					temp.push_back(CircularArc());
-					temp[i].c.r = cr;
-					temp[i].ccw = ccw;
-					case_c.insert(i); // process after other arcs are done.
-					break;
-				case 'l':
-					// given : two points on the arc, radius, and which side of the chord the center lies
-					//	devised to easily approximate straight lines
-					//		connect Point x0(cx,cy) and Point x1(t0,t1) to form a line (approximated with radius cr)
-					// its center lies in the left (view-direction = tangent at cx,cy) if (ccw == true)
-					// cr : should be at least bigger than half of distance btw x0 and x1
-					//		but no upper-bound of cr (but too big cr leads to numerical errors in mink/voronoi)
-					// code is kinda messy as it reuses variables for case 'a'
+					case 'c':
+						// given : radius
+						// connect prev.x1() and next.x0(), with a striaght line (approximated radius cr)
+						ais >> cr >> ccw;
+						temp.push_back(CircularArc());
+						temp[i].c.r = cr;
+						temp[i].ccw = ccw;
+						case_c.insert(i); // process after other arcs are done.
+						break;
+					case 'l':
+						// given : two points on the arc, radius, and which side of the chord the center lies
+						//	devised to easily approximate straight lines
+						//		connect Point x0(cx,cy) and Point x1(t0,t1) to form a line (approximated with radius cr)
+						// its center lies in the left (view-direction = tangent at cx,cy) if (ccw == true)
+						// cr : should be at least bigger than half of distance btw x0 and x1
+						//		but no upper-bound of cr (but too big cr leads to numerical errors in mink/voronoi)
+						// code is kinda messy as it reuses variables for case 'a'
 					{
 						ais >> cx >> cy >> t0 >> t1 >> cr >> ccw;
 						Point x0(cx, cy);
@@ -531,23 +717,26 @@ void initialize()
 						temp.push_back(cd::constructArc(x0, x1, cr, ccw));
 					}
 					break;
-				default:
-					break;
+					default:
+						break;
+					}
 				}
+
+				// 3-2. take care of case c
+				for (auto idx : case_c)
+				{
+					auto prev = (idx - 1) % asz;
+					auto next = (idx + 1) % asz;
+					Point x0 = temp[prev].x1();
+					Point x1 = temp[next].x0();
+					temp[idx] = cd::constructArc(x0, x1, temp[idx].c.r, temp[idx].ccw);
+				}
+
+				// processing of temp is done at this point.
 			}
 
-			// 3-2. take care of case c
-			for (auto idx : case_c)
-			{
-				auto prev = (idx - 1) % asz;
-				auto next = (idx + 1) % asz;
-				Point x0 = temp[prev].x1();
-				Point x1 = temp[next].x0();
-				temp[idx] = cd::constructArc(x0, x1, temp[idx].c.r, temp[idx].ccw);
-			}
-
-			// processing of temp is done at this point.
-
+			vector<CircularArc> temp;
+			readArcModel(arcIn, circIn, temp, circOut);
 
 			// 4. re-order temp (make it G0-continuous)
 			vector<CircularArc> g0;
@@ -561,6 +750,7 @@ void initialize()
 				planning::_Convert_VectorCircularArc_G1(g0, g1);
 
 		};
+
 
 		// 2-2. Load L-shaped model
 		vector<CircularArc> arcObjectL;

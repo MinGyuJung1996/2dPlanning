@@ -5,137 +5,12 @@
 ******************************************************************************************************/
 
 #include "xyt-cs.hpp"
-using namespace std;
-
-using CircularArc = ms::CircularArc;
-/*
-Arc ADT used:
-	cx	cy	cr
-	atan0	atan1
-*/
-
-using Point = ms::Point;
-/*
-Point ADT used:
-	x()
-	y()
-*/
-
-using real = double; // just in case there is a need for a higher-precision-fp-lib
-
-
-/*
-Def : a point in (R^2 X S^1) space
-
-Assume :
-	t loops at 2n*pi 	
-*/
-class xyt
-{
-public:
-	inline double& x() {return _x;}
-	inline double& y() {return _y;}
-	inline double& t() {return _t;}
-	
-	xyt() = default;
-	~xyt() = default;
-	inline xyt(real x, real y, real t): _x(x), _y(y), _t(t) {}
-
-private:
-	double _x;
-	double _y;
-	double _t;
-};
-using triangulationXYT = vector<vector<xyt>>;
 
 /*****************************************************************************************************
 **																									**
 **											csSurface												**
 **																									**
 ******************************************************************************************************/
-
-/*
-Def :
-	Describes a surface in xyt space, which is formed from two convex arcs(angle < 180).
-	
-Desc :
-Not actually a cylinder.. but similar some how...
-What would stacking convolution of two arcs be like(with first arc being rotatable)???
-	1. They would be a subset of a cylinder R(:=r1+r2), but as theta changes, the center of the cylinder keeps changing.
-	2. It is a parallelogram in the parameter space. (theta-phi is the param space)
-		Theta is the rotation
-		This is because... hard to explain...
-		Notice that the topology of param-space is actually a T2... since theta and phi both loops
-Assume:
-	Input CircularArc's angle < 180 degree;
-		If > 180, just cut it half
-How to use:
-	1. constructor
-	2. tessellate (the theta will probably be out of range [0,2pi]
-	3. surface
-	
-*/
-class csSurf
-{
-public:
-
-	/* Inline Alias */
-	inline Point& 
-		c0() { return _center0; }
-	inline Point& 
-		c1() { return _center1; }
-	inline double 
-		r() { return _rad; }
-	inline Point& 
-		c(double thetaRad) { return _center0 + (_center1.rotate(thetaRad)); }
-	inline Point& 
-		x(double thetaRad, double phiRad) { return c(thetaRad) + r() * Point(cos(phiRad), sin(phiRad)); }
-	inline triangulationXYT&
-		surface() { if (!_flagTrianglesFound) cerr << "!!!!!!!!ERROR: _flagTrianglesFound" << endl; return _tess; }
-
-
-	/* Constructor/Destructor */
-	csSurf() = default;
-	csSurf(CircularArc& robot, CircularArc& obs, Point& robotCenter);
-	~csSurf() = default;
-
-	/* functions to get some geometry */
-	void tessellation(int nPhi = 10, int nTheta = 10);
-	CircularArc slice(real theta);
-
-private:
-	/* FLAGS */
-	bool
-		_flagEquationFound = false,
-		_flagTrianglesFound = false;
-
-	/* Var for equation of the surface */
-	Point	_center0;
-	Point	_center1;	// circle center at theta : _center0 + _center1.rotate(theta)
-	real	_rad;		// rad = r1+r2 (for now, convex only)
-
-	/* Var for domain of the surface */
-	// domain : {phi0 < \phi < phi1 } \and {tmp0 < \theta - \phi < tmp1}
-	//		=> a band with grad = 1 in phi-theta space;
-	real
-		_phi0,
-		_phi1,
-		_tmp0,
-		_tmp1;
-
-	/* Var to store Triangles. (needed for */
-	triangulationXYT _tess;
-
-	/* Construction Info */
-	CircularArc
-		* arcR,
-		* arcO;
-	Point
-		robotCenter;
-private:
-	//void setEquation
-
-};
 
 /*
 Def : constructor
@@ -235,6 +110,9 @@ void csSurf::tessellation(int nPhi, int nTheta)
 	_tess.resize(J+1);
 	for (auto& temp : _tess)
 		temp.resize(I+1);
+	_normals.resize(J + 1);
+	for (auto& temp : _normals)
+		temp.resize(I + 1);
 
 	// 2. evaluate point and save it
 	for (size_t j = 0; j <= J; j++)
@@ -252,9 +130,207 @@ void csSurf::tessellation(int nPhi, int nTheta)
 			// 2-2. get point coord xyt.
 			auto xy = x(theta, phi);
 			_tess[j][i] = xyt(xy.x(), xy.y(), theta);
+
+			// 2-3. get normal by cross producting the thing;
+			xy = _center1.rotate(theta + PI_half);
+			xyt grad_theta = xyt(xy.x(), xy.y(), 1);
+			xyt grad_phi = xyt(_rad * (-sin(phi)), _rad * cos(phi), 0);
+			xyt norm = grad_phi.cross(grad_theta);
+
+			////debug 
+			//norm.x() = -norm.x();
+			//norm.y() = -norm.y();
+			//norm.t() = -norm.t();
+
+			_normals[j][i] = norm.normalize();
 		}
 
 	}
+
+}
+
+/*
+Def : get the triangles of the surface, while qualifying : -pi < \theta < +pi
+	The intention : to make the drawing set needed for rendering (As the theta loops after -pi,+pi)
+Desc :
+	1. check which of the 3 regions theta is in
+		1. [-3pi,-pi) 2.[-pi,pi) 3.[pi, 3pi)
+	2. check vertice positions
+		2.1 if all 3 vert in same region => simply offset theta-coordinate
+		2.2 else slice the triangles(now the slices reside only in a region) => offset
+Assumption:
+	None new.
+	Two convoluted arcs(input to csSurf) both < 180 still holds.
+*/
+vector<triNormal>* csSurf::drawingSet()
+{
+	// 0. check validity of function call.
+	if (!_flagTrianglesFound)
+	{
+		tessellation();
+	}
+
+	// 1. alias/allocation stuff
+	auto ret = new vector<triNormal>;
+	auto& vtn = *ret;
+
+	vector<vector<int>> affiliation;
+	affiliation.resize(_tess.size());
+	for (auto& aff : affiliation)
+		aff.resize(_tess[0].size());
+
+	// 2. calc which area each vertex is affiliated with.
+	for (size_t i = 0; i < affiliation.size(); i++)
+	{
+		for (size_t j = 0; j < affiliation[i].size(); j++)
+		{
+			auto& theta = _tess[i][j].t();
+			if (theta < -PI)
+				affiliation[i][j] = -1;
+			else if (theta > PI)
+				affiliation[i][j] = +1;
+			else
+				affiliation[i][j] = 0; // not needed. Just for better code.
+		}
+	}
+
+	// 3. evaluate triangles
+	// i, j : quad mesh idx.
+	//	k : tri index in a quad(0 or 1)
+	for (size_t i = 0; i < affiliation.size() - 1; i++)
+	for (size_t j = 0; j < affiliation[i].size() - 1; j++)
+	for (size_t k = 0; k < 2; k++)
+	{
+		auto& a0 = affiliation[i + k][j + k];
+		auto& a1 = affiliation[i + 0][j + 1];
+		auto& a2 = affiliation[i + 1][j + 0];
+
+		// 3-1. case : all are in same area
+		if (a0 == a1 && a1 == a2)
+		{
+			auto v0 = _tess[i + k][j + k];
+			auto v1 = _tess[i + 0][j + 1];
+			auto v2 = _tess[i + 1][j + 0];
+			
+			// 3-1-1. check a0 and offset
+			if (a0 == -1)
+			{
+				v0.t() += PI2;
+				v1.t() += PI2;
+				v2.t() += PI2;
+			}
+			else if (a0 == +1)
+			{
+				v0.t() -= PI2;
+				v1.t() -= PI2;
+				v2.t() -= PI2;
+			}
+
+			auto& n0 = _normals[i + k][j + k];
+			auto& n1 = _normals[i + 0][j + 1];
+			auto& n2 = _normals[i + 1][j + 0];
+
+			vtn.emplace_back(v0, n0, v1, n1, v2, n2);
+		}
+
+		// 3-2. case : one vertex is in diff area;
+		// notice that in our configuration of the problem(with above assumptions), the triangles can exist up to two areas. (not three or more)
+		else
+		{
+			// 3-2-1. find out which idx is the one in diff area.
+			int diffIdx;
+			int eqIdx0, eqIdx1;
+			{
+				if (a0 == a1)
+				{
+					diffIdx = 2;
+					eqIdx0 = 0;
+					eqIdx1 = 1;
+				}
+				else if (a1 == a2)
+				{
+					diffIdx = 0;
+					eqIdx0 = 1;
+					eqIdx1 = 2;
+				}
+				else
+				{
+					diffIdx = 1;
+					eqIdx0 = 2;
+					eqIdx1 = 0;
+				}
+			}
+
+			// 3-2-2. find surface : t = theta_k;
+			int a[] = { a0, a1, a2 };
+			double theta_k = -PI;
+			if (a[diffIdx] == 1 || a[eqIdx0] == 1)
+				theta_k = PI;
+
+			// 3-2-3. find intersections
+			//			inter0 = line(diff, eq0) vs z = theta_k
+			//			inter1 = line(diff, eq1) vs z = theta_k
+			// alias
+			xyt* v[] = { &_tess[i + k][j + k],	  &_tess[i + 0][j + 1],	   &_tess[i + 1][j + 0] };
+			xyt* n[] = { &_normals[i + k][j + k], &_normals[i + 0][j + 1], &_normals[i + 1][j + 0] };
+			// lerp
+			auto inter0 = (v[diffIdx]->t() - theta_k) * v[eqIdx0][0] + (theta_k - v[eqIdx0]->t()) * v[diffIdx][0];
+			inter0 = inter0 / (v[diffIdx]->t() - v[eqIdx0]->t());
+			auto inter1 = (v[diffIdx]->t() - theta_k) * v[eqIdx1][0] + (theta_k - v[eqIdx1]->t()) * v[diffIdx][0];
+			inter1 = inter1 / (v[diffIdx]->t() - v[eqIdx1]->t());
+
+			auto normal0 = (v[diffIdx]->t() - theta_k) * n[eqIdx0][0] + (theta_k - v[eqIdx0]->t()) * n[diffIdx][0];
+			normal0 = normal0 / (v[diffIdx]->t() - v[eqIdx0]->t()); // this is needed, else normal direction +- will change
+			normal0 = normal0.normalize();
+			auto normal1 = (v[diffIdx]->t() - theta_k) * n[eqIdx1][0] + (theta_k - v[eqIdx1]->t()) * n[diffIdx][0];
+			normal1 = normal1 / (v[diffIdx]->t() - v[eqIdx1]->t()); // this is needed, else normal direction +- will change
+			normal1 = normal1.normalize();
+
+			// 3-2-4. should triangle with diff be offset?
+			//	or the eqs be offset??
+			// also, find offset amount
+			int offsetDiff = true;
+			if (a[diffIdx] == 0)
+				offsetDiff = false;
+
+			xyt o; // offset
+			o.x() = o.y() = 0.0;
+			if (theta_k == PI)
+				o.t() = -PI2;
+			else
+				o.t() = PI2;
+
+			// 3-2-5. Three tri: (need to offset theta)
+			//			diff  , inter0, inter1
+			//			eqIdx0, eqIdx1, inter0
+			//			inter0, eqIdx1, inter1 
+			// intsert all
+			if (offsetDiff)
+			{
+				vtn.emplace_back(v[diffIdx][0] + o,	n[diffIdx][0],	inter0 + o,			normal0,		inter1 + o, normal1);
+			}
+			else
+			{
+				vtn.emplace_back(v[diffIdx][0], n[diffIdx][0], inter0, normal0, inter1, normal1);
+			}
+
+			if(offsetDiff)
+			{
+				vtn.emplace_back(v[eqIdx0][0],	n[eqIdx0][0],	v[eqIdx1][0],	n[eqIdx1][0],	inter0,	normal0);
+				vtn.emplace_back(inter0,		normal0,		v[eqIdx1][0],	n[eqIdx1][0],	inter1,	normal1);
+			}
+			else
+			{
+				vtn.emplace_back(v[eqIdx0][0] + o,	n[eqIdx0][0],	v[eqIdx1][0] + o,	n[eqIdx1][0],	inter0 + o,	normal0);
+				vtn.emplace_back(inter0 + o,		normal0,		v[eqIdx1][0] + o,	n[eqIdx1][0],	inter1 + o,	normal1);
+			}
+		}
+
+	}
+
+	return ret;
+
+
 
 }
 
@@ -265,50 +341,6 @@ void csSurf::tessellation(int nPhi, int nTheta)
 **										configSpaceCalculator										**
 **																									**
 ******************************************************************************************************/
-
-/*
-Def :
-	Compute Configuration space obstacles
-	Stack of Mink-sum of two objects(one which is a rotatable robot, the other is just the obstacles)
-Assume :
-	Input Arcs are convex arcs, and the loops itself are convex.
-	The 3d-CS-Objects do not intersect each other.
-How to use :
-	1. setRobot
-	2. setObs
-	3. setOut
-	(4. isInputProper)
-	5. calculate
-Description :
-
-+:
-	3 ptr are not allocated by this class. No need to free mem.
-	
-
-*/
-class configSpaceCalculator
-{
-public:
-	configSpaceCalculator();
-	virtual ~configSpaceCalculator() = default;
-
-	inline void 
-		setRobot (vector<CircularArc>& robot) { this->_ptrRob = &robot; };
-	inline void 
-		setObstacle (vector<CircularArc>& obstacles) { this->_ptrObs = &obstacles; };
-	inline void 
-		setOutput(vector<csSurf>& output) { this->_ptrOut = &output; };
-
-	bool 
-		isInputProper();
-	void 
-		calculate();
-
-private:
-	vector<CircularArc>* _ptrRob;
-	vector<CircularArc>* _ptrObs;
-	vector<csSurf>*		 _ptrOut;
-};
 
 /*
 Def : constructor
@@ -323,8 +355,9 @@ configSpaceCalculator::configSpaceCalculator()
 
 /*
 Def : Check whether we are ready for calling "calculate()"
+instead of "throw", simply "cerr + return"
 
-Not done yet.
+Stuffs could be added anytime.
 */
 bool configSpaceCalculator::isInputProper()
 {
@@ -346,9 +379,8 @@ bool configSpaceCalculator::isInputProper()
 }
 
 /*
-Def :
+Def : Do the actual calculation.
 */
-
 void configSpaceCalculator::calculate()
 {
 	// 0. init stuff
