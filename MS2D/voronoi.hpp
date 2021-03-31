@@ -57,6 +57,16 @@ namespace planning
 		{
 			Point v0, v1;	// endpoints for this edge.
 			int idx[2];		// two circular arc indexes which makes this v_edge
+
+			inline v_edge flip()
+			{
+				v_edge temp;
+				temp.v0 = v1;
+				temp.v1 = v0;
+				temp.idx[0] = idx[1];
+				temp.idx[1] = idx[0];
+				return temp;
+			}
 		};
 
 		struct bifur_point
@@ -196,3 +206,223 @@ namespace planning
 	bool isNormalBetween(Point n0, Point n1, Point n);
 
 }
+
+
+/*****************************************************************************************************************************
+**																															**
+**												  ~~~~~~~~~~~~~~~~~~~~~~													**
+**												  ~~Voronoi Calculator~~													**
+**												  ~~~~~~~~~~~~~~~~~~~~~~													**
+**																															**
+** Author : Mingyu Jung																										**
+** Def: An integrated Class which keeps information or byproduct during Voronoi Diagram calculation.						**
+**																															**
+** Other API used :																											**
+**	CircularArc :																											**
+**	Point : length2()																										**
+**	PointOnCurve : 																											**
+**	VoronoiEdge : v0, v1, idx[0], idx[1]																					**
+**  ETC : 																													**
+**	 subdivCircularArc, findMaximalDiskSharingPoint, 																		**
+**																															**
+** Assume :																													**
+**	All objects form a loop (of circular Arcs). The inside/outisde should be distinguishable								**
+**	Objects that will have voronoiEdges outside of it should be parameterized clock-wise									**
+**																															**
+** How to use :																												**
+**	1. construct class instance : voronoiCalculator vc;																		**
+**	2. vc.initialize();																										**
+**	3. vc.setInput(...);																									**
+**	4. vc.setOutput(...);																									**
+**	5. (optional) if(!vc.isProperInput()) ...																				**
+**	6. vc.calculate() (or other subroutines)																				**
+**	7. ... vc.getOutput() ...																								**
+**																															**
+** About Subroutine naming:																									**
+** 	Build____ : builds some internal variable/structrue/class that this class contains or has a pointer to.					**
+** 	Find_____ : finds some value or structure value. Does not alter contents of this class.									**
+** 																															**
+** TODO:																													**
+**	clean up findBisectorRecursively																						**
+*****************************************************************************************************************************/
+
+constexpr bool VORONOI_VERBOSE_ERRORS = false;
+
+using pointOnCurve	= planning::pointOnCurve;
+using poc			= pointOnCurve;
+using CircularArc	= ms::CircularArc;
+using Point			= ms::Point;
+using VoronoiEdge	= planning::output_to_file::v_edge;
+
+using retTypeFBR	= std::deque<VoronoiEdge>;
+
+class voronoiCalculatorResultG;
+
+class voronoiCalculator
+{
+public:
+	/* main API */
+	bool
+		isInputProper();
+	void
+		initialize();
+	void
+		calculate();
+	void
+		calculateG();
+
+	/* I/O */
+	void
+		setInput(std::vector<CircularArc>& arcs, std::vector<int>& leftArcIdx, std::vector<double>& loopIdx);
+	void
+		setOutput(std::vector<retTypeFBR>& output);
+	void
+		setOutputG(voronoiCalculatorResultG& outputG);
+
+	/* Access functions to I/O */
+	inline std::vector<CircularArc>&
+		getArcs()	 { return *_arcs; }
+	inline std::vector<int>&
+		getLeft()	 { return *_leftArc; }
+	inline std::vector<double>&
+		getLoopIdx() { return *_loopIdx; }
+	inline std::vector<retTypeFBR>&
+		getOutput()  { return *_output; }
+	inline voronoiCalculatorResultG&
+		getOutputG() { return *_outputG; }
+
+	/* Access functions to byproducts */
+	inline std::vector<std::set<double>>&
+		getDomains()	 { return _domains; }
+	inline std::map<poc,poc>&
+		getTransitions() { return _transitions; }
+	inline std::map<poc,poc>&
+		getPieces()		 { return _pieces; }
+	inline std::vector<std::vector<CircularArc>>&
+		getCycles()		 { return _cycles; }
+
+	/* Constructor Destructor*/
+	inline
+		voronoiCalculator() = default;
+	virtual
+		~voronoiCalculator() = default;
+
+	/* sub routines */
+	poc  
+		findTransitionPoint(poc p, int left, int right);
+	retTypeFBR
+		findBisectorRecursively(std::vector<CircularArc>& cycle, int depth = 0);
+	std::vector<Point>
+		voronoiCalculator::findBifurcationPointRecursively(std::vector<CircularArc>& cycle, int depth = 0);
+
+	void buildTransitions();
+	void buildPieces();
+	void buildCycles();
+	void buildVoronoiEdges();
+
+private:
+	
+	/* INPUT */
+	std::vector<CircularArc>* 
+		_arcs;
+	std::vector<int>*
+		_leftArc;
+	std::vector<double>*
+		_loopIdx;
+
+	/* OUTPUT */
+	std::vector<retTypeFBR>*
+		_output;
+	voronoiCalculatorResultG*
+		_outputG;
+
+	/* Subroutines (not general) */
+	void
+		buildCalculateGSegCurves(std::vector<CircularArc>& cycle, std::vector<int>& cycleIdx, int depth = 0);
+	std::deque<VoronoiEdge>
+		sortVectorVoronoiEdge(std::vector<VoronoiEdge> ve, double sqError);
+	
+	/* Intermeditae data*/
+	std::map<poc, poc>
+		_pieces,
+		_transitions;
+	std::vector<std::set<double>>
+		_domains;
+	std::vector<std::vector<CircularArc>>
+		_cycles;
+	// type _cycle; ???
+	
+	/* FLAGS and flags-handling functions */
+	bool
+		_flags[6];
+
+	static constexpr int
+		_flagPtrSet				= 0,
+		_flagDomainsBuilt		= 1,
+		_flagTransitionsBuilt	= 2,
+		_flagPiecesBuilt		= 3,
+		_flagCyclesBuilt		= 4,
+		_flagVoronoiEdgesBuilt	= 5;
+
+	inline bool& _isPtrSet()			{ return _flags[_flagPtrSet];			 }
+	inline bool& _isDomainsBuilt()		{ return _flags[_flagDomainsBuilt];		 }
+	inline bool& _isTransitionsBuilt()	{ return _flags[_flagTransitionsBuilt];  }
+	inline bool& _isPiecesBuilt()		{ return _flags[_flagPiecesBuilt];		 }
+	inline bool& _isCyclesBuilt()		{ return _flags[_flagCyclesBuilt];		 }
+	inline bool& _isVoronoiEdgesBuilt() { return _flags[_flagVoronoiEdgesBuilt]; }
+
+	/* simple helper funcs and options used during code*/
+	double _optEpsArcCriteria = 1e-18;
+
+	inline bool _EpsArc(CircularArc& c)
+	{
+		/* Def : returns true when arc is very small */
+		return ((c.x0() - c.x1()).length2() < _optEpsArcCriteria);
+	}
+};
+
+/*
+	Def: stores result of calculateG() of voronoiCalculator;
+*/
+class voronoiCalculatorResultG
+{
+	friend class voronoiCalculator;
+
+private:
+	// Vert
+	std::vector<Point> allPoints;	// saves bifurPT
+	std::vector<Point> bifurcationPoints;	// saves bifurPT
+	std::vector<Point> danglingPoints;	//dangling v_edge end : like model's non-g1-points
+	
+	// Edge
+	std::deque<std::deque<VoronoiEdge>> voronoiCurves;	// surves as an edge in graph : vCurves[
+	
+	// E2V, V2E
+	std::deque<std::pair<int, int>> _E2V; // edge index -> endpoint
+	std::vector<std::vector<int>> _V2E;	// verIdx * 2 -> edge
+
+	// map[bifurPt] = cycleIdxItWasFrom
+	std::map<Point, int> bifurcationPointToCycle;	// saves which cycle made bifurPt
+	//inline decltype(bifurcationPoints)& V() { return bifurcationPoints; }
+	//inline decltype(voronoiCurves)& E() { return voronoiCurves; }
+
+	// curves, but cluster with cycle info
+	std::vector<std::vector<std::vector<VoronoiEdge>>> segmentCurves;	// segCurves[cycleNo][localCurveIdx] = vector<VoronoiEdge> = curves;
+
+
+	//variables used during calculation;
+	int currentCycleNo;
+	std::map<std::pair<int, int>, int> arcPairToLocalIdx;
+
+public:
+	inline decltype(allPoints)& 
+		V() { return allPoints; }
+	inline decltype(voronoiCurves)&
+		E() { return voronoiCurves; }
+	inline decltype(_E2V)& 
+		E2V() { return _E2V; }
+	inline decltype(_V2E)&
+		V2E() { return _V2E; }
+
+	std::vector<VoronoiEdge> findVoronoiCurvePair(VoronoiEdge& v0, VoronoiEdge& v1, double equalPointError);
+};

@@ -2436,7 +2436,7 @@ namespace planning
 		//tag g1inc
 		if (left != poc.c)
 		{
-			if (fabs(arcs[left].n[1] * arcs[poc.c].n[0]) < 1 - 1e-8) //check if not g1
+			if (fabs(arcs[left].n[1] * arcs[poc.c].n[0]) < 1 - 1e-3) //check if not g1
 				return { left, 1 };
 		}
 
@@ -3783,7 +3783,7 @@ namespace planning
 	}
 
 	/* Def:
-	
+		Perform Medial Axis Transformation
 	*/
 	dbg int lineSegCnt;
 	void _Medial_Axis_Transformation(VR_IN& INPUT in)
@@ -4045,5 +4045,1761 @@ namespace planning
 		}
 	}
 
+
+}
+
+///*****************************************************************************************************************************
+//**																															**
+//**												  ~~~~~~~~~~~~~~~~~~~~~~													**
+//**												  ~~Voronoi Calculator~~													**
+//**												  ~~~~~~~~~~~~~~~~~~~~~~													**
+//**																															**
+//** Author : Mingyu Jung																										**
+//** Def: An integrated Class which keeps information or byproduct during Voronoi Diagram calculation.						**
+//**																															**
+//** Other API used :																											**
+//**	CircularArc :																											**
+//**	Point : length2()																										**
+//**	PointOnCurve : 																											**
+//**	VoronoiEdge : v0, v1, idx[0], idx[1]																					**
+//**  ETC : 																													**
+//**	 subdivCircularArc, findMaximalDiskSharingPoint, 																		**
+//**																															**
+//** Assume :																													**
+//**	All objects form a loop (of circular Arcs). The inside/outisde should be distinguishable								**
+//**	Objects that will have voronoiEdges outside of it should be parameterized clock-wise									**
+//**																															**
+//** How to use :																												**
+//**	1. construct class instance : voronoiCalculator vc;																		**
+//**	2. vc.initialize();																										**
+//**	3. vc.setInput(...);																									**
+//**	4. vc.setOutput(...);																									**
+//**	5. (optional) if(!vc.isProperInput()) ...																				**
+//**	6. vc.calculate() (or other subroutines)																				**
+//**	7. ... vc.getOutput() ...																								**
+//**																															**
+//** About Subroutine naming:																									**
+//** 	Build____ : builds some internal variable/structrue/class that this class contains or has a pointer to.					**
+//** 	Find_____ : finds some value or structure value. Does not alter contents of this class.									**
+//** 																															**
+//** TODO:																													**
+//**	clean up findBisectorRecursively																						**
+//*****************************************************************************************************************************/
+//
+//constexpr bool VORONOI_VERBOSE_ERRORS = false;
+//
+//using pointOnCurve	= planning::pointOnCurve;
+//using poc			= pointOnCurve;
+//using CircularArc	= ms::CircularArc;
+//using VoronoiEdge	= planning::output_to_file::v_edge;
+//
+//using retTypeFBR	= std::deque<VoronoiEdge>;
+//
+//class voronoiCalculator
+//{
+//public:
+//	/* main API */
+//	bool
+//		isInputProper();
+//	void
+//		initialize();
+//	void
+//		calculate();
+//
+//	/* I/O */
+//	void
+//		voronoiCalculator::setInput(std::vector<CircularArc>& arcs, std::vector<int>& leftArcIdx, std::vector<double>& loopIdx);
+//	void
+//		voronoiCalculator::setOutput(std::vector<retTypeFBR>& output);
+//
+//	/* Access functions to I/O */
+//	inline std::vector<CircularArc>&
+//		getArcs()	 { return *_arcs; }
+//	inline std::vector<int>&
+//		getLeft()	 { return *_leftArc; }
+//	inline std::vector<double>&
+//		getLoopIdx() { return *_loopIdx; }
+//	inline std::vector<retTypeFBR>&
+//		getOutput()  { return *_output; }
+//
+//	/* Access functions to byproducts */
+//	inline std::vector<std::set<double>>&
+//		getDomains()	 { return _domains; }
+//	inline std::map<poc,poc>&
+//		getTransitions() { return _transitions; }
+//	inline std::map<poc,poc>&
+//		getPieces()		 { return _pieces; }
+//	inline std::vector<std::vector<CircularArc>>&
+//		getCycles()		 { return _cycles; }
+//
+//	/* Constructor Destructor*/
+//	inline
+//		voronoiCalculator() = default;
+//	virtual
+//		~voronoiCalculator() = default;
+//
+//	/* sub routines */
+//	poc  
+//		findTransitionPoint(poc p, int left, int right);
+//	retTypeFBR
+//		findBisectorRecursively(std::vector<CircularArc>& cycle, int depth = 0);
+//
+//	void buildTransitions();
+//	void buildPieces();
+//	void buildCycles();
+//	void buildVoronoiEdges();
+//
+//private:
+//	
+//	/* INPUT */
+//	std::vector<CircularArc>* 
+//		_arcs;
+//	std::vector<int>*
+//		_leftArc;
+//	std::vector<double>*
+//		_loopIdx;
+//
+//	/* OUTPUT */
+//	std::vector<retTypeFBR>*
+//		_output;
+//
+//	/* Intermeditae data*/
+//	std::map<poc, poc>
+//		_pieces,
+//		_transitions;
+//	std::vector<std::set<double>>
+//		_domains;
+//	std::vector<std::vector<CircularArc>>
+//		_cycles;
+//	// type _cycle; ???
+//	
+//	/* FLAGS and flags-handling functions */
+//	bool
+//		_flags[6];
+//
+//	static constexpr int
+//		_flagPtrSet				= 0,
+//		_flagDomainsBuilt		= 1,
+//		_flagTransitionsBuilt	= 2,
+//		_flagPiecesBuilt		= 3,
+//		_flagCyclesBuilt		= 4,
+//		_flagVoronoiEdgesBuilt	= 5;
+//
+//	inline bool& _isPtrSet()			{ return _flags[_flagPtrSet];			 }
+//	inline bool& _isDomainsBuilt()		{ return _flags[_flagDomainsBuilt];		 }
+//	inline bool& _isTransitionsBuilt()	{ return _flags[_flagTransitionsBuilt];  }
+//	inline bool& _isPiecesBuilt()		{ return _flags[_flagPiecesBuilt];		 }
+//	inline bool& _isCyclesBuilt()		{ return _flags[_flagCyclesBuilt];		 }
+//	inline bool& _isVoronoiEdgesBuilt() { return _flags[_flagVoronoiEdgesBuilt]; }
+//
+//	/* simple helper funcs and options used during code*/
+//	double _optEpsArcCriteria = 1e-18;
+//
+//	inline bool _EpsArc(CircularArc& c)
+//	{
+//		/* Def : returns true when arc is very small */
+//		return ((c.x0() - c.x1()).length2() < _optEpsArcCriteria);
+//	}
+//};
+
+/*
+Def :
+	Checks whether the input is proper(does not fix it)
+Return :
+	False IF there is some error(true doesn't mean that input will always succeed calc) 
+Summary :
+	1. pointer
+*/
+bool 
+	voronoiCalculator::isInputProper()
+{
+	// 1. check I/O ptr
+	if(	_arcs	 == nullptr ||
+		_leftArc == nullptr ||
+		_loopIdx == nullptr ||
+		_output	 == nullptr		)
+		return false;
+}
+
+/*
+Def : 
+	Initializes variable (to Nullptr... false...)
+Warning :
+	Access prviate variables directly instead of get___().
+*/
+void 
+	voronoiCalculator::initialize()
+{
+	_arcs	 = nullptr;
+	_leftArc = nullptr;
+	_loopIdx = nullptr;
+	_output	 = nullptr;
+
+	_pieces.clear(),
+	_transitions.clear();
+	_domains.clear();
+	_cycles.clear();
+
+	for (auto& f : _flags)
+		f = false;
+}
+
+/*
+Def : 
+	Finds the voronoi edges. (and store it to _output)
+Desc :
+	find voronoiEdges as a set(soup of edges)
+*/
+void 
+	voronoiCalculator::calculate()
+{
+	//// 0. alias
+	//auto& arcs	= getArcs();
+	//auto& left	= getLeft();
+	//auto& loop	= getLoopIdx();
+	//
+	//auto& transition = getTransitions();
+	//auto& piece = getPieces();
+
+	if (_output == nullptr)
+	{
+		std::cerr << "!!! ERROR : voronoiCalculator.calculate : output pointer not set . !!!" << std::endl;
+	}
+
+	// 1. build transition & piece
+	buildTransitions();
+	// 2.
+	buildPieces();
+	// 3.
+	buildCycles();
+	// 4.
+	buildVoronoiEdges();
+}
+
+/*
+Def :
+	Finds the voronoi edges and topology
+Desc : 
+	instead of returning a soup ( like calculate() ),
+	find the structure of the graph and return it.
+	Terms used:
+		curves : just a vector<vEdge>. They will form a curve.
+		segment curves : curves that comes out from evaluating a cycle.
+		voronoi curve : sum of some segCurves. So that the endpoints connect vertices in the graph structure.
+*/
+void
+voronoiCalculator::calculateG()
+{
+	double pointDiffError = 1e-12;
+	double pointDiffError2 = 1e-12;
+	//// 0. alias
+	//auto& arcs	= getArcs();
+	//auto& left	= getLeft();
+	//auto& loop	= getLoopIdx();
+	//
+	//auto& transition = getTransitions();
+	//auto& piece = getPieces();
+
+	if (_outputG == nullptr)
+	{
+		std::cerr << "!!! ERROR : voronoiCalculator.calculate : output pointer not set . !!!" << std::endl;
+	}
+
+	// 1. build transition & piece
+	buildTransitions();
+	// 2.
+	buildPieces();
+	// 3.
+	buildCycles();
+
+	// 4. set vcResultG ready
+	auto& out = getOutputG();
+	auto& cycles = getCycles();
+	out.segmentCurves.clear();
+	out.segmentCurves.resize(cycles.size());
+
+	//dbg_out
+	//std::cout << "dbg out : cycles.size()" << cycles.size() << std::endl;
+
+	// 5. fill segmentcurves
+	for (size_t i = 0; i < cycles.size(); i++)
+	{
+		out.currentCycleNo = i;
+		out.arcPairToLocalIdx.clear();
+		std::vector<int> ci;
+		for (int j = 0; j < cycles[i].size(); j++)
+			ci.push_back(j);
+		buildCalculateGSegCurves(cycles[i], ci, 0);
+	}
+
+
+	////err check dbg_out
+	//{
+	//	using namespace std;
+	//	int cnt = 0;
+	//	for(auto& a : out.segmentCurves)
+	//		for (auto& b : a)
+	//		{
+	//			cnt+=b.size();
+	//		}
+	//	cout << "CNT : " << cnt << endl;
+	//}
+
+	// 6. sort segment curves; and store it to temp;
+	std::deque<std::deque<VoronoiEdge>> temp;
+	for (auto& curvesInACycle : out.segmentCurves)
+	{
+		for (auto& singleCurve : curvesInACycle)
+		{
+			temp.push_back({});
+			temp.back().swap(sortVectorVoronoiEdge(singleCurve, pointDiffError));
+
+		}
+	}
+
+	// err check dbg_out
+	// check whether sorted correctly
+	{
+		using namespace std;
+
+		int count = 0;
+		double max2 = -1.0;
+		for (auto& sc : temp)
+		{
+			double max = -1.0;
+			for (int i = 0; i < sc.size() - 1; i++)
+			{
+				auto& v0 = sc[i];
+				auto& v1 = sc[i+1];
+
+				auto err = (v0.v1 - v1.v0).length2();
+				if (err > max)
+					max = err;
+			}
+			if (max2 < max)
+				max2 = max;
+
+			count++;
+		}
+		cout << "checking v-edge sort. max err : " << max2 << endl;
+	}
+	// ~dbg : conclusion : max err < 1e-13 => prob seems to be in merging
+	
+	// 7. mark endpoints of curves, if they are bifur; (so that it is not connected at 8)
+	std::deque<std::pair<int, int>> mark;
+	mark.resize(temp.size());
+	for (int i = 0; i < temp.size(); i++)
+	{
+		auto& p = temp[i].front().v0;
+		auto& q = temp[i].back().v1;
+
+		mark[i].first = -1;
+		mark[i].second = -1;
+		for (size_t j = 0; j < out.bifurcationPoints.size(); j++)
+		{
+			//if ( p == out.bifurcationPoints[j]) // bug_fixed : use 1e-12 instead of 1e-16
+			if ((p - out.bifurcationPoints[j]).length2() < pointDiffError2)
+				mark[i].first = j;
+			if ((q - out.bifurcationPoints[j]).length2() < pointDiffError2)
+				mark[i].second = j;
+		}
+	}
+
+	// 8. find neighbors
+	int offset = 100000000; // 2 << 28; // to make difference btw curve/bifurPoint
+	//int offset2 = 2 << 27; //
+	double maxErr = 1e-4;
+	double diffErr = pointDiffError *1.0e-1;
+	double errMult = 9.0;
+	while(diffErr < maxErr)
+	{
+		for (size_t i = 0; i < temp.size(); i++)
+		{
+			// for left part of temp[i]
+			if (mark[i].first == -1)
+			{
+				auto& x = temp[i].front().v0;
+				for (size_t j = i + 1; j < temp.size(); j++)
+				{
+					auto& p = temp[j].front().v0;
+					if ((p - x).length2() < diffErr && mark[j].first == -1)
+					{
+						mark[i].first = offset + j;
+						mark[j].first = offset + i;
+						break;
+					}
+
+					auto& q = temp[j].back().v1;
+					if ((q - x).length2() < diffErr && mark[j].second == -1)
+					{
+						mark[i].first = offset + j;
+						mark[j].second = offset + i;
+						break;
+					}
+				}
+			}
+
+			// for right part of temp[i]
+			if (mark[i].second == -1)
+			{
+				auto& x = temp[i].back().v1;
+				for (size_t j = i + 1; j < temp.size(); j++)
+				{
+					auto& p = temp[j].front().v0;
+					if ((p - x).length2() < diffErr && mark[j].first == -1)
+					{
+						mark[i].second = offset + j;
+						mark[j].first = offset + i;
+						break;
+					}
+
+					auto& q = temp[j].back().v1;
+					if ((q - x).length2() < diffErr && mark[j].second == -1)
+					{
+						mark[i].second = offset + j;
+						mark[j].second = offset + i;
+						break;
+					}
+				}
+			}
+		}
+		diffErr = errMult * diffErr;
+	}
+
+	// 9. merge lists
+	// used to compute danling point idx
+	int offset3 = out.bifurcationPoints.size();
+	int nDangling = 0;
+	// alias for saved data;
+	std::deque<std::deque<VoronoiEdge>>& E = out.voronoiCurves;
+	std::deque<std::pair<int, int>>& E2 = out._E2V;
+	// to check redundancy;
+	std::vector<bool> used(temp.size(), false);
+
+	//// dbg_out
+	//for (auto i : mark)
+	//	std::cout << i.first << " " << i.second << std::endl;
+	//// ~dbg_out
+
+	for(int i = 0; i<temp.size(); i++)
+	{
+		if (used[i]) continue;
+		used[i] = true;
+		auto& m = mark[i];
+
+		// 9-1. check left (keep connecting segcurves to the left side)
+		int lastLeft = i;
+		while (m.first >= offset)
+		{
+			// 9-1-1. find neighbor
+			int neigh = m.first - offset;
+			if (used[neigh])break; //dbg
+			used[neigh] = true;
+
+			// 9-1-2. check if it should be attached right away or flipped.
+			// if(my leftmost part is connected to the right-side-of-neigh)
+			if (mark[neigh].second - offset == lastLeft)
+			{
+				////dbg_out
+				//auto& p = temp[neigh].back().v1;
+				//auto& q = temp[i].front().v0;
+				//if ((p - q).length2() > maxErr)
+				//	std::cout << "!!! merging arr error at 9-1-2-1 with err value : " << (p - q).length2() << std::endl;
+				////~dbg
+				temp[i].insert(temp[i].begin(), temp[neigh].begin(), temp[neigh].end());
+				m.first = mark[neigh].first;
+				lastLeft = neigh;
+			}
+			// if(my leftmost part is connected to the left-side-of-neigh)
+			else
+			{
+				////dbg_out
+				//auto& p = temp[neigh].back().v1;
+				//auto& q = temp[i].front().v0;
+				//if ((p - q).length2() > maxErr)
+				//	std::cout << "!!! merging arr error at 9-1-2-2 with err value : " << (p - q).length2() << std::endl;
+				////~dbg
+				
+				//for (auto it = temp[neigh].rbegin(); it != temp[neigh].rend(); it++)
+				for (auto it = temp[neigh].begin(); it != temp[neigh].end(); it++)
+				{
+					temp[i].push_front(it->flip());
+				}
+				//temp[i].insert(temp[i].begin(), temp[neigh].rbegin(), temp[neigh].rend());
+				m.first = mark[neigh].second;
+				lastLeft = neigh;
+			}
+
+		}
+
+		// 9-2. check right
+		int lastRight = i;
+		while (m.second >= offset)
+		{
+			// 9-2-1. find neighbor
+			int neigh = m.second - offset;
+			if (used[neigh])break; //dbg
+			used[neigh] = true;
+
+			// 9-2-2. check if it should be attached right away or flipped.
+			if (mark[neigh].first - offset == lastRight)
+			{
+				temp[i].insert(temp[i].end(), temp[neigh].begin(), temp[neigh].end());
+				m.second = mark[neigh].second;
+				lastRight = neigh;
+			}
+			else
+			{
+				for (auto it = temp[neigh].rbegin(); it != temp[neigh].rend(); it++)
+				{
+					temp[i].push_back(it->flip());
+				}
+				//temp[i].insert(temp[i].end(), temp[neigh].rbegin(), temp[neigh].rend());
+				m.second = mark[neigh].first;
+				lastRight = neigh;
+			}
+
+		}
+
+		////dbg
+		//if (m.first >= offset)
+		//	m.first = -1;
+		//if (m.second >= offset)
+		//	m .second = -1;
+		////~dbg
+
+		// 9-3. now both are connected to a bifur or/dangling
+		//if (m.first < offset && m.second < offset) ==> no need to check
+		{
+			// 9-3-1. check dangling
+			if (m.first == -1)
+			{
+				// i. check if there is some bifurcation point close enough
+
+				m.first = offset3 + nDangling;
+				nDangling++;
+				out.danglingPoints.push_back(temp[i].front().v0);
+			}
+
+			// 9-3-1.
+			if (m.second == -1)
+			{
+				m.second = offset3 + nDangling;
+				nDangling++;
+				out.danglingPoints.push_back(temp[i].back().v1);
+			}
+		}
+
+		// 9-4. add to final
+		//if (m.first > -1 && m.second > -1 && m.first < offset && m.second < offset) //dbg
+		{
+			E2.push_back(m);
+			E.push_back({});
+			E.back().swap(temp[i]);
+		}
+	}
+
+	// 10. final stuff: build V and V2E
+	out.allPoints.insert(out.allPoints.end(), out.bifurcationPoints.begin(), out.bifurcationPoints.end());
+	out.allPoints.insert(out.allPoints.end(), out.danglingPoints.begin(), out.danglingPoints.end());
+
+	out._V2E.resize(out.allPoints.size());
+	for (auto& a : out._V2E)
+		a.resize(out.allPoints.size(), -1);
+
+	for (size_t i = 0; i < E.size(); i++)
+	{
+		auto& m = out._E2V[i];
+		out._V2E[m.first][m.second] = i;
+		out._V2E[m.second][m.first] = i;
+	}
+
+}
+
+
+/* 
+Def : 
+	a subroutine of calculateG, which build Vedge lists;
+*/
+void
+	voronoiCalculator::buildCalculateGSegCurves(std::vector<CircularArc>& cycle, std::vector<int>& cycleIdx, int depth)
+{
+	// need to erase these.
+	using namespace planning;
+	using namespace std;
+
+
+	// 1. check cases and return if necessary
+
+	// 1-1. recursive depth enough
+	// not this case
+	if (depth >= 20)
+		return;
+
+	// 1-2. bifur && dpeth enough
+	if ((cycle.size() == 3 && depth >= 15) || (cycle.size() >= 3 && depth == 18))
+	{
+		if (_EpsArc(cycle[0]) || _EpsArc(cycle[1]) || _EpsArc(cycle[2]))
+			return;
+
+		// 1-2-1. find q (bifurcation point)
+		
+		auto mid0 = cycle[0](0.5);
+		auto mid1 = cycle[1](0.5);
+		auto mid2 = cycle[2](0.5);
+		
+		auto l0 = getLineEquationFromPointVector((mid0 + mid1)*0.5, rotate_p90(mid0 - mid1));
+		auto l1 = getLineEquationFromPointVector((mid2 + mid1)*0.5, rotate_p90(mid2 - mid1));
+		
+		auto q = getLineIntersectionPoint(l0, l1);
+		if (isnan(q.P[0]))
+		{
+			dbg return;
+		}
+
+		// 1-2-2. save bifur
+		_outputG->bifurcationPoints.push_back(q);
+		_outputG->bifurcationPointToCycle[q] = _outputG->currentCycleNo;
+
+		// 1-2-3. save voronoiEdge
+		for (int i = 0; i < cycle.size(); i++)
+		{
+			// i. find v-edge to insert
+			VoronoiEdge v;
+			auto iNext = i + 1;
+			{
+				if (iNext == cycle.size()) iNext = 0;
+				auto pn = getTouchingDiskCenter(cycle[i].x[1], cycle[iNext].x[0], cycle[i].n[1]);
+
+				v.v0 = pn;
+				v.v1 = q;
+				v.idx[0] = cycle[i].originalIndex;
+				v.idx[1] = cycle[iNext].originalIndex;
+			}
+
+			// ii. find place to insert (localIdx);
+			std::pair<int, int> key; // key should be (smallerNo, largerNo) 
+			int localIdx;
+			{
+				// ii-1. make key
+				if (cycleIdx[i] < cycleIdx[iNext])
+				{
+					key.first = cycleIdx[i];
+					key.second = cycleIdx[iNext];
+				}
+				else
+				{
+					key.first = cycleIdx[iNext];
+					key.second = cycleIdx[i];
+				}
+
+				// ii-2. search for key
+				auto& searchRes = _outputG->arcPairToLocalIdx.find(key);
+				if (searchRes == _outputG->arcPairToLocalIdx.end())
+				{
+					// update map if key didn't exist;
+					localIdx = _outputG->segmentCurves[_outputG->currentCycleNo].size();
+					_outputG->arcPairToLocalIdx[key] = localIdx;
+					_outputG->segmentCurves[_outputG->currentCycleNo].push_back(vector<VoronoiEdge>());
+				}
+				else
+				{
+					localIdx = searchRes->second;
+				}
+			}
+
+			// iii.do insertion
+			_outputG->segmentCurves[_outputG->currentCycleNo][localIdx].push_back(v);
+
+		}
+
+		return;
+	}
+	
+	if (cycle.size() == 2)
+	{
+		if (_EpsArc(cycle[0]) || _EpsArc(cycle[1]))
+			return;
+
+		// 1-1. sample some points on input curve.
+		auto p00 = cycle[0].x[0]; 
+		auto p01 = cycle[0].x[1];
+		auto p10 = cycle[1].x[0];
+		auto p11 = cycle[1].x[1];
+
+		// 1-2. endpoints of bisector
+		auto p = getTouchingDiskCenter(cycle[0].x[1], cycle[1].x[0], cycle[0].n[1]);
+		auto q = getTouchingDiskCenter(cycle[0].x[0], cycle[1].x[1], cycle[0].n[0]);
+
+		// 1-3. check terminal condition
+		bool terminal = false;
+		{
+		if (sqlength(p00-p11)< rfbTerminationEps) {
+			terminal = true;
+		}
+		else if (sqlength(p01 - p10)<rfbTerminationEps) {
+			terminal = true;
+		}
+		else if (sqlength(p00 - p01)<rfbTerminationEps)
+			terminal = true;
+		else if (sqlength(p10 - p11)<rfbTerminationEps)
+			terminal = true;
+		}
+
+		// 1-4. if (terminal && vEdge length is short enough) return it
+		if (sqlength(p-q)<rfbTerminationEps2 || terminal) {
+			// i. find v-edge to insert
+			VoronoiEdge v;
+			int i = 0, iNext = 1;
+			{
+				v.v0 = p;
+				v.v1 = q;
+				v.idx[0] = cycle[0].originalIndex;
+				v.idx[1] = cycle[1].originalIndex;
+			}
+
+			// ii. find place to insert (localIdx);
+			std::pair<int, int> key; // key should be (smallerNo, largerNo) 
+			int localIdx;
+			{
+				// ii-1. make key
+				if (cycleIdx[i] < cycleIdx[iNext])
+				{
+					key.first = cycleIdx[i];
+					key.second = cycleIdx[iNext];
+				}
+				else
+				{
+					key.first = cycleIdx[iNext];
+					key.second = cycleIdx[i];
+				}
+
+				// ii-2. search for key
+				auto& searchRes = _outputG->arcPairToLocalIdx.find(key);
+				if (searchRes == _outputG->arcPairToLocalIdx.end())
+				{
+					// update map if key didn't exist;
+					localIdx = _outputG->segmentCurves[_outputG->currentCycleNo].size();
+					_outputG->arcPairToLocalIdx[key] = localIdx;
+					_outputG->segmentCurves[_outputG->currentCycleNo].push_back(vector<VoronoiEdge>());
+				}
+				else
+				{
+					localIdx = searchRes->second;
+				}
+			}
+
+			// iii.do insertion
+			_outputG->segmentCurves[_outputG->currentCycleNo][localIdx].push_back(v);
+			return;
+		}
+
+		// 1-5. if the endpoints of a curve are too close, return. No more subdiv
+		if (_EpsArc(cycle[0]) || _EpsArc(cycle[1]))
+			return;
+	}
+
+	// 2. if not returned above, subdiv
+	if (true)
+	{
+		auto foot = findMaximalDiskSharingPoint(cycle, poc{ 0 , 0.5 }, 0, 0);
+
+		auto first  = subdivCircularArc(cycle[0]	 , 0.5);	// subdiv curve[0] at t = 0.5
+		auto second = subdivCircularArc(cycle[foot.c], foot.t); // subdiv some other curve, where it shares a disk with curve[0] at t = 0.5
+
+		vector<CircularArc> sub[2];
+		vector<int> subCI[2];
+		if (cycle.size() == 2)
+		{
+			// build [0] :
+			{
+				sub[0].push_back(first.second);			//curve[0]'s right
+				sub[0].push_back(second.first);			//curve[other]'s left
+				subCI[0].push_back(cycleIdx[0]);
+				subCI[0].push_back(cycleIdx[foot.c]);
+			}
+			// build [1] :
+			{
+				sub[1].push_back(first.first);	//curve[0]'s left
+				sub[1].push_back(second.second);//curve[other]'s right
+				subCI[1].push_back(cycleIdx[0]);
+				subCI[1].push_back(cycleIdx[foot.c]);
+			}
+		}
+		else
+		{
+			// build [0] : from right segment of curve[0] ~ left seg of other curve
+			{
+				for (int i = 1; i < foot.c; i++) {
+					sub[0].push_back(cycle[i]);
+					subCI[0].push_back(cycleIdx[i]);
+				}
+				sub[0].push_back(second.first);			//curve[other]'s left
+				subCI[0].push_back(cycleIdx[foot.c]);
+				sub[0].push_back(first.second);			//curve[0]'s right
+				subCI[0].push_back(cycleIdx[0]);
+			}
+			// build [1] : leftovers from [0]
+			{
+				for (size_t i = foot.c + 1; i < cycle.size(); i++) {
+					sub[1].push_back(cycle[i]);
+					subCI[1].push_back(cycleIdx[i]);
+				}
+				sub[1].push_back(first.first);	//curve[0]'s left
+				subCI[1].push_back(cycleIdx[0]);
+				sub[1].push_back(second.second);//curve[other]'s right
+				subCI[1].push_back(cycleIdx[foot.c]);
+			}
+		}
+
+		buildCalculateGSegCurves(sub[0], subCI[0], depth + 1);
+		buildCalculateGSegCurves(sub[1], subCI[1], depth + 1);
+
+		return ;
+
+	}
+}
+
+/*
+Def:
+	Register Input vector to calculator
+*/
+void
+	voronoiCalculator::setInput( std::vector<CircularArc>& arcs, std::vector<int>& leftArcIdx, std::vector<double>& loopIdx)
+{
+	_arcs	 = &(arcs);
+	_leftArc = &(leftArcIdx);
+	_loopIdx = &(loopIdx);
+
+
+	if (_arcs	 != nullptr &&
+		_leftArc != nullptr &&
+		_loopIdx != nullptr)
+		_isPtrSet() = true;
+}
+
+/*
+Def : 
+	Register a vector which will receive the output.
+*/
+void
+	voronoiCalculator::setOutput(std::vector<retTypeFBR>& output)
+{
+	_output = &output;
+}
+
+/*
+Def : set output for the graph type output case;
+*/
+void
+	voronoiCalculator::setOutputG(voronoiCalculatorResultG& outputG)
+{
+	_outputG = &outputG;
+}
+
+
+/*
+Def : 
+	Find a point which shares a maximal touching disk with "p"
+Return : 
+	The pair-point represented with pointOnCurve
+Assume : 
+	_isPtrSet() == true;
+Parameter : 
+	p : point of interest
+	left  : index of arc, which shares p.arc.x0()
+	right : index of arc, which shares p.arc.x1()
+		Or intuitively, you can put arc idx which you don't want to test against p
+*/
+poc 
+	voronoiCalculator::findTransitionPoint(poc p, int left, int right)
+{
+	// currently just calls findMaximalDiskSharingPoint
+	return findMaximalDiskSharingPoint(getArcs(), p, left, right);
+}
+
+/*
+Def : Build _Transition and _Domains
+Desc :
+	A Domain contains info about how an arcs t = [0,1] should be divided.
+	A Transition tells us at a point (in the domain set built above) where to go, following the cycle. (Hard to explain)
+*/
+void
+	voronoiCalculator::buildTransitions()
+{
+
+	// 1. Error check;
+	if (!_isPtrSet()) // this only checks input ptr;
+	{
+		std::cerr << "!!!!!! ERROR : voronoiCalculator : isPtrSet == false !!!!!!" << std::endl;
+		return;
+	}
+	_isDomainsBuilt() = true;
+	_isTransitionsBuilt() = true;
+
+	// 2. Alias
+	auto& arcs = getArcs();
+	auto& left = getLeft();
+	auto& loop = getLoopIdx();
+
+	auto& transitions	= getTransitions();
+	auto& domains		= getDomains();
+	domains.resize(arcs.size());
+
+	// 3. Build Domains & Transitions
+	// for(each arc)
+	for (int i = 0, length = arcs.size(); i < length; i++)
+	{
+		// 3-1. find paired point (of an arc's left point)
+		auto foot = findTransitionPoint(pointOnCurve{ i, 0.0 }, left[i], i);
+
+		// 3-2. build domain (insert * 3)
+		domains[i].insert(0);
+		domains[i].insert(1);
+		if (foot.c >= 0)
+			domains[foot.c].insert(foot.t);
+
+		// 3-2-1. set origIdx for later use (since an arc will be sliced into multiple small arcs)
+		arcs[i].originalIndex = i;
+
+		// 3-2-2. check errors for debugging
+		if (VORONOI_VERBOSE_ERRORS)
+		{
+			if (foot.c < 0)												  std::cerr << "ERROR : foot.c < 0 while building domain/transition" << std::endl;
+			if (transitions.find(poc{ left[i], 1 }) != transitions.end()) std::cerr << "ERROR : while building transition, overwriting happened" << std::endl;
+			if (transitions.find(foot)				!= transitions.end()) std::cerr << "ERROR : while building transition, overwriting happened" << std::endl;
+		}
+
+		// 3-3. build transition 
+		transitions[poc{ left[i], 1 }] = foot;
+		transitions[foot             ] = poc{ i, 0 };
+	}
+}
+
+/*
+Def : 
+	using the domain, divide the arcs's domain(which is just t = [0,1]) into smaller pieces, which will be used to form cycles.
+*/
+void
+	voronoiCalculator::buildPieces()
+{
+	// 0. Error Check
+	if (!_isDomainsBuilt())
+	{
+		std::cerr << "!!!!!! ERROR : voronoiCalculator : isDomainsBuilt() == false !!!!!!" << std::endl;
+		return;
+	}
+	_isPiecesBuilt() = true;
+
+	// 1. Alias 
+	auto& arcs = getArcs();
+	//auto& left = getLeft();
+	//auto& loop = getLoopIdx();
+
+	auto& domains	  = getDomains();
+	//auto& transitions = getTransitions();
+	auto& pieces	  = getPieces();
+	
+	// 2. build piece
+	for (int i = 0, length = arcs.size(); i < length; i++) {
+		auto& d = domains[i];
+		for (auto j = d.begin(), k = ++d.begin(); k != d.end(); ++j, ++k) {
+			pieces[poc{ i, *j }] = poc{ i, *k };
+		}
+	}
+}
+
+/*
+Def :
+	build cycles.
+	A cycle is : arc - transition - arc - transition - ...
+	
+*/
+void
+	voronoiCalculator::buildCycles()
+{
+	// 0. Error Check
+	if (!_isPiecesBuilt())
+	{
+		std::cerr << "!!!!!! ERROR : voronoiCalculator : isPiecesBuilt() == false !!!!!!" << std::endl;
+		return;
+	}
+	_isCyclesBuilt() = true;
+
+	// 1. turn piece set into cycle set;
+	auto pieces = getPieces(); // WARNING: This declaration not being a reference-type is intended. We are gonna manipulate a copy of "_pieces".
+	auto& arcs = getArcs();
+	auto& transitions = getTransitions();
+	auto& cycles = getCycles();
+	
+	while (!pieces.empty())
+	{
+		cycles.push_back(std::vector<CircularArc>());
+		auto& cycle = cycles.back();
+		//std::vector<double> col;
+
+		// 1-1. first element of cycle.
+		auto begin = *pieces.begin();
+		auto left  = begin.first;
+		auto right = begin.second;
+		pieces.erase(left);
+		cycle.push_back(planning::subdivCircularArc(arcs[left.c], left.t, right.t)); // note that left.first == right.first
+
+		// 1-2. repeat for next element of cycle
+		while(true)
+		{
+			//refactor
+			/*
+			left = transitions[right];
+			auto next = pieces.find(left);
+
+			if (next == pieces.end())
+				break;
+			right = next->second;
+			*/
+
+			auto next = pieces.find(transitions[right]);
+			if (next == pieces.end())
+				break;
+			left  = next->first;
+			right = next->second;
+			//~refactor
+
+			pieces.erase(left);
+
+			cycle.push_back(planning::subdivCircularArc(arcs[left.c], left.t, right.t));
+		}
+
+
+		//recursivelyFindBisector(cycle, col); // usually called 700 times?
+	}
+}
+
+/*
+Def : 
+	from the cycles, evaluate the v_edges inside that cycle.
+*/
+void
+	voronoiCalculator::buildVoronoiEdges()
+{
+	// 0. Error Check
+	if (!_isCyclesBuilt())
+	{
+		std::cerr << "!!!!!! ERROR : voronoiCalculator : isCyclesBuilt() == false !!!!!!" << std::endl;
+		return;
+	}
+	_isVoronoiEdgesBuilt() = true;
+
+	// 1. For each cycle, find bisector
+	auto& output = getOutput();
+	auto& cycles = getCycles();
+	output.resize(cycles.size());
+
+	for (size_t i = 0; i < cycles.size(); i++)
+	{
+		output[i] = findBisectorRecursively(cycles[i]);
+	}
+}
+
+
+/* 
+Def : 
+	Returns a list of voronoiEdges for that cycle 
+	Do this in a recursive manner, so that if the cycle is too big, cut it and then evaluate it.
+*/
+retTypeFBR 
+	voronoiCalculator::findBisectorRecursively(std::vector<CircularArc>& cycle, int depth)
+{
+	// need to erase these.
+	using namespace planning;
+	using namespace std;
+
+
+	// 1. check cases and return if necessary
+
+	// 1-1. recursive depth enough
+	if (depth >= 20) return retTypeFBR();
+
+	// 1-2. triplet case && dpeth enough
+	if (cycle.size() == 3 && depth >= 15)
+	{
+		if (_EpsArc(cycle[0]) || _EpsArc(cycle[1]) || _EpsArc(cycle[2]))
+			return {};
+
+		// 1-2-1. find q (bifurcation point)
+		auto p0 = getTouchingDiskCenter(cycle[0].x[1], cycle[1].x[0], cycle[0].n[1]);
+		auto p1 = getTouchingDiskCenter(cycle[1].x[1], cycle[2].x[0], cycle[1].n[1]);
+		auto p2 = getTouchingDiskCenter(cycle[2].x[1], cycle[0].x[0], cycle[2].n[1]);
+
+		auto mid0 = cycle[0](0.5);
+		auto mid1 = cycle[1](0.5);
+		auto mid2 = cycle[2](0.5);
+		
+		auto l0 = getLineEquationFromPointVector((mid0 + mid1)*0.5, rotate_p90(mid0 - mid1));
+		auto l1 = getLineEquationFromPointVector((mid2 + mid1)*0.5, rotate_p90(mid2 - mid1));
+		
+		auto q = getLineIntersectionPoint(l0, l1);
+		if (isnan(q.P[0]))
+		{
+			dbg return retTypeFBR();
+			q = p0;
+		}
+
+		// 1-2-2. save to ret (3 times);
+		retTypeFBR edges(3);
+		{
+			VoronoiEdge& v = edges[0];
+			v.v0 = p0;
+			v.v1 = q;
+			v.idx[0] = cycle[0].originalIndex;
+			v.idx[1] = cycle[1].originalIndex;
+		}
+		{
+			VoronoiEdge& v = edges[1];
+			v.v0 = p1;
+			v.v1 = q;
+			v.idx[0] = cycle[1].originalIndex;
+			v.idx[1] = cycle[2].originalIndex;
+		}
+		{
+			VoronoiEdge& v = edges[2];
+			v.v0 = p2;
+			v.v1 = q;
+			v.idx[0] = cycle[2].originalIndex;
+			v.idx[1] = cycle[0].originalIndex;
+		}
+		
+		return edges;
+	}
+	
+	if (cycle.size() == 2)
+	{
+		if (_EpsArc(cycle[0]) || _EpsArc(cycle[1]))
+			return retTypeFBR();
+
+		// 1-1. sample some points on input curve.
+		auto p00 = cycle[0].x[0]; 
+		auto p01 = cycle[0].x[1];
+		auto p10 = cycle[1].x[0];
+		auto p11 = cycle[1].x[1];
+
+		// 1-2. endpoints of bisector
+		auto p = getTouchingDiskCenter(cycle[0].x[1], cycle[1].x[0], cycle[0].n[1]);
+		auto q = getTouchingDiskCenter(cycle[0].x[0], cycle[1].x[1], cycle[0].n[0]);
+
+		// 1-3. check terminal condition
+		bool terminal = false;
+		{
+		if (sqlength(p00-p11)< rfbTerminationEps) {
+			//tag oscrfb
+			/*
+			Point normal;
+			if (cycle[0].ccw)
+				p = cycle[0].c.c;
+			else
+				p = cycle[0].x[0] + cycle[0].c.r * cycle[0].n[0];
+			swap(p, q);*/
+			//draw(p);
+			terminal = true;
+		}
+		else if (sqlength(p01 - p10)<rfbTerminationEps) {
+			//tag oscrfb
+			/*Point normal;
+			if (cycle[0].ccw)
+				q = cycle[0].c.c;
+			else
+				q = cycle[0].x[1] + cycle[0].c.r * cycle[0].n[1];*/
+			//draw(q);
+			terminal = true;
+		}
+		else if (sqlength(p00 - p01)<rfbTerminationEps)
+			terminal = true;
+		else if (sqlength(p10 - p11)<rfbTerminationEps)
+			terminal = true;
+		}
+
+		// 1-4. if (terminal && vEdge length is short enough) return it
+		if (sqlength(p-q)<rfbTerminationEps2 || terminal) {
+			retTypeFBR edges(1);
+			{
+				auto& v = edges[0];
+				v.v0 = p;
+				v.v1 = q;
+				v.idx[0] = cycle[0].originalIndex;
+				v.idx[1] = cycle[1].originalIndex;
+			}
+			return edges;
+		}
+
+		// 1-5. if the endpoints of a curve are too close, return. No more subdiv
+		if (_EpsArc(cycle[0]) || _EpsArc(cycle[1]))
+			return retTypeFBR();
+	}
+
+	// 2. if not returned above, subdiv
+	if (true)
+	{
+		auto foot = findMaximalDiskSharingPoint(cycle, poc{ 0 , 0.5 }, 0, 0);
+
+		auto first  = subdivCircularArc(cycle[0]	 , 0.5);	// subdiv curve[0] at t = 0.5
+		auto second = subdivCircularArc(cycle[foot.c], foot.t); // subdiv some other curve, where it shares a disk with curve[0] at t = 0.5
+
+		vector<CircularArc> sub[2];
+		if (cycle.size() == 2)
+		{
+			// build [0] :
+			{
+				sub[0].push_back(first.second);			//curve[0]'s right
+				sub[0].push_back(second.first);			//curve[other]'s left
+			}
+			// build [1] :
+			{
+				sub[1].push_back(first.first);	//curve[0]'s left
+				sub[1].push_back(second.second);//curve[other]'s right
+			}
+		}
+		else
+		{
+			// build [0] : from right segment of curve[0] ~ left seg of other curve
+			{
+				for (int i = 1; i < foot.c; i++) {
+					sub[0].push_back(cycle[i]);
+				}
+				sub[0].push_back(second.first);			//curve[other]'s left
+				sub[0].push_back(first.second);			//curve[0]'s right
+			}
+			// build [1] : leftovers from [0]
+			{
+				for (size_t i = foot.c + 1; i < cycle.size(); i++) {
+					sub[1].push_back(cycle[i]);
+				}
+				sub[1].push_back(first.first);	//curve[0]'s left
+				sub[1].push_back(second.second);//curve[other]'s right
+			}
+		}
+		auto ret0 = findBisectorRecursively(sub[0], depth + 1);
+		auto ret1 = findBisectorRecursively(sub[1], depth + 1);
+
+		ret0.insert(ret0.end(), ret1.begin(), ret1.end());
+		return ret0;
+
+	}
+}
+
+/*
+Def: evaluate a cycle to get its bifur-pt
+
+Note:
+	Just a simpler version of findBisectorRecursively. (Erased some parts not related to bifurcation)
+*/
+std::vector<Point>
+	voronoiCalculator::findBifurcationPointRecursively(std::vector<CircularArc>& cycle, int depth)
+{
+	// need to erase these.
+	using namespace planning;
+	using namespace std;
+
+	// 1. check cases and return if necessary
+
+	// 1-1. recursive depth enough
+	if (depth >= 20) return {};
+
+	// 1-2. triplet case && dpeth enough
+	if (cycle.size() >= 3 && depth >= 15)
+	{
+		if (_EpsArc(cycle[0]) || _EpsArc(cycle[1]) || _EpsArc(cycle[2]))
+			return {};
+
+		// 1-2-1. find q (bifurcation point)
+		auto p0 = getTouchingDiskCenter(cycle[0].x[1], cycle[1].x[0], cycle[0].n[1]);
+		auto p1 = getTouchingDiskCenter(cycle[1].x[1], cycle[2].x[0], cycle[1].n[1]);
+		Point p2;
+		if(cycle.size() == 3)
+			p2 = getTouchingDiskCenter(cycle[2].x[1], cycle[0].x[0], cycle[2].n[1]);
+		else
+			p2 = getTouchingDiskCenter(cycle[2].x[1], cycle[3].x[0], cycle[2].n[1]);
+
+		auto mid0 = cycle[0](0.5);
+		auto mid1 = cycle[1](0.5);
+		auto mid2 = cycle[2](0.5);
+		
+		auto l0 = getLineEquationFromPointVector((mid0 + mid1)*0.5, rotate_p90(mid0 - mid1));
+		auto l1 = getLineEquationFromPointVector((mid2 + mid1)*0.5, rotate_p90(mid2 - mid1));
+		
+		auto q = getLineIntersectionPoint(l0, l1);
+		if (isnan(q.P[0]))
+		{
+			dbg return {};
+			q = p0;
+		}
+		
+		return { q };
+	}
+	
+	if (cycle.size() <= 2)
+	{
+		return {};
+	}
+
+	// 2. if not returned above, subdiv
+	if (true)
+	{
+		auto foot = findMaximalDiskSharingPoint(cycle, poc{ 0 , 0.5 }, 0, 0);
+
+		auto first  = subdivCircularArc(cycle[0]	 , 0.5);	// subdiv curve[0] at t = 0.5
+		auto second = subdivCircularArc(cycle[foot.c], foot.t); // subdiv some other curve, where it shares a disk with curve[0] at t = 0.5
+
+		vector<CircularArc> sub[2];
+		// build [0] : from right segment of curve[0] ~ left seg of other curve
+		{
+			for (int i = 1; i < foot.c; i++) {
+				sub[0].push_back(cycle[i]);
+			}
+			sub[0].push_back(second.first);			//curve[other]'s left
+			sub[0].push_back(first.second);			//curve[0]'s right
+		}
+		// build [1] : leftovers from [0]
+		{
+			for (size_t i = foot.c + 1; i < cycle.size(); i++) {
+				sub[1].push_back(cycle[i]);
+			}
+			sub[1].push_back(first.first);	//curve[0]'s left
+			sub[1].push_back(second.second);//curve[other]'s right
+		}
+
+		auto ret0 = findBifurcationPointRecursively(sub[0], depth + 1);
+		auto ret1 = findBifurcationPointRecursively(sub[1], depth + 1);
+
+		ret0.insert(ret0.end(), ret1.begin(), ret1.end());
+		return ret0;
+
+	}
+}
+
+/*
+Def:
+	Sorts the given vector to make it g0
+	n^2
+Assume :
+	The input is a soup(non-ordered set), but it could be re-arragned to become g0 somehow
+Parameter :
+	ve : should be a copy, not ref
+*/
+std::deque<VoronoiEdge>
+	voronoiCalculator::sortVectorVoronoiEdge(std::vector<VoronoiEdge> ve, double sqError)
+{
+	// 1. init step
+	std::deque<VoronoiEdge> temp;
+	temp.push_back(ve.back());
+	ve.pop_back();
+
+	// 2. search for neighbors and append to temp.
+	while (ve.size() != 0)
+	{
+		Point& p0 = temp.front().v0;
+		Point& p1 = temp.back().v1;
+
+		bool found = false;
+		int deleteIdx = -1;
+		for (int i = ve.size() - 1; i > -1; i--)
+		{
+			Point& q0 = ve[i].v0;
+			Point& q1 = ve[i].v1;
+
+			if ((p0 - q1).length2() < sqError)
+			{
+				found = true; deleteIdx = i;
+				temp.push_front(ve[i]);
+				break;
+			}
+			if ((p1 - q0).length2() < sqError)
+			{
+				found = true; deleteIdx = i;
+				temp.push_back(ve[i]);
+				break;
+			}
+			if ((p1 - q1).length2() < sqError)
+			{
+				found = true; deleteIdx = i;
+				temp.push_back(ve[i].flip());
+				break;
+			}
+			if ((p0 - q0).length2() < sqError)
+			{
+				found = true; deleteIdx = i;
+				temp.push_front(ve[i].flip());
+				break;
+			}
+		}
+
+		if (found)
+		{
+			ve.erase(ve.begin() + deleteIdx);
+		}
+		else
+		{
+			std::cerr << "!!! ERROR : Failed sorting segments in calculateG() !!!" << std::endl;
+			break;
+		}
+	}
+
+	// 3. ret
+	return temp;
+}
+
+/*
+Def : 
+	given two voronoi Edges v0, v1 : we want to find some vCurve(vector<VorEdge>) which is the closest pair to a vCurve(vector<VorEdge>) which starts with v0 and ends with v1;
+Param :
+	v0 : the first vEdge of a vCurve we are interested in.
+	v1 : the final vEdge of a vCurve we are interested in.
+Return :
+	vector of VoronoiEdge, if such an pair exists.
+	but, if the size of the array is 0(when two bifurcation points merge in the next slice, forming an X-junction) :
+		push a eps-vEdge : {v0 = bifur, v1 = bifur}
+
+*/
+std::vector<VoronoiEdge> voronoiCalculatorResultG::findVoronoiCurvePair(VoronoiEdge& v0, VoronoiEdge& v1, double equalPointError)
+{
+	// 1. project v0 v1 (= find closest bifur)
+	auto
+		& ep0 = v0.v0,
+		& ep1 = v1.v1;
+	int eppi0, eppi1; //endpoint projection (index) to next slice
+	double d0 = 1e8, d1 = 1e8;
+	//d0 = d1 = equalPointError;
+	bool found0 = false, found1 = false; // whether there is a corresponding point in this class' data
+
+	// 1-1. find query point's closest neighbor in DB;
+	for (size_t i = 0; i < allPoints.size(); i++)
+	{
+		auto& v = allPoints[i];
+		auto D0 = (v - ep0).length2();
+		auto D1 = (v - ep1).length2();
+
+		if (D0 < d0)
+		{
+			eppi0 = i;
+			d0 = D0;
+			//found0 = true;
+		}
+
+		if (D1 < d1)
+		{
+			eppi1 = i;
+			d1 = D1;
+			//found1 = true;
+		}
+	}
+	if (d0 < equalPointError)
+		found0 = true;
+	if (d1 < equalPointError)
+		found1 = true;
+
+	// 2. take care of found0 or found 1 being false;
+	// e.g., if ep0 was a bifurcation point which disappears at next slice
+	// 2-1. find a single vEdge instance which is closest to ep0 or ep1. than use the vCurve(containing that vEdge)'s endpoint in graph search
+	std::vector<VoronoiEdge> mergeFirst, mergeLast;
+	if (!found0)
+	{
+		// 2-1-1. alias
+		int closestP = eppi0; // closest but not close enough;
+		auto& pt = ep0;
+		auto& tan = (v0.v1 - v0.v0); //size does not matter. should change between found0 and found 1
+		auto& arr = mergeFirst;
+		auto& newEppi = eppi0;
+
+		// 2-1-2. find closest ve
+		auto& cand = V2E()[closestP];
+		int closestI = 0, closestJ = 0;
+		double dist = 1e10;
+		// for (all vCurves near)
+		for (size_t i = 0; i < cand.size(); i++)
+		{
+			auto edgeIdx = cand[i];
+			if (edgeIdx == -1)
+				continue;
+
+			auto& vc = E()[edgeIdx];
+
+			// for (all vEdge in vCurve)
+			for (size_t j = 1; j < vc.size(); j++) // j = 1 since, j=0's v0 is vert in graph
+			{
+				auto& v = vc[j];
+				auto dTemp = (v.v0 - ep0).length2();
+				if (dTemp < dist)
+				{
+					dist = dTemp;
+					closestI = i;
+					closestJ = j;
+				}
+
+			}
+		}
+		// closestI, closestJ is found;
+
+		// 2-1-3. find need for flip;
+		auto vCurveIdx = cand[closestI];
+		auto& vClose = E()[vCurveIdx][closestJ];
+		auto tan2 = (vClose.v1 - vClose.v0);
+		auto dotP = tan * tan2;
+		bool needFlip = dotP < 0; //if(false) insert [j-1, 0] else [j, end]
+
+		// 2-1-4. build mergeFirst;
+		if (needFlip)
+		{
+			auto& temp = E()[vCurveIdx];
+			for (int i = closestJ - 1; i >= 0; i--)
+			{
+				////dbg_out
+				//std::cout << " temp.size()   ,  i = " << temp.size() << "    ,   " << i << std::endl;
+				arr.push_back(temp[i].flip());
+			}
+			newEppi = E2V()[vCurveIdx].first;
+		}
+		else
+		{
+			auto& temp = E()[vCurveIdx];
+			for (size_t i = closestJ; i < temp.size(); i++)
+			{
+				arr.push_back(temp[i]);
+			}
+			newEppi = E2V()[vCurveIdx].second;
+		}
+
+	}
+	if (!found1)
+	{
+		// 2-1-1. alias
+		int closestP = eppi1; // closest but not close enough;
+		auto& pt = ep1;
+		auto& tan = (v1.v0 - v1.v1); //size does not matter. should change between found0 and found 1
+		auto& arr = mergeFirst;
+		auto& newEppi = eppi1;
+
+		// 2-1-2. find closest ve
+		auto& cand = V2E()[closestP];
+		int closestI = 0, closestJ = 0;
+		double dist = 1e10;
+		// for (all vCurves near)
+		for (size_t i = 0; i < cand.size(); i++)
+		{
+			auto edgeIdx = cand[i];
+			if (edgeIdx == -1)
+				continue;
+
+			auto& vc = E()[edgeIdx];
+
+			// for (all vEdge in vCurve)
+			for (size_t j = 1; j < vc.size(); j++) // j = 1 since, j=0's v0 is vert in graph
+			{
+				auto& v = vc[j];
+				auto dTemp = (v.v0 - ep0).length2();
+				if (dTemp < dist)
+				{
+					dist = dTemp;
+					closestI = i;
+					closestJ = j;
+				}
+
+			}
+		}
+		// closestI, closestJ is found;
+
+		// 2-1-3. find need for flip;
+		auto vCurveIdx = cand[closestI];
+		auto& vClose = E()[vCurveIdx][closestJ];
+		auto tan2 = (vClose.v1 - vClose.v0);
+		auto dotP = tan * tan2;
+		bool needFlip = dotP < 0; //if(false) insert [j-1, 0] else [j, end]
+
+		// 2-1-4. build mergeLast;
+		if (needFlip)
+		{
+			auto& temp = E()[vCurveIdx];
+			for (int i = temp.size() - 1; i >= closestJ; i--) // HARD ???
+			{
+				arr.push_back(temp[i].flip());
+			}
+
+			newEppi = E2V()[vCurveIdx].second;
+		}
+		else
+		{
+			auto& temp = E()[vCurveIdx];
+			for (size_t i = 0; i < closestJ; i++)
+			{
+				arr.push_back(temp[i]);
+			}
+			newEppi = E2V()[vCurveIdx].first;
+		}
+
+	}
+
+
+	// 3. now we just need to find a path in the graph from eppi0 to eppi1;
+	// 3-0. triv case
+	// 3-0-1. the first/last points are the same.
+	if (eppi0 == eppi1)
+	{
+		// simply merge.
+		mergeFirst.insert(mergeFirst.end(), mergeLast.begin(), mergeLast.end());
+		// but don't make it size() == 0;
+		if (mergeFirst.size() == 0)
+		{
+			VoronoiEdge vTemp;
+			vTemp.v0 = V()[eppi0];
+			vTemp.v1 = V()[eppi0];
+			vTemp.idx[0] = -1; // to indicate that this is a fake vEdge;
+			vTemp.idx[1] = -1; // to indicate that this is a fake vEdge;
+			mergeFirst.push_back(vTemp);
+		}
+		return mergeFirst;
+	}
+	// 3-0-2. one line between.
+	if (V2E()[eppi0][eppi1] != -1)
+	{
+		// check direction of curve
+		auto vCurveIdx = V2E()[eppi0][eppi1];
+		auto leftOfVIdx = E2V()[vCurveIdx].first;
+		auto needFlip = eppi0 != leftOfVIdx;
+		
+		// merge
+		if (needFlip)
+		{
+			for (int i = E()[vCurveIdx].size() - 1; i >= 0; i--)
+			{
+				auto& ve = E()[vCurveIdx][i];
+				mergeFirst.push_back(ve.flip());
+			}
+		}
+		else
+		{
+			for (size_t i = 0, length = E()[vCurveIdx].size(); i < length; i++)
+			{
+				auto& ve = E()[vCurveIdx][i];
+				mergeFirst.push_back(ve);
+			}
+		}
+
+		// merge Last
+		mergeFirst.insert(mergeFirst.end(), mergeLast.begin(), mergeLast.end());
+
+		return mergeFirst;
+	}
+
+	// 3-1. Multiple edges between... => Do BFS; // HARD TODO: better way to do search in graph
+	std::vector<bool> visited(V().size(), false);
+	std::deque<std::vector<int>> queue;
+	// 3-1. queue init
+	visited[eppi0] = true;
+	std::vector<int> temp;
+	temp.push_back(eppi0);
+	queue.push_back(temp);
+	bool pathExists = false; // HARD TODO : when cs-obstacles merge and destroys vCurve
+	
+	// 3-2. queue to find path in voronoiGraph
+	std::vector<int> qRes;
+	while (!queue.empty())
+	{
+		temp = queue.front();
+		queue.pop_front();
+
+		bool canBreak = false;
+
+		auto lastVert = temp.back();
+		////dbg_out
+		//std::cout << "lastVert : " << lastVert << "      V.size() : " << V().size() << std::endl;
+		
+		auto& connections = V2E()[lastVert];
+		
+		for (int neigh = 0; neigh < connections.size(); neigh++)
+		//for (auto& neigh : neighCandi)
+		{
+			if (connections[neigh] == -1) // "neigh" is not connected with lastVert
+				continue;
+
+			if (visited[neigh])
+				continue;
+
+			if (neigh == eppi1)
+			{
+				canBreak = true;
+				pathExists = true;
+				qRes = temp;
+				qRes.push_back(neigh);
+				break;
+			}
+			else
+			{
+				visited[neigh] = true;
+				auto copy = temp;
+				copy.push_back(neigh);
+				queue.push_back(copy);
+			}
+		}
+		
+		if (canBreak)
+		{
+			break;
+		}
+
+	}
+
+	// 3-3. after finding a path, merge the lists of vedges, regarding the orders
+	if (!pathExists)
+		return {};
+	else
+	{
+		// now merge these lists;
+		for (size_t i = 0; i < qRes.size() - 1; i++)
+		{
+			auto in = i + 1;
+			auto vCurveIdx  = V2E()[qRes[i]][qRes[in]];
+			auto leftOfVIdx = E2V()[vCurveIdx].first; // the left point of the current vCurve examined
+			bool needFlip; 
+			if(i == 0)
+				needFlip = (eppi0 != leftOfVIdx);
+			else
+			{
+				auto& lastP = mergeFirst.back().v1;
+				auto& p = E()[vCurveIdx].front().v0;
+				auto& q = E()[vCurveIdx].back().v1;
+
+				if ((lastP - q).length2() < (lastP - p).length2())
+					needFlip = true;
+				else
+					needFlip = false;
+			}
+
+			// merge
+			if (needFlip)
+			{
+				for (int i = E()[vCurveIdx].size() - 1; i >= 0; i--)
+				{
+					////dbg_out
+					//std::cout << "needFlip : i = " << i << std::endl;
+					
+					auto& ve = E()[vCurveIdx][i];
+					mergeFirst.push_back(ve.flip());
+				}
+			}
+			else
+			{
+				for (size_t i = 0, length = E()[vCurveIdx].size(); i < length; i++)
+				{
+					auto& ve = E()[vCurveIdx][i];
+					mergeFirst.push_back(ve);
+				}
+			}
+		}
+
+
+		// merge Last
+		//mergeFirst.insert(mergeFirst.begin(), mergeLast.begin(), mergeLast.end()); // bug_fixed
+		mergeFirst.insert(mergeFirst.end(), mergeLast.begin(), mergeLast.end());
+
+		return mergeFirst;
+	}
 
 }

@@ -32,6 +32,7 @@ void
 void
 	appendArcModel(std::vector<ms::CircularArc>& sceneOriginal, std::vector<ms::Circle>& sceneCircles, std::vector<ms::CircularArc>& arcs, std::vector<ms::Circle>& circs, double scale, double rotationDegree, ms::Point translation);
 
+#define grid_half_size 3.25
 
 namespace ms {
 	extern int
@@ -39,6 +40,8 @@ namespace ms {
 		&t1,
 		&t2;
 	extern int dbgcnt;
+	extern std::vector<CircularArc> Model_vca[8];
+	extern bool Model_from_arc[8];
 
 
 	// Error Bound
@@ -71,10 +74,10 @@ namespace ms {
 	// The number of grid along x / y axis
 	static const int grid = 16;
 	// Scope of Grid (Min / Max)
-	static const double grid_min_x = -1.25;
-	static const double grid_max_x = 1.25;
-	static const double grid_min_y = -1.25;
-	static const double grid_max_y = 1.25;
+	static const double grid_min_x = -grid_half_size;
+	static const double grid_max_x = +grid_half_size;
+	static const double grid_min_y = -grid_half_size;
+	static const double grid_max_y = +grid_half_size;
 
 	// File Descriptor to Export data
 	extern FILE *f;
@@ -194,6 +197,7 @@ namespace ms {
 		inline double& x() { return P[0]; }
 		inline double& y() { return P[1]; }
 		inline double length2() { return P[0] * P[0] + P[1] * P[1]; }
+		bool operator< (const Point& rhs) const;
 	};
 
 	/*!
@@ -652,6 +656,10 @@ namespace ms {
 	*
 	*	\author 한상준(manolike@snu.ac.kr)
 	*	\date 21 Dec., 2017
+
+	MG JUNG:
+		Be aware, there shoudl be initialization outside of the constructor... (see minkSum())
+
 	*/
 	class CacheCircles {
 		//연산자
@@ -702,7 +710,7 @@ namespace ms {
 		/* grid가 완전히 채워진 여부 판단. cover된 경우, insert도 안함! */
 		bool cover[grid][grid];
 
-		/* covercheck: internally used variable */
+		/* covercheck: internally used variable */ // Seems like unused?
 		bool covercheck;
 	};
 

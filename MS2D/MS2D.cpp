@@ -1149,6 +1149,12 @@ void minkowskisum(int frame, int figure2)
 			}
 	}
 
+	//dbg_out
+	{
+		std::cout << "ConvolutionArcs.size() : " << ConvolutionArcs.size() << std::endl
+			<< Models_Rotated_Approx[frame].size() << std::endl
+			<< Models_Approx[figure2].size() << std::endl;
+	}
 	// dbg_out
 	if (false)
 	{
@@ -1567,7 +1573,7 @@ void minkowskisum(int frame, int figure2)
 
 	/* 7. Export Data */
 
-	fprintf(f, "%d\t%d\t%d\t%lf\n", ModelInfo_CurrentModel.first, ModelInfo_CurrentModel.second, ModelInfo_CurrentFrame, (micro.count() / 1000.0));
+	//fprintf(f, "%d\t%d\t%d\t%lf\n", ModelInfo_CurrentModel.first, ModelInfo_CurrentModel.second, ModelInfo_CurrentFrame, (micro.count() / 1000.0));
 
 	/* 8. Memory Management */
 	for (int i = 0; i < (int)Models_Rotated[frame].size(); i++) {
@@ -2044,6 +2050,25 @@ bool Point::operator==(Point & rhs)
 bool Point::operator<(Point & rhs)
 {
 	return (*this * *this < rhs * rhs);
+}
+
+/*
+Used for STL less function
+*/
+
+bool Point::operator< (const Point& rhs) const
+{
+	if (this->P[0] < rhs.P[0])
+		return true;
+	else if (this->P[0] > rhs.P[0])
+		return false;
+	else
+	{
+		if (this->P[1] < rhs.P[1])
+			return true;
+		else
+			return false;
+	}
 }
 
 /*!
@@ -4272,30 +4297,47 @@ void CircularArc::refineNormal()
 *	\param SingleGrid Circular Arc가 하나의 Grid에만 포함되는지를 확인
 *
 *	\return Circular Arc가 Trimming되지 않는 경우 True를 반환한다.
+
+Mg Jung:
+	False : IFF there is a single circle(convoluted) that completely encloses a bounding-triangle-of-an-arc
+
 */
 bool CircularArc::trimmingTest()
 {
+	// 0. trivial
 	if (x[0].exact(x[1]))
 		return false;
+
+	// 0.5. check theta if very small... just return true;
+	// debug : seems like it fixes some cases... will this affect performance somehow?
+	auto cosdTheta = this->n0() * this->n1();
+	if (cosdTheta > 0.99) return true;
 	
+	// 1. find thrid point of bounding-tri
 	Point p = Point(*this);
 
+	// 2. Trim with cache (simply move through all elements in array)
+	//	LOOP variable : Cache_Trimming.idx
 	/* Trimming Using Cache */
-	int init = Cache_Trimming.idx;
+	int init = Cache_Trimming.idx; //(bound idx for ending loop)
 	do {
+		// 2-1. check inclusion
 		if (Cache_Trimming.cache[Cache_Trimming.idx]->contain(*this, p)) {
 			// Trimming (Cache Hit)
 			// check : 최근에 해당 Disk가 Trimming을 성공했음을 Check함
-			Cache_Trimming.check[Cache_Trimming.idx] = true;
+			Cache_Trimming.check[Cache_Trimming.idx] = true; // this check is used as sth similar to : Least Recently Used
 			return false;
 		}
+
+		// 2-2. update LOOP variable
 		if (Cache_Trimming.idx == cacheSize - 1)
 			Cache_Trimming.idx = 0;
 		else
 			Cache_Trimming.idx++;
 	} while (init != Cache_Trimming.idx);
 
-	// FP[0][1][2][3] -> {xmin, xmax, ymin, ymax}의 position
+	// 3. find FindPosition :
+	// FP[0][1][2][3] -> {xmin, xmax, ymin, ymax}'s cell position
 	std::vector<int> FindPosition;
 	try
 	{
@@ -4305,27 +4347,56 @@ bool CircularArc::trimmingTest()
 	{
 		//dbg_out
 		std::cout << "catched" << std::endl;
-		return false;
+		return true;
 	}
 
+	// 3-1. err check
+	// dbg : seems like GRID::find() doesn't check wheter point is in GRID bound...
+	// in that case... simply be conservative... don't trim;
+	if (FindPosition.size() < 4)
+		return true;
+
+	// 3-2. true if : bounding-tri lies in a single cell
 	bool SingleGrid = (FindPosition[0] == FindPosition[1]) && (FindPosition[2] == FindPosition[3]);
 
+	// 4. examin all cells (that the tri might intersect) : if there is a circle which completely includes a tri, return false(trimmed)
+	//	Q) Aren't the same circles examined multiple times??? (Since circles are a member of a cell it has intersection with)
+	//	Also update cache.
 	for(int i = FindPosition[0]; i <= FindPosition[1]; i++)
 		for (int j = FindPosition[2]; j <= FindPosition[3]; j++) {
-			auto result = Grid_Trimming.trimming(p, x[0], x[1], i, j, SingleGrid);
+
+			// 4.1 call function which tests the tri against all the circles that a cell includes.
+			std::pair<ms::Circle*, bool> result;
+			try 
+			{
+				result = Grid_Trimming.trimming(p, x[0], x[1], i, j, SingleGrid);
+			}
+			catch (std::exception & exc)
+			{
+				using namespace std;
+				cerr << exc.what() << endl;
+				cerr << i << " " << j << endl;
+			}
+			
+			
+			// 4-2-1. case 1 : trimmed by a covering circle
 			// if covered
+			// Q: couldn't this lead to a case where : all cached circles are the same? -> If the circle inserted at this point was in the cache... than it would have trimmed the thing then.
 			if ((result.first == NULL) && result.second) {
 				// Cache update
 				// Second Chance Algorithm으로 Cache에서 지울 Index를 찾아냄
+				// 4-i. FIND LRU
 				while (Cache_Trimming.check[Cache_Trimming.idx]) {
 					Cache_Trimming.check[Cache_Trimming.idx++] = false;
 					if (Cache_Trimming.idx == cacheSize)
 						Cache_Trimming.idx = 0;
 				}
+				// 4-ii. update
 				Cache_Trimming.cache[Cache_Trimming.idx] = Grid_Trimming.coverCircle[i][j];
 				Cache_Trimming.check[Cache_Trimming.idx] = true;
 				return false;
 			}
+			// 4-2-2. case 2: trimmed by a non-covering circle(singe line is diff from 4-2-1)
 			// Cache Update
 			else if (result.first != NULL) {
 				while (Cache_Trimming.check[Cache_Trimming.idx]) {
@@ -4338,6 +4409,7 @@ bool CircularArc::trimmingTest()
 				return false;
 			}
 		}
+	// 4-2-3. case 3: no trimming.
 	//fail
 	return true;
 }
@@ -5646,6 +5718,14 @@ Grid::Grid()
 *	\brief Circle과 만나는 Grid를 찾아 Grid에 해당 Circle을 추가하여 업데이트
 *
 *	\param input Circle의 주소
+MG Jung:
+	Iterate for each cell
+	4bit case statement:
+		9 case (00, 01, 11) x (00, 01, 11)
+			00 : (x or y of circ_center) is smaller than cell boundary
+			01 : (x or y of circ_center) is inside cell
+			11 : (x or y of circ_center) is larger than cell boundary
+
 */
 void Grid::insert(Circle *input)
 {
@@ -5741,15 +5821,24 @@ void Grid::insert(Circle *input)
 *
 *	\return Grid의 x, y방향 Index 네 개를 반환한다.
 */
-/* reval:
+/* 
+
+Mg JUNG :
+	find rectangle (by grid index's bound) which contains a triangle.
+
+reval:
  * first value: min x idx
  * second value: max x idx
  * third value: min y idx
  * forth value: max y idx
+
+ The triangle (p1, p2, p3) is bounded by a rectangle ( which is a set of cells with its idx qualifying : reval[0] <= x_idx <= reval[1] && reval[2] <= y_idx <= reval[3] )
  */
 std::vector<int> Grid::find(const Point & p1, const Point & p2, const Point & p3)
 {
 	std::vector<int> reval;
+
+	// 1. find max/min among p1,p2,p3
 	double xmax = (p1.P[0] > p2.P[0]) ? p1.P[0] : p2.P[0];
 	double xmin = (p1.P[0] < p2.P[0]) ? p1.P[0] : p2.P[0];
 	double ymax = (p1.P[1] > p2.P[1]) ? p1.P[1] : p2.P[1];
@@ -5759,6 +5848,7 @@ std::vector<int> Grid::find(const Point & p1, const Point & p2, const Point & p3
 	ymax = (ymax > p3.P[1]) ? ymax : p3.P[1];
 	ymin = (ymin < p3.P[1]) ? ymin : p3.P[1];
 
+	// 2. find min,max containing grid idx
 	for (int i = 0; i < grid; i++) {
 		if (xmin < x[i + 1]) {
 			reval.push_back(i);
@@ -5793,6 +5883,7 @@ std::vector<int> Grid::find(const Point & p1, const Point & p2, const Point & p3
 		}
 	}
 
+	// 3. check stuff (should check whether points are inside grid boundary)
 	if (reval.size() != 4)
 		std::cout << "error occurs! - grid/find" << std::endl;
 
@@ -5810,15 +5901,32 @@ std::vector<int> Grid::find(const Point & p1, const Point & p2, const Point & p3
 *	\param singleGrid Circular Arc가 단 하나의 Grid에 포함되는지를 판단
 *
 *	\return Circular Arc를 Trimming하는 Circle의 주소와, Trimming 여부를 pair로 반환. (pair의 두 번째 값이 false인 경우 Circle*은 NULL일 수밖에 없음)
+
+MG Jung :
+Summary:
+	Simply,
+	1. check the cell's (whether cell is completely filled) && (whether the tri lies in a single cell)
+		if so, just trim
+	2. loop through all the circles intersecting this cell(x,y).
+		If some circle contains the whole tri, trim
+
 */
 std::pair<Circle*, bool> Grid::trimming(Point& p1, Point& p2, Point& p3, int x, int y, bool singleGrid)
 {
+	// 1. 
 	// Single Grid인 경우에만 Trimming이 가능함을 확신할 수 있음
 	if ((covercheck = cover[x][y]) && singleGrid)
 		return std::make_pair((Circle*)NULL, true);
 	int s = (int)gCircles[x][y].size();
 
+	//dbg_out
+	if (x >= 16 || y >= 16)
+	{
+		std::cerr << "i , j at grid : " << x << " " << y << std::endl;
+	}
 	
+	// 2.
+	// seems like : look for a single circle(which is a member of GRID_CELL_(x,y)) which completely encloses a boudning triangle of an arc
 	for (int i = 0; i < s; i++)
 		// 순서가 뒤집힌 이유: Sorting 할 때 반지름이 작은 것 부터 큰 것 순서로 Sorting 되어 있음!
 		// Grid의 Circle 중 반지름이 큰 Circle과 먼저 비교해보기 위함!

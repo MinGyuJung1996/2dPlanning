@@ -230,7 +230,10 @@ vector<triNormal>* csSurf::drawingSet()
 			auto& n1 = _normals[i + 0][j + 1];
 			auto& n2 = _normals[i + 1][j + 0];
 
-			vtn.emplace_back(v0, n0, v1, n1, v2, n2);
+			if(k==1)
+				vtn.emplace_back(v0, n0, v1, n1, v2, n2);
+			else
+				vtn.emplace_back(v0, n0, v2, n2, v1, n1); // since we draw with GL_TRIANGLES (not fan), we have to manage ccw for back/front face decision step of GL
 		}
 
 		// 3-2. case : one vertex is in diff area;
@@ -305,24 +308,53 @@ vector<triNormal>* csSurf::drawingSet()
 			//			eqIdx0, eqIdx1, inter0
 			//			inter0, eqIdx1, inter1 
 			// intsert all
-			if (offsetDiff)
+			if (k == 1)
 			{
-				vtn.emplace_back(v[diffIdx][0] + o,	n[diffIdx][0],	inter0 + o,			normal0,		inter1 + o, normal1);
-			}
-			else
-			{
-				vtn.emplace_back(v[diffIdx][0], n[diffIdx][0], inter0, normal0, inter1, normal1);
-			}
+				if (offsetDiff)
+				{
+					vtn.emplace_back(v[diffIdx][0] + o, n[diffIdx][0], inter0 + o, normal0, inter1 + o, normal1);
+					//vtn.emplace_back(v[diffIdx][0] + o,	n[diffIdx][0],	inter1 + o, normal1, inter0 + o, normal0);
+				}
+				else
+				{
+					vtn.emplace_back(v[diffIdx][0], n[diffIdx][0], inter0, normal0, inter1, normal1);
+					//vtn.emplace_back(v[diffIdx][0], n[diffIdx][0], inter1, normal1, inter0, normal0);
+				}
 
-			if(offsetDiff)
-			{
-				vtn.emplace_back(v[eqIdx0][0],	n[eqIdx0][0],	v[eqIdx1][0],	n[eqIdx1][0],	inter0,	normal0);
-				vtn.emplace_back(inter0,		normal0,		v[eqIdx1][0],	n[eqIdx1][0],	inter1,	normal1);
+				if (offsetDiff)
+				{
+					vtn.emplace_back(v[eqIdx0][0], n[eqIdx0][0], v[eqIdx1][0], n[eqIdx1][0], inter0, normal0);
+					vtn.emplace_back(inter0, normal0, v[eqIdx1][0], n[eqIdx1][0], inter1, normal1);
+				}
+				else
+				{
+					vtn.emplace_back(v[eqIdx0][0] + o, n[eqIdx0][0], v[eqIdx1][0] + o, n[eqIdx1][0], inter0 + o, normal0);
+					vtn.emplace_back(inter0 + o, normal0, v[eqIdx1][0] + o, n[eqIdx1][0], inter1 + o, normal1);
+				}
 			}
 			else
 			{
-				vtn.emplace_back(v[eqIdx0][0] + o,	n[eqIdx0][0],	v[eqIdx1][0] + o,	n[eqIdx1][0],	inter0 + o,	normal0);
-				vtn.emplace_back(inter0 + o,		normal0,		v[eqIdx1][0] + o,	n[eqIdx1][0],	inter1 + o,	normal1);
+				if (offsetDiff)
+				{
+					vtn.emplace_back(v[diffIdx][0] + o, n[diffIdx][0], inter1 + o, normal1, inter0 + o, normal0);
+					//vtn.emplace_back(v[diffIdx][0] + o,	n[diffIdx][0],	inter1 + o, normal1, inter0 + o, normal0);
+				}
+				else
+				{
+					vtn.emplace_back(v[diffIdx][0], n[diffIdx][0], inter1, normal1, inter0, normal0);
+					//vtn.emplace_back(v[diffIdx][0], n[diffIdx][0], inter1, normal1, inter0, normal0);
+				}
+
+				if (offsetDiff)
+				{
+					vtn.emplace_back(v[eqIdx0][0], n[eqIdx0][0], inter0, normal0, v[eqIdx1][0], n[eqIdx1][0]);
+					vtn.emplace_back(inter0, normal0, inter1, normal1, v[eqIdx1][0], n[eqIdx1][0]);
+				}
+				else
+				{
+					vtn.emplace_back(v[eqIdx0][0] + o, n[eqIdx0][0], inter0 + o, normal0, v[eqIdx1][0] + o, n[eqIdx1][0]);
+					vtn.emplace_back(inter0 + o, normal0, inter1 + o, normal1, v[eqIdx1][0] + o, n[eqIdx1][0]);
+				}
 			}
 		}
 

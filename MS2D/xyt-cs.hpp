@@ -64,7 +64,10 @@ public:
 		return { this->x() * m, this->y() * m, this->t() * m };
 	}
 	friend inline xyt operator*(double lhs, xyt& rhs);
-
+	inline xyt operator-()
+	{
+		return { -this->x(), -this->y(), -this->t()};
+	}
 	// math
 	inline xyt cross(xyt rhs)
 	{
