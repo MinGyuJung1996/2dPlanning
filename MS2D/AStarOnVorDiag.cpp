@@ -99,8 +99,11 @@ void connect_slices(const vector<Vertex>&  vecVertices,
 				minCurrSliceIdx = currSliceIter;
 			}
 		}
-		vecEdges.push_back({ prevSliceIter, minCurrSliceIdx });
-		vecWeights.push_back(minDist);
+		if (minDist < 0.1)
+		{
+			vecEdges.push_back({ prevSliceIter, minCurrSliceIdx });
+			vecWeights.push_back(minDist);
+		}
 	}
 }
 //-----------------------------------------------------------------------------

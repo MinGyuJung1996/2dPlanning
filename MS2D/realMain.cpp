@@ -199,7 +199,7 @@ int main(int argc, char *argv[]) {
 
 	//cout << "fake func" << endl;
 
-	rendering3D::main3::main3(argc, argv);
+	//rendering3D::main3::main3(argc, argv);
 	//graphSearch::searchTest();
 	graphSearch::main2(argc, argv);
 	
@@ -221,7 +221,7 @@ namespace graphSearch
 	int main2(int argc, char* argv[])
 	{
 		// 1. build v_edges
-
+		planning::_h_fmdsp_g1 = 1e-8;
 		ms::initialize();	// read data from files.
 		ms::ModelInfo_CurrentModel = std::make_pair(1, 7);
 		ms::postProcess(ms::ModelInfo_CurrentModel.first, ms::ModelInfo_CurrentModel.second); // process arcs to satisfy conditions.
@@ -299,10 +299,42 @@ namespace graphSearch
 		vector<Vertex> vecVertices;
 		map<Vertex, int, VertexLessFn> mapLookup;
 		Graph theGr = create_VorGraph(v_edges_sparced, vecVertices, mapLookup);
-		Vertex ptnSrc(-0.70296182284311681, -0.30610712038352472, 0.0);
-		Vertex ptnDst(0.76932775901415118, 0.36524457774288216, 320.0);
+		//Vertex ptnSrc(-0.70296182284311681, -0.30610712038352472, 0.0);
+		//Vertex ptnDst(0.76932775901415118, 0.36524457774288216, 320.0);
+
+		Vertex ptnSrc(-0.9, -0.1, 0.0);
+		Vertex ptnDst(+0.5, +0.4, 160.0);
+		// Code to find the closest point in G(V,E)
+		{
+			Vertex src(0, 0, 0), dst(0, 0, 0);
+			double d0 = 1e100, d1 = 1e100;
+			for (auto& a : vecVertices)
+			{
+				auto& v = a;
+				if (v.z == ptnSrc.z)
+				{
+					if (v.dist(ptnSrc) < d0)
+					{
+						d0 = v.dist(ptnSrc);
+						src = v;
+					}
+				}
+				if (v.z == ptnDst.z)
+				{
+					if (v.dist(ptnDst) < d1)
+					{
+						d1 = v.dist(ptnDst);
+						dst = v;
+					}
+				}
+			}
+			ptnSrc = src;
+			ptnDst = dst;
+		}
+
 		std::vector<Vertex> path = invoke_AStar(theGr, vecVertices, mapLookup, ptnSrc, ptnDst);
 
+		//std::cout << path.size() << std::endl;
 
 		// 3. call functions from namespace graphSearch (AStarOnVorDiag.cpp)
 		 // triplet of (path[3n+0], path[3n+1], path[3n+2]) represents a vertice in path. 
@@ -314,7 +346,7 @@ namespace graphSearch
 		// uncomment below to begin renderLoop for mink/voronoi calculated above.
 		//ms::renderMinkVoronoi(argc, argv, MRs, MIBs, v_edges, planning::voronoiBoundary);
 		//ms::renderRefinementCollisionTest(argc, argv, MRs, MIBs, v_edges, planning::voronoiBoundary, VRINs);
-		rendering3D::renderCSObject(argc, argv, MRs, MIBs);
+		//rendering3D::renderCSObject(argc, argv, MRs, MIBs);
 
 		// 4-2. render robot's path
 		// Path found on step 3 should be used instead of dummy_path

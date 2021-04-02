@@ -2431,12 +2431,13 @@ namespace planning
 
 	/* Def: given a point on an arc, compute the maximal touching disk of that point. The return another point touching that disk.
 	*/
+	double _h_fmdsp_g1 = 1e-3; //hyperParam, _epsilon
 	pointOnCurve findMaximalDiskSharingPoint(vector<CircularArc>& INPUT arcs, pointOnCurve INPUT poc, int INPUT left, int INPUT right)
 	{
 		//tag g1inc
 		if (left != poc.c)
 		{
-			if (fabs(arcs[left].n[1] * arcs[poc.c].n[0]) < 1 - 1e-3) //check if not g1
+			if (fabs(arcs[left].n[1] * arcs[poc.c].n[0]) < 1 - _h_fmdsp_g1) //check if not g1
 				return { left, 1 };
 		}
 

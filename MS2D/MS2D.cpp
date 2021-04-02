@@ -188,8 +188,8 @@ extern double basis4[10001][5];
 extern double basis5[10001][6];
 extern double basis6[10001][7];
 
-const bool change7 = true; // change 7 model to scene-with-obstacles (6 + 7)
-const bool change0 = true; // change 0 to half size
+const bool change7 = false; // change 7 model to scene-with-obstacles (6 + 7)
+const bool change0 = false; // change 0 to half size
 const bool override1 = true;
 const bool override7 = true;
 std::vector<CircularArc> Model_vca[8]; // model's circularArc representation (before calling postprocessing)
@@ -217,7 +217,9 @@ void initialize()
 	fopen_s(&f, "time.txt", "w");
 
 	ModelInfo_CurrentModel.first  = 1; // 1
-	ModelInfo_CurrentModel.second = 6; // 6
+	ModelInfo_CurrentModel.second = 7; // 6
+	
+	
 	Models_Imported[0] = import_Crv("impt1.txt");
 	Models_Imported[1] = import_Crv("impt2.txt");
 	Models_Imported[2] = import_Crv("impt3.txt");
@@ -226,6 +228,7 @@ void initialize()
 	Models_Imported[5] = import_Crv("impt6.txt");
 	Models_Imported[6] = import_Crv("impt7.txt");
 	Models_Imported[7] = import_Crv("impt8.txt");
+	
 	InteriorDisks_Imported[0] = importCircles("refinedCircle1.txt");
 	InteriorDisks_Imported[1] = importCircles("refinedCircle2.txt");
 	InteriorDisks_Imported[2] = importCircles("refinedCircle3.txt");
@@ -234,6 +237,7 @@ void initialize()
 	InteriorDisks_Imported[5] = importCircles("refinedCircle6.txt");
 	InteriorDisks_Imported[6] = importCircles("refinedCircle7.txt");
 	InteriorDisks_Imported[7] = importCircles("refinedCircle8.txt");
+	
 
 	//debug : test multiple loops in one model // conclusion : seems to work
 
@@ -390,57 +394,57 @@ void initialize()
 
 
 
-	planning::output_to_file::objSize.resize(8);
+	//planning::output_to_file::objSize.resize(8);
 
-	for (int i = 0; i < 8; i++) {
-		for (int j = 0; j < (int)Models_Imported[i].size(); j++) {
-			Models_Imported[i][j].segmentation(Models[i]);
-		}
+	//for (int i = 0; i < 8; i++) {
+	//	for (int j = 0; j < (int)Models_Imported[i].size(); j++) {
+	//		Models_Imported[i][j].segmentation(Models[i]);
+	//	}
 
-		std::cout << "hello" << std::endl;
-		for (int j = 0; j < (int)Models[i].size(); j++) {
-			auto s = Models[i][j].integrityTest();
-			if (s.size() > 0)
-				Models[i].insert(Models[i].begin() + j + 1, s.begin(), s.end());
-		}
+	//	std::cout << "hello" << std::endl;
+	//	for (int j = 0; j < (int)Models[i].size(); j++) {
+	//		auto s = Models[i][j].integrityTest();
+	//		if (s.size() > 0)
+	//			Models[i].insert(Models[i].begin() + j + 1, s.begin(), s.end());
+	//	}
 
-		std::cout << "hello" << std::endl;
-		for (int j = 0; j < (int)Models[i].size(); j++) {
-			auto tempSpiral = ArcSpline(Models[i][j]); /* where bez -> arc */
-			auto input = tempSpiral.integrityTest();
-			Models_Approx[i].insert(Models_Approx[i].end(), input.begin(), input.end());
-		}
+	//	std::cout << "hello" << std::endl;
+	//	for (int j = 0; j < (int)Models[i].size(); j++) {
+	//		auto tempSpiral = ArcSpline(Models[i][j]); /* where bez -> arc */
+	//		auto input = tempSpiral.integrityTest();
+	//		Models_Approx[i].insert(Models_Approx[i].end(), input.begin(), input.end());
+	//	}
 
-		std::cout << "hello" << std::endl;
-		//build planning::output_to_file::objSize;
-		if (i != 7)
-		{
-			int cnt = 0;
-			for (auto& as : Models_Approx[i])
-			{
-				cnt += as.Arcs.size();
-			}
-			planning::output_to_file::objSize[i].push_back(cnt);
-		}
-		else
-		{
-			int cnt = 0;
-			int a0 = Models_Imported[7].size() - Models_Imported[6].size();
-			for (size_t j = 0; j < a0; j++)
-			{
-				cnt += Models_Approx[i][j].Arcs.size();
-			}
-			planning::output_to_file::objSize[i].push_back(cnt);
+	//	std::cout << "hello" << std::endl;
+	//	//build planning::output_to_file::objSize;
+	//	if (i != 7)
+	//	{
+	//		int cnt = 0;
+	//		for (auto& as : Models_Approx[i])
+	//		{
+	//			cnt += as.Arcs.size();
+	//		}
+	//		planning::output_to_file::objSize[i].push_back(cnt);
+	//	}
+	//	else
+	//	{
+	//		int cnt = 0;
+	//		int a0 = Models_Imported[7].size() - Models_Imported[6].size();
+	//		for (size_t j = 0; j < a0; j++)
+	//		{
+	//			cnt += Models_Approx[i][j].Arcs.size();
+	//		}
+	//		planning::output_to_file::objSize[i].push_back(cnt);
 
-			cnt = 0;
-			for (size_t j = a0; j < Models_Imported[7].size(); j++)
-			{
-				cnt += Models_Approx[i][j].Arcs.size();
-			}
-			planning::output_to_file::objSize[i].push_back(cnt);
-		}
-		//end objSize
-	}
+	//		cnt = 0;
+	//		for (size_t j = a0; j < Models_Imported[7].size(); j++)
+	//		{
+	//			cnt += Models_Approx[i][j].Arcs.size();
+	//		}
+	//		planning::output_to_file::objSize[i].push_back(cnt);
+	//	}
+	//	//end objSize
+	//}
 
 	// tried to merge models_approx after... but seems to break
 	if (false)

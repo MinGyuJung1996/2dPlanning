@@ -22,6 +22,8 @@ namespace planning
 #define ERR_GET_POINT_GEOM_DTHETA		true
 #define ERR_ARC_NORMAL_TO_PARAM			true
 
+	extern double _h_fmdsp_g1;
+
 	extern int drawBifurCircle;
 	extern int drawVoronoiSingleBranch;
 	extern int drawMinkowski;
