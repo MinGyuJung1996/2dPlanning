@@ -282,7 +282,7 @@ namespace cd
 
 	/*
 	Def : given two endpoints of an arc, and a tangent at one of its endpoints, this uniquely decides and arc. return it.
-
+		(Actually there is a freedom in ccw. But we assume that dTheta < 180degree)
 	Does almost the same thing with the constructor(of same argument type) of "CircularArc"
 		But that constructor was buggy, so this is used.
 	*/

@@ -56,6 +56,11 @@ namespace graphSearch
 	int main2(int argc, char* argv[]);
 }
 
+namespace sceneEditor
+{
+	int main(int argc, char* argv[]);
+}
+
 int main(int argc, char *argv[]) {
 
 	//Test stuff:
@@ -199,12 +204,11 @@ int main(int argc, char *argv[]) {
 
 	//cout << "fake func" << endl;
 
-	//rendering3D::main3::main3(argc, argv);
-	//graphSearch::searchTest();
-	graphSearch::main2(argc, argv);
-	
+	//sceneEditor::main(argc, argv);	// interactive editing
+	//rendering3D::main3::main3(argc, argv);	// draw 3d c-space
+	graphSearch::main2(argc, argv);		// draw moving robot
 	//graphSearch::main(0, NULL);
-	ms::main2(argc, argv);
+	//ms::main2(argc, argv); //RSV
 
 	system("pause");
 }
@@ -220,9 +224,12 @@ namespace graphSearch
 	*/
 	int main2(int argc, char* argv[])
 	{
+		int robotType = 1;
+		int obsType = 1;
+
 		// 1. build v_edges
 		planning::_h_fmdsp_g1 = 1e-8;
-		ms::initialize();	// read data from files.
+		initializeRobotObstacles(robotType, obsType);	// read data from files.
 		ms::ModelInfo_CurrentModel = std::make_pair(1, 7);
 		ms::postProcess(ms::ModelInfo_CurrentModel.first, ms::ModelInfo_CurrentModel.second); // process arcs to satisfy conditions.
 		planning::output_to_file::flag = true; // flag to enable : gathering data inside global var, during v-diagram construction.
@@ -245,7 +252,18 @@ namespace graphSearch
 
 			planning::VR_IN& vrin = VRINs[i];
 			planning::_Convert_MsOut_To_VrIn(ms::Model_Result, ms::ModelInfo_Boundary, vrin);
-			planning::_Medial_Axis_Transformation(vrin);
+			//planning::_Medial_Axis_Transformation(vrin);
+			voronoiCalculator vc;
+			vector<deque<VoronoiEdge>> v_res;
+			vc.initialize();
+			vc.setInput(vrin.arcs, vrin.left, vrin.color);
+			vc.setOutput(v_res);
+			vc.calculate();
+
+			auto& result = planning::output_to_file::v_edges[i];
+			for (auto& a : v_res)
+				for (auto& b : a)
+					result.push_back(b);
 
 
 			//// dbg_out
@@ -288,6 +306,8 @@ namespace graphSearch
 		std::vector<std::vector<v_edge>>&
 			v_edges = planning::output_to_file::v_edges;
 
+		//ms::renderMinkVoronoi(argc, argv, MRs, MIBs, v_edges, planning::voronoiBoundary);
+
 		//Graph theGr = create_VorGraph(v_edges);
 		//std::vector<v_edge> path = invoke_AStar(theGr);
 		std::vector<std::vector<v_edge>> v_edges_sparced;
@@ -302,8 +322,14 @@ namespace graphSearch
 		//Vertex ptnSrc(-0.70296182284311681, -0.30610712038352472, 0.0);
 		//Vertex ptnDst(0.76932775901415118, 0.36524457774288216, 320.0);
 
+		// Set starting pt, ending pt
 		Vertex ptnSrc(-0.9, -0.1, 0.0);
 		Vertex ptnDst(+0.5, +0.4, 160.0);
+		if (/*robotType == 0 && */obsType == 1)
+		{
+			ptnSrc = Vertex(0.858, -1.07, 0.0);
+			ptnDst = Vertex(-0.502, 0.509, 0.0);
+		}
 		// Code to find the closest point in G(V,E)
 		{
 			Vertex src(0, 0, 0), dst(0, 0, 0);

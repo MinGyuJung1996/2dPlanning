@@ -14,16 +14,94 @@
 
 /*
 Def : constructor
-	find equation and domain
+	find equation and domain (just a wrapper)
+Assume : 
+	all robots and obstacles are all convex
+		To be specific, this func does not take care of those cases :
+			The reverse case : One of the arcs should be rotated 180degrees and then be convoluted.
+			<==> The resulting surface with R = |r1-r2| is not computed
 */
 csSurf::csSurf(CircularArc& robot, CircularArc& obs, Point& robotCenter)
 {
-	// 0. set arcR, arcO, _flagEquationFound
+	// Set info about origin
 	{
 		arcR = &robot;
 		arcO = &obs;
 		this->robotCenter = robotCenter;
+		isReverse = false;
 	}
+
+	buildEquation(robot, obs, robotCenter);
+}
+
+/*
+Def : constructor
+	find equation and domain of a surface in 3d (formed by arc_mink_sum + roation of robot)
+	can take care of the reverse case.
+Desc : 
+	Two arcs of radius r1, r2 can form 2 surfaces in the x-y-t space
+		1. _rad = |r1 + r2|
+			The normal case : where normal-matching is done with the original arc's normals 
+		2. _rad = |r1 - r2|
+			The reverse case: where normal-matching is done with one arc's normals flipped(+180 degree)
+			(Note that mink-sum-boundaries are a sum-of-boundary-points-in-the-input where the normals-of-the-two-input-points are paralell(exterior_product(p.norm,q.norm) = 0) )
+				(i.e., b = p + q is a boundary <==> (p is boundary) and (q is boundary) and (p.normal // q.normal)
+			(Therefore Case 1 looks form "dot(p.n, q.n) == 1", while case 2 looks for "dot(p.n, q.n) == -1"
+Param :
+	robot		: arc from robot (one of robot or obs should not be flipped already)
+	obs			: arc from osbtacle
+	robotCenter : Point which the robot rotates with. (probably (0,0))
+	reverse		: if(true) do case2 else do case1
+Summary : 
+	1. check if (no reverse) just trivial case
+	2. find an arc equivalent 
+*/
+csSurf::csSurf(CircularArc& robot, CircularArc& obs, Point& robotCenter, bool reverse)
+{
+	// 0. Set info about origin
+	{
+		arcR = &robot;
+		arcO = &obs;
+		this->robotCenter = robotCenter;
+		isReverse = reverse;
+	}
+
+	// 1. Just a trivial case.
+	if (reverse == false)
+	{
+		buildEquation(robot, obs, robotCenter);
+		return;
+	}
+
+	// 2. find an equivalent arc "equiv", where buildEquation(equiv, theOther, robotCenter) would do what we want
+	//// ==> find an arc with smaller rad, then make it -_rad ?????????? HARD
+	if (robot.cr() < obs.cr())
+	{
+		auto equiv = robot;
+		equiv.n0() = -equiv.n0();
+		equiv.n1() = -equiv.n1();
+		equiv.cr() = -equiv.cr(); // WARNING : The circular arc instance here is corrupted. (some values not in normal state e.g., x0,x1)
+		buildEquation(equiv, obs, robotCenter);
+	}
+	else if (robot.cr() > obs.cr())
+	{
+		auto equiv = obs;
+		equiv.n0() = -equiv.n0();
+		equiv.n1() = -equiv.n1();
+		equiv.cr() = -equiv.cr(); // WARNING : The circular arc instance here is corrupted. (some values not in normal state e.g., x0,x1)
+		buildEquation(robot, equiv, robotCenter);
+	}
+}	
+
+/*
+Def : 
+	find constants that form the surface's 
+		equation (_c0, _c1, _r)
+		domain	(_phi, _tmp)
+*/
+void csSurf::buildEquation(CircularArc& robot, CircularArc& obs, Point& robotCenter)
+{
+	// 0. set arcR, arcO, _flagEquationFound
 	_flagEquationFound = true;
 
 	// 1. set primitive var;
@@ -36,6 +114,8 @@ csSurf::csSurf(CircularArc& robot, CircularArc& obs, Point& robotCenter)
 		x0 = temp.cx();
 		y0 = temp.cy();
 		r0 = temp.cr();
+
+		// make the arc go counterClockWise
 		if (temp.lccw())
 		{
 			b0 = temp.atan0();
@@ -46,6 +126,7 @@ csSurf::csSurf(CircularArc& robot, CircularArc& obs, Point& robotCenter)
 			b0 = temp.atan1();
 			e0 = temp.atan0();
 		}
+		// set b0,e0 so that : b0 < e0 
 		while (e0 < b0)
 			e0 += PI2;
 	}
@@ -86,6 +167,7 @@ csSurf::csSurf(CircularArc& robot, CircularArc& obs, Point& robotCenter)
 	_center1 = Point(x0 - cx, y0 - cy);
 	_rad = r0 + r1;
 }
+
 
 /*
 Def : from the equation/domain found, get points on the suraface
@@ -422,11 +504,21 @@ void configSpaceCalculator::calculate()
 	auto& obs = *_ptrObs;
 	auto origin = Point(0, 0);
 
-	// 1.
+	// 1. Take care of CASE 1 : two arcs just go through convolution
 	for(auto& r : rob)
 		for (auto& o : obs)
 		{
 			out.emplace_back(r, o, origin);
+		}
+	
+	// 2. Take care of CASE 2: rotate one of the arcs 180 degress, and then do convolution
+	
+
+	// 1. Take care of CASE 1 : two arcs just go through convolution
+	for (auto& r : rob)
+		for (auto& o : obs)
+		{
+			out.emplace_back(r, o, origin, true);
 		}
 
 	// 99.

@@ -14,3 +14,7 @@
 6. fixed bug on MinkowskiSum : "void overlapTest(std::vector<ArcSpline> &source, ArcSpline & lhs, ArcSpline & rhs)"
 	=> case 5 was not evaluated correctly
 	==> see image 1 1 257 5 4
+
+7.
+	SimplifyVCA
+	concave arc's findMTD -> radius bound

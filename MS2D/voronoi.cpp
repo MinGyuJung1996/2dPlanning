@@ -32,6 +32,11 @@ namespace planning
 
 	vector<ms::CircularArc> voronoiBoundary;
 
+	constexpr bool flag_vmqa = true; //Voronoi-Multi-Quadrant-Arcs.
+	constexpr bool use_simplifyVCA = true;
+	constexpr bool flag_findMTD_concave_check = true;
+	constexpr bool flag_findMTD_nonG1_divide_case = true;
+
 	namespace output_to_file
 	{
 		// tag to distinguish variables that should be configured before calling start() end()
@@ -1172,6 +1177,79 @@ namespace planning
 		////~debug
 	}
 
+	/*
+	Def:
+		reduce g0 arcs which have the same center, rad into one.
+	Assume:
+		vector of CA are somewhat-well-ordered
+			For those arcs that are G0-continuous, arcs[i].x1() == arcs[1+1].x0() holds (will be tested with some error)
+	Desc:
+		Same arcs divided into multiples could cause some topological errors in the vor-diag(to be specific, findMTD)
+	Date:
+		2021-0420: made
+	*/
+	double _H_SVCA_PT_ERROR = 1e-12;
+	double _H_SVCA_RAD_ERROR = 1e-6;
+	void simplifyVCA(vector<CircularArc>& INPUT in, vector<CircularArc>& OUTPUT out)
+	{
+		// Alias
+		auto& err0 = _H_SVCA_PT_ERROR;
+		auto& err1 = _H_SVCA_RAD_ERROR;
+
+		// 1. compare neighboring arcs and then merge them if they sould be.
+		int length = in.size();
+		// for (all input)
+		for (int i = 0; i < length; /*i = iUpdate*/)
+		{
+			int iUpdate = i + 1; // next i value. need initialization for i = length -1;
+			// iUpdate could be optimized to j.
+
+			auto arc = in[i];
+
+			// for (following arcs)
+			for (int j = i + 1; j < length; j++)
+			{
+				// 1-1. check whether merging is possible between (arc & in[j])
+				if ((arc.c.r - in[j].c.r) < err1 &&				// rad check
+					(arc.c.c - in[j].c.c).length2() < err0 &&	// center check
+					(arc.x1() - in[j].x0()).length2() < err0)	// g0 check
+				{
+					////dbg_out
+					//cout << "~~~~~~~~~~~Merged :" << endl << arc << endl << in[j] << endl;
+
+					// 1-1-1. merge arc;
+					arc.x1() = in[j].x1();
+					arc.n1() = in[j].n1();
+					iUpdate = j+1;
+				}
+				else
+				{
+					// 1-1-2. if merging is not possible, the next i value should be current j; Also, stop adding to "arc"
+					break;
+				}
+			}
+
+			// at this point, "arc" is merged.
+			out.push_back(arc);
+			i = iUpdate;
+		}
+
+		// 2. The last and first arc could be merged.
+		if (out.size() > 2)
+		{
+			auto& a0 = out.front();
+			auto& a1 = out.back();
+
+			if ((a1.c.r -  a0.c.r) < err1 &&			// rad check
+				(a1.c.c -  a0.c.c).length2() < err0 &&	// center check
+				(a1.x1() - a0.x0()).length2() < err0)	// g0 check
+			{
+				a0.x0() = a1.x0();
+				a0.n0() = a1.n0();
+				out.pop_back();
+			}
+		}
+	}
 
 #pragma region 2
 
@@ -1222,10 +1300,52 @@ namespace planning
 		
 	}
 
-	/* Def : assume that a circular arc is parameterized, find that parameter of nt (btw [0,1])
-		assume: the function is called with t values which are [0,1], since we are interested in arc only.
-				3 inputs need to be normalized.
-				input arc is segmented (x,y-ex)
+	/*
+	Def:
+		Similar to the func with same name, But does not restrict delta_theta
+	Date:
+		2021-0421: made
+	*/
+	bool isNormalBetween(CircularArc& arc, Point n)
+	{
+		double
+			t0 = arc.atan0(),
+			t1 = arc.atan1(),
+			tn = atan2(n.y(), n.x());
+
+		if (arc.ccw)
+		{
+			while (t1 < t0)
+				t1 += PI2;
+			while (tn < t0)
+				tn += PI2;
+
+			if (tn < t1)
+				return true;
+			else
+				return false;
+		}
+		else
+		{
+			while (t1 > t0)
+				t1 -= PI2;
+			while (tn > t0)
+				tn -= PI2;
+
+			if (tn > t1)
+				return true;
+			else
+				return false;
+		}
+	}
+
+	/*
+	Def : 
+		assume that a circular arc is parameterized, find that parameter of nt (btw [0,1])
+	Assume: 
+		the function is called with t values which are [0,1], since we are interested in arc only.
+			3 inputs need to be normalized.
+			input arc is segmented (x,y-ex)
 	*/
 	double arcNormalToParameter(Point n0, Point n1, Point nt)
 	{
@@ -1251,6 +1371,41 @@ namespace planning
 		return t;
 	}
 
+	/*
+	Def:
+		Similar to the func with same name, But does not restrict delta_theta
+	Date:
+		2021-0421: made
+	*/
+	double arcNormalToParameter(CircularArc& arc, Point n)
+	{
+		double
+			t0 = arc.atan0(),
+			t1 = arc.atan1(),
+			tn = atan2(n.y(), n.x());
+
+		if (arc.ccw)
+		{
+			while (t1 < t0)
+				t1 += PI2;
+			while (tn < t0)
+				tn += PI2;
+		}
+		else
+		{
+			while (t1 > t0)
+				t1 -= PI2;
+			while (tn > t0)
+				tn -= PI2;
+		}
+
+		double
+			numer = tn - t0,
+			denom = t1 - t0;
+		if (denom == 0.0)
+			return 1.0;
+		return (numer / denom);
+	}
 
 	/* Def: given an arc A with A(0) = center + rad * n0 && A(1) = center + rad * n1, find nt such that A(t) = center + rad * nt. 
 	+) built from getPointGeometry
@@ -1302,6 +1457,42 @@ namespace planning
 		return ret;
 	}
 
+	/*
+	Def: 
+		similar to the above version, but this one can support arcs that are not bounded to a quadrant
+
+	Date:
+		2021-0421 : made
+	*/
+	Point arcNormalInterpolation(CircularArc& arc, double t)
+	{
+		// 0. Take care of trivial cases
+		if (t == 0) return arc.n0();
+		if (t == 1) return arc.n1();
+
+		// 1. get Theta0, Theta1
+		double theta0, theta1;
+		{
+			theta0 = atan2(arc.n0().y(), arc.n0().x());
+			theta1 = atan2(arc.n1().y(), arc.n1().x());
+			if (arc.ccw)
+			{
+				while (theta1 < theta0)
+					theta1 += PI2;
+			}
+			else
+			{
+				while (theta1 > theta0)
+					theta1 -= PI2;
+			}
+		}
+
+		// 2. do interpolation;
+		auto theta = (t)*theta1 + (1 - t) * theta0;
+		Point ret(cos(theta), sin(theta));
+		return ret;
+	}
+
 	/* Def : given a point p and an arc c, first find the point on the arc closest from the point, then return its parameter t ~ [0,1];
 	*/
 	double getClosestArcParameter(Point& p, CircularArc &c)
@@ -1320,8 +1511,12 @@ namespace planning
 		}
 	}
 
-	/* Def : return one circular arc corresponding to interval [t0, t1] of c
-
+	/* 
+	Def:
+		return one circular arc corresponding to interval [t0, t1] of c
+	Date:
+		?
+		2021-0421 : modified vmqa
 	*/
 	CircularArc subdivCircularArc(CircularArc& c, double t0, double t1)
 	{
@@ -1335,8 +1530,19 @@ namespace planning
 
 
 		CircularArc ret = c;
-		auto n0 = arcNormalInterpolation(c.n[0], c.n[1], t0);
-		auto n1 = arcNormalInterpolation(c.n[0], c.n[1], t1);
+		Point n0, n1;
+		if (flag_vmqa)
+		{
+			//debugging;
+			n0 = arcNormalInterpolation(c, t0);
+			n1 = arcNormalInterpolation(c, t1);
+
+		}
+		else
+		{
+			n0 = arcNormalInterpolation(c.n[0], c.n[1], t0);
+			n1 = arcNormalInterpolation(c.n[0], c.n[1], t1);
+		}
 
 
 		ret.n[0] = n0;
@@ -1367,7 +1573,12 @@ namespace planning
 		return ret;
 	}
 
-	/* Def : return two circular arcs [0, t] and [t, 1]
+	/* 
+	Def: 
+		return two circular arcs [0, t] and [t, 1]
+	Date:
+		?
+		2021-0421 : modified vmqa
 	*/
 	pair<CircularArc, CircularArc> subdivCircularArc(CircularArc& c, double t)
 	{
@@ -1375,7 +1586,16 @@ namespace planning
 		ret.first  = c;
 		ret.second = c;
 
-		auto n = arcNormalInterpolation(c.n[0], c.n[1], t);
+		Point n;
+		if (flag_vmqa)
+		{
+			// debugging.
+			n = arcNormalInterpolation(c, t);
+		}
+		else
+		{
+			n = arcNormalInterpolation(c.n[0], c.n[1], t);
+		}
 
 		ret.first .n[1] =
 		ret.second.n[0] = n;
@@ -1403,21 +1623,37 @@ namespace planning
 		constexpr double _pi = 3.1415926535897932384;
 		constexpr double _2pi = 3.14159265358979323846 * 2.0;
 		
-		// 1-1. take care of those cases where +pi and -pi might be swapped.
-		if (theta1 - theta0 > _pi)
+		if (flag_vmqa)
 		{
-			theta1 = theta1 - _2pi; // note that theta won't be btw [-pi, +pi]
+			if (arc.ccw)
+			{
+				while (theta1 < theta0)
+					theta1 += PI2;
+			}
+			else
+			{
+				while (theta1 > theta0)
+					theta1 -= PI2;
+			}
 		}
-		if (theta0 - theta1 > _pi)
+		else
 		{
-			theta1 = theta1 + _2pi;
-		}
-		// 1-2. Error chck
-		if (PRINT_ERRORS && ERR_GET_POINT_GEOM_DTHETA)
-		{
-			auto dtheta = fabs(theta0 - theta1) / _pi * 180.0;
-			if (dtheta > 90.0) cerr << "ERROR : in getPointGeometry, |dtheta| > 90" << endl <<
-				"      : n0 n1 theta0 theta1 " << arc.n[0] << arc.n[1] << " " << theta0 / _pi * 180 << " " << theta1 / _pi * 180 << endl;
+			// 1-1. take care of those cases where +pi and -pi might be swapped.
+			if (theta1 - theta0 > _pi)
+			{
+				theta1 = theta1 - _2pi; // note that theta won't be btw [-pi, +pi]
+			}
+			if (theta0 - theta1 > _pi)
+			{
+				theta1 = theta1 + _2pi;
+			}
+			// 1-2. Error chck
+			if (PRINT_ERRORS && ERR_GET_POINT_GEOM_DTHETA)
+			{
+				auto dtheta = fabs(theta0 - theta1) / _pi * 180.0;
+				if (dtheta > 90.0) cerr << "ERROR : in getPointGeometry, |dtheta| > 90" << endl <<
+					"      : n0 n1 theta0 theta1 " << arc.n[0] << arc.n[1] << " " << theta0 / _pi * 180 << " " << theta1 / _pi * 180 << endl;
+			}
 		}
 		auto theta = (t)* theta1 + (1 - t) * theta0;
 
@@ -2154,7 +2390,7 @@ namespace planning
 	Convex/Concave arcs are both okay, as long as they are globally counterclockwise (see model o=0)
 
 	*/
-	void _Convert_VectorCircularArc_To_MsInput(INPUT vector<CircularArc>& input, OUTPUT vector<ArcSpline>& output, double rotationDegree )
+	void _Convert_VectorCircularArc_To_MsInput(INPUT vector<CircularArc>& input, OUTPUT vector<ArcSpline>& output, double rotationDegree)
 	{
 		Point
 			n0(1, 0),
@@ -2268,9 +2504,14 @@ namespace planning
 			vrIn		: just empty VR_IN should be okay.
 		Assume:
 			Vector<CircularArc> voronoiBoundary is already set.
+		Date:
+		2021
+			0421: added code to handle continuous arcs with same r/center (can be turned off with use_simplifyVCA = false)
 	*/
 	void _Convert_MsOut_To_VrIn(vector<deque<ArcSpline>>& INPUT msOut, vector<bool>& INPUT isBoundary, VR_IN& OUTPUT vrIn)
 	{
+		
+
 		// 1. count number of outer boundaries & check valid input
 		{
 		int nBoundary = 0;
@@ -2299,8 +2540,22 @@ namespace planning
 				//		(other stuff...)
 				{
 					// 2-1. build vrIn.Arcs & arcsPerLoop
-					vector<CircularArc> temp;
-					convertMsOutput_Clockwise(msOut[i], temp);
+					vector<CircularArc> temp,temp2;
+					if (!use_simplifyVCA)
+					{
+						convertMsOutput_Clockwise(msOut[i], temp); // HARD
+					}
+					else
+					{
+						convertMsOutput_Clockwise(msOut[i], temp2);
+						//set local ccw info (since mink sum code uses the var for glo/loc ccw, but in vor, it is assumed to be local)
+						for (auto& i : temp2)
+						{
+							auto ccw = (i.n[0] ^ i.n[1]) > 0;
+							i.ccw = ccw;
+						}
+						simplifyVCA(temp2, temp);
+					}
 					//vector<CircularArc> temp2;
 					//for(auto& as : msOut[i])
 					//	for (auto& arc : as.Arcs)
@@ -2342,8 +2597,22 @@ namespace planning
 			{
 
 				// 2-1. build vrIn.Arcs & arcsPerLoop
-				vector<CircularArc> temp;
-				convertMsOutput_Clockwise(msOut[i], temp);
+				vector<CircularArc> temp, temp2;
+				if (!use_simplifyVCA)
+				{
+					convertMsOutput_Clockwise(msOut[i], temp); // HARD
+				}
+				else
+				{
+					convertMsOutput_Clockwise(msOut[i], temp2);
+					//set local ccw info (since mink sum code uses the var for glo/loc ccw, but in vor, it is assumed to be local)
+					for (auto& i : temp2)
+					{
+						auto ccw = (i.n[0] ^ i.n[1]) > 0;
+						i.ccw = ccw;
+					}
+					simplifyVCA(temp2, temp);
+				}
 				vrIn.arcs.insert(vrIn.arcs.end(), temp.begin(), temp.end());
 				vrIn.arcsPerLoop.push_back(temp.size());
 
@@ -2408,10 +2677,13 @@ namespace planning
 		// 4. fix bugs in output
 		for (auto& i : vrIn.arcs)
 		{
-			// 4-1. some with strange ccw
-			auto ccw = (i.n[0] ^ i.n[1]) > 0;
-			//if (PRINT_ERRORS && ccw != i.ccw) cerr << "ERROR : ccw of arc not correct\n      : n0 n1 arc.ccw" << i.n[0] << i.n[1] << " " << i.ccw << endl;
-			i.ccw = ccw;
+			if (!use_simplifyVCA)
+			{
+				// 4-1. some with strange ccw
+				auto ccw = (i.n[0] ^ i.n[1]) > 0;
+				//if (PRINT_ERRORS && ccw != i.ccw) cerr << "ERROR : ccw of arc not correct\n      : n0 n1 arc.ccw" << i.n[0] << i.n[1] << " " << i.ccw << endl;
+				i.ccw = ccw;
+			}
 
 			// 4-2. some with strange normal (i.x[] is true value)
 			auto n0 = i.x[0] - i.c.c;
@@ -2430,16 +2702,19 @@ namespace planning
 
 
 	/* Def: given a point on an arc, compute the maximal touching disk of that point. The return another point touching that disk.
+
+	For arc > 90degree compatibility:
+		getPointGeom
+		2-6
+		arcNormalToParam
+	Date:
+	2021
+		0421 added code 2-2.5 : since arcs from same circles won't produce v-edge
+		0421 added flag_findMTD_concave_check: convex arcs won't get max-disk-rad bigger than itself
 	*/
-	double _h_fmdsp_g1 = 1e-3; //hyperParam, _epsilon
+	double _h_fmdsp_g1 = 1e-8; //hyperParam, _epsilon
 	pointOnCurve findMaximalDiskSharingPoint(vector<CircularArc>& INPUT arcs, pointOnCurve INPUT poc, int INPUT left, int INPUT right)
 	{
-		//tag g1inc
-		if (left != poc.c)
-		{
-			if (fabs(arcs[left].n[1] * arcs[poc.c].n[0]) < 1 - _h_fmdsp_g1) //check if not g1
-				return { left, 1 };
-		}
 
 		//1. init stuff
 		// alias
@@ -2452,6 +2727,40 @@ namespace planning
 		auto v = g.v;
 		auto n = g.n;
 		auto k = g.k;
+
+		bool convex = !arcs[i].ccw; //since objects are winded cw
+
+
+		//tag g1inc
+		if (left != poc.c && t < 1e-10)
+		{
+			if (!flag_findMTD_nonG1_divide_case)
+			{
+				if (fabs(arcs[left].n[1] * arcs[poc.c].n[0]) < 1 - _h_fmdsp_g1) //check if not g1
+					return { left, 1 };
+			}
+			else
+			{
+				if (fabs(arcs[left].n[1] * arcs[poc.c].n[0]) < 1 - _h_fmdsp_g1)//check if not g1
+				{
+					// 2cases are possible : Look at the shape of a 'V'. This is two tangents meeting at the bottom point.
+					// 1. voronoi is drawn on the upper side of 'V' : The radius of MTD is 0 -> return {left,1}
+					// 2. on the lower side of 'V' shape : Do not return.
+
+					auto n2 = arcs[left].n1();
+					Point t2; // tangent at left's x1()
+					if (arcs[left].ccw)
+						t2 = rotate_p90(n2);
+					else
+						t2 = rotate_m90(n2);
+
+					if (n * t2 < 0) // dot btw (normal & left's tangent) could be used to decide
+						return { left,1 };
+
+				}
+			}
+
+		}
 
 		if (PRINT_ERRORS && (n*n > 1.01 || n*n < 0.99)) cerr << "ERROR 3 : normal  not normalized " << endl;
 		//dbg if (PRINT_ERRORS && i == 97)
@@ -2509,7 +2818,7 @@ namespace planning
 		//_dbg
 
 		// 2. get maxdisk
-		const double r_init = 1e+10;
+		double r_init = 1e+10;
 		Point   LOOP center(0, 0);
 		double	LOOP r = r_init;	// currently best r
 		bool	LOOP atMiddle;		// t not 0 nor 1 // if this is true just use middle
@@ -2526,6 +2835,10 @@ namespace planning
 			auto distBtwCenters = sqrt(tempPoint * tempPoint);
 			if (r != r_init && distBtwCenters > r + arcs[j].c.r) continue;
 			//if (distBtwCenters < fabs(r - arcs[j].c.r)) continue;
+
+			// 2-2.5 another check. check if from same circle
+			if (arcs[i].c == arcs[j].c)
+				continue;
 
 			// 2-3. distance infos
 			Point L = arcs[j].c.c - p;
@@ -2557,10 +2870,18 @@ namespace planning
 
 			bool normalInArc;
 			double eps = 1e-180;
-			if (arcs[j].ccw)
-				normalInArc = ((arcs[j].n[0] ^ normal) >= -eps) && ((normal ^ arcs[j].n[1]) >= -eps);
+			if (flag_vmqa)
+			{
+				//debugging
+				normalInArc = isNormalBetween(arcs[j], normal);
+			}
 			else
-				normalInArc = ((arcs[j].n[0] ^ normal) <= eps) && ((normal ^ arcs[j].n[1]) <= eps);
+			{
+				if (arcs[j].ccw)
+					normalInArc = ((arcs[j].n[0] ^ normal) >= -eps) && ((normal ^ arcs[j].n[1]) >= -eps);
+				else
+					normalInArc = ((arcs[j].n[0] ^ normal) <= eps) && ((normal ^ arcs[j].n[1]) <= eps);
+			}
 
 			// 2-7. decide which point is closest
 			if (normalInArc)
@@ -2656,6 +2977,14 @@ namespace planning
 			return { -1, 0.0 };
 		}
 
+		if (flag_findMTD_concave_check)
+		{
+			if (!convex && r >= arcs[i].cr() - 1e-8)
+			{
+				return { i, 1.0 };
+			}
+		}
+
 		/*dbg if (i == 97)
 		{
 			Circle c(center, r);
@@ -2668,7 +2997,15 @@ namespace planning
 			// 3-1. if in middle, find t
 			Point normal = center - arcs[bestJ].c.c;
 			normal = normal / sqrt(normal*normal);
-			auto t = arcNormalToParameter(arcs[bestJ].n[0], arcs[bestJ].n[1], normal);
+			double t;
+			if (flag_vmqa)
+			{
+				t = arcNormalToParameter(arcs[bestJ], normal);
+			}
+			else
+			{
+				t = arcNormalToParameter(arcs[bestJ].n[0], arcs[bestJ].n[1], normal);
+			}
 			if (PRINT_ERRORS)
 			{
 				auto denominator = acos(arcs[bestJ].n[0] * arcs[bestJ].n[1]);
@@ -4320,7 +4657,7 @@ voronoiCalculator::calculateG()
 	out.segmentCurves.resize(cycles.size());
 
 	//dbg_out
-	//std::cout << "dbg out : cycles.size()" << cycles.size() << std::endl;
+	std::cout << "dbg out : cycles.size()" << cycles.size() << std::endl;
 
 	// 5. fill segmentcurves
 	for (size_t i = 0; i < cycles.size(); i++)
@@ -4562,12 +4899,12 @@ voronoiCalculator::calculateG()
 
 		}
 
-		////dbg
-		//if (m.first >= offset)
-		//	m.first = -1;
-		//if (m.second >= offset)
-		//	m .second = -1;
-		////~dbg
+		//dbg
+		if (m.first >= offset)
+			m.first = -1;
+		if (m.second >= offset)
+			m .second = -1;
+		//~dbg
 
 		// 9-3. now both are connected to a bifur or/dangling
 		//if (m.first < offset && m.second < offset) ==> no need to check
@@ -4631,6 +4968,7 @@ void
 
 
 	// 1. check cases and return if necessary
+	if (cycle.size() < 2) return;
 
 	// 1-1. recursive depth enough
 	// not this case
@@ -4827,7 +5165,7 @@ void
 				subCI[1].push_back(cycleIdx[foot.c]);
 			}
 		}
-		else
+		else 
 		{
 			// build [0] : from right segment of curve[0] ~ left seg of other curve
 			{
@@ -4947,6 +5285,19 @@ void
 	auto& domains		= getDomains();
 	domains.resize(arcs.size());
 
+	// 2-1. build right;
+	std::vector<int> right(left.size(), -1);
+	{
+		for (int i = 0; i< left.size(); i++)
+		{
+			int l = left[i];
+			if (l != -1)
+			{
+				right[l] = i;
+			}
+		}
+	}
+
 	// 3. Build Domains & Transitions
 	// for(each arc)
 	for (int i = 0, length = arcs.size(); i < length; i++)
@@ -4972,8 +5323,44 @@ void
 		}
 
 		// 3-3. build transition 
-		transitions[poc{ left[i], 1 }] = foot;
-		transitions[foot             ] = poc{ i, 0 };
+		bool EXPERIMENTAL = true;
+		if (!EXPERIMENTAL)
+		{
+			transitions[poc{ left[i], 1 }] = foot;
+			transitions[foot] = poc{ i, 0 };
+		}
+		else
+		{
+			// right?
+			if (foot.c < 0)
+				return;
+
+			// non-g1-neighbor-case
+			if (foot.c == left[i])
+			{
+				//transitions[poc{ left[i], 1 }] = foot;
+				transitions[foot] = poc{ i, 0 };
+			}
+			// t = 0 case
+			else if (foot.t == 0.0 && left[foot.c] != -1)
+			{
+				//
+				transitions[poc{ left[i], 1 }] = foot;
+				transitions[poc{ left[foot.c], 1 }] = poc{ i, 0 };
+			}
+			// t = 1 case
+			else if (foot.t == 1.0 && right[foot.c] != -1)
+			{
+				transitions[poc{ left[i], 1 }] = poc{ right[foot.c], 0 };
+				transitions[foot] = poc{ i, 0 };
+			}
+			// t in (0, 1) case
+			else
+			{
+				transitions[poc{ left[i], 1 }] = foot;
+				transitions[foot] = poc{ i, 0 };
+			}
+		}
 	}
 }
 
@@ -5046,6 +5433,10 @@ void
 		pieces.erase(left);
 		cycle.push_back(planning::subdivCircularArc(arcs[left.c], left.t, right.t)); // note that left.first == right.first
 
+		// +) cyclesOriginal
+		_cyclesOriginal.push_back({});
+		_cyclesOriginal.back().push_back({ left,right });
+
 		// 1-2. repeat for next element of cycle
 		while(true)
 		{
@@ -5069,6 +5460,9 @@ void
 			pieces.erase(left);
 
 			cycle.push_back(planning::subdivCircularArc(arcs[left.c], left.t, right.t));
+
+			// +) cyclesOriginal
+			_cyclesOriginal.back().push_back({ left,right });
 		}
 
 
@@ -5079,6 +5473,9 @@ void
 /*
 Def : 
 	from the cycles, evaluate the v_edges inside that cycle.
+Date:
+2021
+	0421 debug : "if(cycles[i].size() > 1)" added
 */
 void
 	voronoiCalculator::buildVoronoiEdges()
@@ -5098,7 +5495,8 @@ void
 
 	for (size_t i = 0; i < cycles.size(); i++)
 	{
-		output[i] = findBisectorRecursively(cycles[i]);
+		if(cycles[i].size() > 1)
+			output[i] = findBisectorRecursively(cycles[i]);
 	}
 }
 
@@ -5802,5 +6200,14 @@ std::vector<VoronoiEdge> voronoiCalculatorResultG::findVoronoiCurvePair(VoronoiE
 
 		return mergeFirst;
 	}
+
+}
+
+/*
+Def : initialize the thing
+	NOT done
+*/
+void voronoiCalculatorResultG::initialize()
+{
 
 }

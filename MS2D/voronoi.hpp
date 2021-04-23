@@ -193,6 +193,7 @@ namespace planning
 	double getClosestArcParameter(Point& p, CircularArc &c);
 
 	void					convertMsOutput_Clockwise(deque<ArcSpline>& INPUT in, vector<CircularArc>& OUTPUT returned);
+	void					simplifyVCA(vector<CircularArc>& INPUT in, vector<CircularArc>& OUTPUT out);
 	CircularArc				flipArc(CircularArc& in);
 	template<class f> bool	isZero(f a);
 
@@ -253,6 +254,7 @@ constexpr bool VORONOI_VERBOSE_ERRORS = false;
 using pointOnCurve	= planning::pointOnCurve;
 using poc			= pointOnCurve;
 using CircularArc	= ms::CircularArc;
+using Circle		= ms::Circle;
 using Point			= ms::Point;
 using VoronoiEdge	= planning::output_to_file::v_edge;
 
@@ -302,6 +304,8 @@ public:
 		getPieces()		 { return _pieces; }
 	inline std::vector<std::vector<CircularArc>>&
 		getCycles()		 { return _cycles; }
+	inline std::vector<std::vector<std::pair<poc, poc>>>&
+		getCyclesOri()	 { return _cyclesOriginal; }
 
 	/* Constructor Destructor*/
 	inline
@@ -352,6 +356,8 @@ private:
 		_domains;
 	std::vector<std::vector<CircularArc>>
 		_cycles;
+	std::vector<std::vector<std::pair<poc, poc>>>
+		_cyclesOriginal; // _cycles, but with (arcNo, t)
 	// type _cycle; ???
 	
 	/* FLAGS and flags-handling functions */
@@ -427,4 +433,5 @@ public:
 		V2E() { return _V2E; }
 
 	std::vector<VoronoiEdge> findVoronoiCurvePair(VoronoiEdge& v0, VoronoiEdge& v1, double equalPointError);
+	void initialize();
 };

@@ -3,7 +3,23 @@
 
 //double dbgBlock[100];
 
+#define useApproxInSymmetryCollision true
+#define useNewerVersionOfG1conveter false
+
+#define DEBUG
+	// Tells that the associated codes were for debugging
+#define TARGET
+	// Tells that 1. the declared variable is the TARGET of this subsection / 2. this sentence does sth with the TARGET
+
 #pragma region Code by MgJung
+
+
+/************************************************************************************************************
+**																										   **
+**									Code by MgJung(Enclosed By region)									   **
+**																										   **
+*************************************************************************************************************/
+
 /*
 Def : 
 	Read from CircularArc format
@@ -14,7 +30,15 @@ Parameter :
 	vector to store circles read
 Description :
 	Format of file is self-explanatory... see switch for detail.
-	a d c l 
+	a : arc (standard)
+	d : arc, but angle is degree
+	c : connector
+	l : line
+	g : g1 arc.
+Date:
+2021
+	0423 ">180 support" added for case_g
+	
 */
 void readArcModel(const char* arcIn, const char* circIn, std::vector<ms::CircularArc>& arcOut, std::vector<ms::Circle>& circOut)
 {
@@ -51,7 +75,7 @@ void readArcModel(const char* arcIn, const char* circIn, std::vector<ms::Circula
 
 	ais >> asz;
 	vector<CircularArc>& temp = arcOut;
-	set<int> case_c;
+	set<int> case_c, case_g;
 	char type;
 	double cx, cy, cr, t0, t1, ccw;
 	for (int i = 0; i < asz; i++)
@@ -89,8 +113,15 @@ void readArcModel(const char* arcIn, const char* circIn, std::vector<ms::Circula
 						t1 -= PI * 2;
 				temp.push_back(cd::constructArc(Point(cx, cy), cr, t0, t1));
 			}
-		break;
-
+			break;
+		case 'g':
+			// given : nothing
+			// note that there isn't always an circular arc that can connect two arcs g1
+			//	since 2 points and 1 tangent uniquely decides an arc. (but in this case, there are 2 points and 2 tangents)
+			// The model should be well-designed.
+			temp.push_back(CircularArc());
+			case_g.insert(i);
+			break;
 		case 'c':
 			// given : radius
 			// connect prev.x1() and next.x0(), with a striaght line (approximated radius cr)
@@ -134,6 +165,7 @@ void readArcModel(const char* arcIn, const char* circIn, std::vector<ms::Circula
 			}
 			break;
 		default:
+			cerr << "!!! possible error reading arc model" << endl;
 			break;
 		}
 	}
@@ -147,10 +179,58 @@ void readArcModel(const char* arcIn, const char* circIn, std::vector<ms::Circula
 		Point x1 = temp[next].x0();
 		temp[idx] = cd::constructArc(x0, x1, temp[idx].c.r, temp[idx].ccw);
 	}
-	
+
+	// 3-3. take care of case g
+	for (auto idx : case_g)
+	{
+		auto prev = (idx - 1) % asz;
+		auto next = (idx + 1) % asz;
+		Point x0 = temp[prev].x1();
+		Point x1 = temp[next].x0();
+		Point t0 = temp[prev].n1().rotate();
+
+		if (!temp[prev].ccw) // >180 support
+			t0 = temp[prev].n1().rotate(-PI * 0.5);
+
+		temp[idx] = cd::constructArc(x0, x1, t0);
+		
+		if (!counterclockwise(temp[idx].n0(), t0)) // >180 support
+			temp[idx].ccw = false;
+		else
+			temp[idx].ccw = true;
+
+		////dbg_out
+		//cout << arcIn << endl;
+		//cout << "case g : " << idx << "   " << temp[idx].cr() << endl;
+	}
 	// processing of temp is done at this point.
-	
 }
+
+/*
+Def: do
+	1. read from given input file names
+	2. make model g0
+	3. make model g1
+*/
+void readArcModelAndProcessIt(const char* arcIn, const char* circIn, std::vector<CircularArc>& arcOut, std::vector<ms::Circle>& circOut)
+{
+	using namespace std;
+	vector<CircularArc> temp;
+	readArcModel(arcIn, circIn, temp, circOut);
+
+	// 4. re-order temp (make it G0-continuous)
+	vector<CircularArc> g0;
+	planning::_Convert_VectorCircularArc_G0(temp, g0, 1);
+
+	// 5. make g0 G1-continuous by adding eps-arcs
+	vector<CircularArc>& g1 = arcOut;
+	if (useNewerVersionOfG1conveter)
+		planning::_Convert_VectorCircularArc_G1_new(g0, g1);
+	else
+		planning::_Convert_VectorCircularArc_G1(g0, g1);
+
+};
+
 
 /*
 Def :
@@ -175,6 +255,337 @@ void appendArcModel(std::vector<ms::CircularArc>& sceneOriginal, std::vector<ms:
 	}
 };
 
+
+/*
+Def :
+	initialize model data needed to perform robot motion planning
+Summary:
+	1. Read robot
+	2. Read & Form Obstacles
+	3. Set Voronoi Boundary.
+Date:
+  2021
+	0421 : making
+*/
+void initializeRobotObstacles(int RobotIdx, int ObstaclesIdx)
+{
+	using namespace ms;
+	// 0. Trivial 
+	// Just set some Idx. By default 1: robot, 7: Obstacles
+	ModelInfo_CurrentModel.first = 1; // 1
+	ModelInfo_CurrentModel.second = 7; // 6
+
+	int rsvIdx = 1, // mink-sum-call idx of robot's RSV 
+		oriIdx = 0, // mink-sum-call idx of original robot
+		obsIdx = 7; // mink-sum-call idx of obstacles
+
+	// 0-1. Check Input
+	{
+		const int
+			nRobot = 2,
+			nObs = 2;
+
+		if (RobotIdx < 0)
+			RobotIdx = 0;
+		if (RobotIdx >= nRobot)
+			RobotIdx = nRobot - 1;
+		
+		if (ObstaclesIdx < 0)
+			ObstaclesIdx = 0;
+		if (ObstaclesIdx >= nObs)
+			ObstaclesIdx = nObs - 1;
+	}
+	
+	// 1. Robot
+	{
+		// 1-0. Alias
+		using namespace std;
+		Model_from_arc[rsvIdx] = true;
+		Model_from_arc[oriIdx] = true;
+
+		// These 4 variables are the goal of this section
+		TARGET auto& robOri = Model_vca[oriIdx];		// circArc output (ori)
+		TARGET auto& robRsv = Model_vca[rsvIdx];		// circArc output (rsv)
+		TARGET auto& robVAS = Models_Approx[rsvIdx];	// Arcspline output
+		TARGET auto& robCir = InteriorDisks_Imported[rsvIdx]; // circ output
+
+		// 1-1. init step (set path and scalefactor)
+		string path("Robots/");
+		double scaleFactor = 1.0;
+		switch (RobotIdx)
+		{
+		case 1:
+			path += "8/";
+			scaleFactor = 0.2;
+			break;
+		case 0:
+		default:
+			path += "rect/";
+			scaleFactor = 0.21;
+			break;
+		}
+		auto pathRsv	(path + "arcRSV.txt");
+		auto pathOri	(path + "arcOri.txt");
+		auto pathCircRsv(path + "circ.txt");
+		auto pathCircOri(path + "circ.txt"); // if we intend to use diff circles for arcOri, this part should be changed
+
+		vector<Circle>
+			circRead0,
+			circRead1,
+			garbage;
+		vector<CircularArc>
+			arcRead0,
+			arcRead1,
+			temp;
+
+		// 1-2. Do reading
+		readArcModel(pathOri.c_str(), pathCircOri.c_str(), arcRead0, circRead0);
+		readArcModel(pathRsv.c_str(), pathCircRsv.c_str(), arcRead1, circRead1);
+
+		// 1-3. Apply transformations
+		appendArcModel(temp  , robCir , arcRead1, circRead1, scaleFactor, 0, Point(0, 0)); // RSV case
+		appendArcModel(robOri, garbage, arcRead0, circRead0, scaleFactor, 0, Point(0, 0)); // Original case
+		// do RSV
+
+		// 1-4. make temp G0
+		vector<CircularArc> g0;
+		planning::_Convert_VectorCircularArc_G0(temp, g0, 1);
+
+		// 1-5. make g0 G1
+		vector<CircularArc>& g1 = robRsv;
+		if (useNewerVersionOfG1conveter)
+			planning::_Convert_VectorCircularArc_G1_new(g0, g1);
+		else
+			planning::_Convert_VectorCircularArc_G1(g0, g1);
+
+		// 1-6. convert to AS
+		vector<ArcSpline>& asRSV = robVAS;
+		planning::_Convert_VectorCircularArc_To_MsInput(g1, asRSV);
+
+	}
+
+	// 2. Obstacles
+	{
+		/*
+		What is done:
+		1. set flag : Model_from_arc
+		2. set model data : Model_vca (will be used in post processing... optional since this is obstacles, not robot...)
+		3. convert model and save : Models_approx
+		4. also set disks : ID_I
+
+		Notice that there can be up to 2~3 copies of the same model with different representation
+			=> Model_vca(vector<CircularArc>, original, read from file)
+			=> Models_approx(vector<ArcSpline>, modified(segmented) to be an input of minkowski sum)
+			=> Models_approx_rotated(rotate Model_vca and then segment)
+		*/
+
+		// 1. alias
+		Model_from_arc[obsIdx] = true;
+		auto& sceneOriginal = Model_vca[obsIdx];
+		auto& sceneProcessed = Models_Approx[obsIdx];
+		auto& sceneCircles = InteriorDisks_Imported[obsIdx];
+
+		sceneOriginal.resize(0);
+		sceneProcessed.resize(0);
+		sceneCircles.resize(0);
+
+
+		// 2. Load models
+		using namespace std;
+
+		// 2-2. Load L-shaped model
+		vector<CircularArc> arcObjectL;
+		vector<Circle> circObjectL;
+		readArcModelAndProcessIt("Objects/L-shape/arc.txt", "Objects/L-shape/circ.txt", arcObjectL, circObjectL);
+
+		// 2-3. Load L-shaped model 2
+		vector<CircularArc> arcObjectL2;
+		vector<Circle> circObjectL2;
+		readArcModelAndProcessIt("Objects/L-shape2/arc.txt", "Objects/L-shape2/circ.txt", arcObjectL2, circObjectL2);
+
+		// 2-4. Load L-shaped model 3
+		vector<CircularArc> arcObjectL3;
+		vector<Circle> circObjectL3;
+		readArcModelAndProcessIt("Objects/L-shape3/arc.txt", "Objects/L-shape3/circ.txt", arcObjectL3, circObjectL3);
+
+		// 2-5. Load square
+		vector<CircularArc> arcObjectSq;
+		vector<Circle> circObjectSq;
+		readArcModelAndProcessIt("Objects/Square-shape/arc.txt", "Objects/Square-shape/circ.txt", arcObjectSq, circObjectSq);
+
+		// 2-6. Load Hexagon
+		vector<CircularArc> arcObjectHx;
+		vector<Circle> circObjectHx;
+		readArcModelAndProcessIt("Objects/hex-shape-g1/arc.txt", "Objects/hex-shape-g1/circ.txt", arcObjectHx, circObjectHx);
+
+		// 2-6. Load Hexagon
+		vector<CircularArc> arcObjectPn;
+		vector<Circle> circObjectPn;
+		readArcModelAndProcessIt("Objects/pent-shape-g1/arc.txt", "Objects/pent-shape-g1/circ.txt", arcObjectPn, circObjectPn);
+
+		// 2-7. Load ASC3
+		vector<CircularArc> arcObjectA3;
+		vector<Circle> circObjectA3;
+		readArcModelAndProcessIt("Objects/ASC3/arc.txt", "Objects/ASC3/circ.txt", arcObjectA3, circObjectA3);
+
+		// 3. instantiate loaded models to build sceneOriginal/sceneCircles
+		Point uniformTranslation;
+		switch (ObstaclesIdx)
+		{
+		case 1:
+			// Curved maze
+//L-shape3		0.8		0		0.7			-0.8
+//L-shape3		0.75	4.75	0.8125		-0.6875
+//hex-shape-g1	0.125	-0.25	0.125		-0.75
+//hex-shape-g1	0.225	0		0.125		-0.625
+//pent-shape-g1	0.2		-1.25	-0.0625		0.5125
+//ASC3			0.55	-2.5	0.4875		-0.71875
+//ASC3			0.55	-3.5	0.65		-0.65
+//ASC3			1		-1.5	0.7			-0.4
+//ASC3			1		0		0.7			0.05
+//ASC3			1		-1		0.45		-0.45
+//ASC3			1		-1.5	0.45		0
+//ASC3			1		0		0.7			0.5
+//ASC3			1		-93		0.25		0.8
+//ASC3			1		-1.5	0.1375		0.4
+//ASC3			1		-1.5	0.1375		-0.05
+//ASC3			1		-1.5	0.1375		-0.5
+//ASC3			1		-92.125 0.15		-0.925
+//ASC3			1		-92		-0.275		-0.925
+//ASC3			1		-92		-0.7		-0.925
+//ASC3			1		-182	-0.175		-0.5
+//ASC3			1		-16.5625 -0.175		-0.375
+//ASC3			1		-0.9375 -0.059375	0.0421875
+//ASC3			1		-90		-0.175		0.8
+//ASC3			1		-92		-0.6125		0.8
+//ASC3			1		-2		-0.7375		0.4875
+//ASC3			1		-0.5	-0.7375		0.05
+//ASC3			1		-1.375	-0.75		-0.3875
+//ASC3			1		0		-0.7375		-0.825
+//ASC3			1		-0.125	-0.2625		0.375
+//ASC3			1		0		-0.2875		-0.0625
+//ASC3			1		-17.875 -0.4125		-0.4875
+//ASC3			0.75	-0.5	0.3375		0.0125
+//ASC3			0.75	0		0.35		-0.3125
+//
+appendArcModel(sceneOriginal,sceneCircles, arcObjectL3, circObjectL3, 0.8	,0		 ,Point(0.7			,-0.8		));
+appendArcModel(sceneOriginal,sceneCircles, arcObjectL3, circObjectL3, 0.75	,4.75	 ,Point(0.8125		,-0.6875	));
+appendArcModel(sceneOriginal,sceneCircles, arcObjectHx, circObjectHx, 0.125	,-0.25	 ,Point(0.125		,-0.75		));
+appendArcModel(sceneOriginal,sceneCircles, arcObjectHx, circObjectHx, 0.225	,0		 ,Point(0.125		,-0.625		));
+appendArcModel(sceneOriginal,sceneCircles, arcObjectPn, circObjectPn, 0.2	, -1.25	 ,Point(0.3			,0.5125		));
+appendArcModel(sceneOriginal,sceneCircles, arcObjectPn, circObjectPn, 0.2	,-1.25	 ,Point(-0.0625		,0.5125		));
+appendArcModel(sceneOriginal,sceneCircles, arcObjectA3, circObjectA3, 0.55	,-2.5	 ,Point(0.4875		,-0.71875	));
+appendArcModel(sceneOriginal,sceneCircles, arcObjectA3, circObjectA3, 0.55	,-3.5	 ,Point(0.65		,-0.65		));
+appendArcModel(sceneOriginal,sceneCircles, arcObjectA3, circObjectA3, 1		,-1.5	 ,Point(0.7			,-0.4		));
+appendArcModel(sceneOriginal,sceneCircles, arcObjectA3, circObjectA3, 1		,0		 ,Point(0.7			,0.05		));
+appendArcModel(sceneOriginal,sceneCircles, arcObjectA3, circObjectA3, 1		,-1		 ,Point(0.45		,-0.45		));
+appendArcModel(sceneOriginal,sceneCircles, arcObjectA3, circObjectA3, 1		,-1.5	 ,Point(0.45		,0			));
+appendArcModel(sceneOriginal,sceneCircles, arcObjectA3, circObjectA3, 1		,0		 ,Point(0.7			,0.5		));
+appendArcModel(sceneOriginal,sceneCircles, arcObjectA3, circObjectA3, 1		,-93	 ,Point(0.25		,0.8		));
+appendArcModel(sceneOriginal,sceneCircles, arcObjectA3, circObjectA3, 1		,-1.5	 ,Point(0.1375		,0.4		));
+appendArcModel(sceneOriginal,sceneCircles, arcObjectA3, circObjectA3, 1		,-1.5	 ,Point(0.1375		,-0.05		));
+appendArcModel(sceneOriginal,sceneCircles, arcObjectA3, circObjectA3, 1		,-1.5	 ,Point(0.1375		,-0.5		));
+appendArcModel(sceneOriginal,sceneCircles, arcObjectA3, circObjectA3, 1		,-92.125 ,Point(0.15		,-0.925		));
+appendArcModel(sceneOriginal,sceneCircles, arcObjectA3, circObjectA3, 1		,-92	 ,Point(-0.275		,-0.925		));
+appendArcModel(sceneOriginal,sceneCircles, arcObjectA3, circObjectA3, 1		,-92	 ,Point(-0.7		,-0.925		));
+appendArcModel(sceneOriginal,sceneCircles, arcObjectA3, circObjectA3, 1		,-182	 ,Point(-0.175		,-0.5		));
+appendArcModel(sceneOriginal,sceneCircles, arcObjectA3, circObjectA3, 1		,-16.5625,Point( -0.175		,-0.375		));
+appendArcModel(sceneOriginal,sceneCircles, arcObjectA3, circObjectA3, 1		,-0.9375 ,Point(-0.059375	,0.0421875	));
+appendArcModel(sceneOriginal,sceneCircles, arcObjectA3, circObjectA3, 1		,-90	 ,Point(-0.175		,0.8		));
+appendArcModel(sceneOriginal,sceneCircles, arcObjectA3, circObjectA3, 1		,-92	 ,Point(-0.6125		,0.8		));
+appendArcModel(sceneOriginal,sceneCircles, arcObjectA3, circObjectA3, 1		,-2		 ,Point(-0.7375		,0.4875		));
+appendArcModel(sceneOriginal,sceneCircles, arcObjectA3, circObjectA3, 1		,-0.5	 ,Point(-0.7375		,0.05		));
+appendArcModel(sceneOriginal,sceneCircles, arcObjectA3, circObjectA3, 1		,-1.375	 ,Point(-0.75		,-0.3875	));
+appendArcModel(sceneOriginal,sceneCircles, arcObjectA3, circObjectA3, 1		,0		 ,Point(-0.7375		,-0.825		));
+appendArcModel(sceneOriginal,sceneCircles, arcObjectA3, circObjectA3, 1		,-0.125	 ,Point(-0.2625		,0.375		));
+appendArcModel(sceneOriginal,sceneCircles, arcObjectA3, circObjectA3, 1		,0		 ,Point(-0.2875		,-0.0625	));
+appendArcModel(sceneOriginal,sceneCircles, arcObjectA3, circObjectA3, 1		,-17.875 ,Point(-0.4125		,-0.4875	));
+appendArcModel(sceneOriginal,sceneCircles, arcObjectA3, circObjectA3, 0.75	,-0.5	 ,Point(0.3375		,0.0125		));
+appendArcModel(sceneOriginal,sceneCircles, arcObjectA3, circObjectA3, 0.75	,0		 ,Point(0.35		,-0.3125	));
+
+			break;
+		case 0:
+		default:
+			uniformTranslation = Point(0.15, 0.05);
+			appendArcModel(sceneOriginal, sceneCircles, arcObjectL3, circObjectL3, 1.3, -90, uniformTranslation + Point(-0.1, +0.10));
+			appendArcModel(sceneOriginal, sceneCircles, arcObjectL2, circObjectL2, 0.4, -90, uniformTranslation + Point(-0.1, +0.10));
+			appendArcModel(sceneOriginal, sceneCircles, arcObjectL3, circObjectL3, 1.3, +90, uniformTranslation + Point(-0.5, +0.03));
+			appendArcModel(sceneOriginal, sceneCircles, arcObjectL2, circObjectL2, 0.4, +90, uniformTranslation + Point(-0.5, +0.03));
+			appendArcModel(sceneOriginal, sceneCircles, arcObjectSq, circObjectSq, 0.8, +0 , uniformTranslation + Point(+0.07,-0.30));
+			appendArcModel(sceneOriginal, sceneCircles, arcObjectSq, circObjectSq, 0.4, +55, uniformTranslation + Point(-0.53, 0.30));
+			break;
+		}
+
+		// 4. build vec<AS> sceneProcessed(input to MinkSum)
+		planning::_Convert_VectorCircularArc_To_MsInput(sceneOriginal, sceneProcessed);
+
+		//dbg_out
+		cout << "obsSq size : " << arcObjectSq.size() << endl;
+		cout << "sceneOri : " << sceneOriginal.size() << endl;
+		cout << "sceneProc : " << sceneProcessed.size() << endl;
+	}
+
+	// 3. Voronoi Boundary
+	// set voronoiBoundary;
+	// should be properly ordered(G0-continuous)
+	{
+		double r = 2;
+		CircularArc a(Point(0, 0), r, Point(+1, +0), Point(+0, +1));
+		CircularArc b(Point(0, 0), r, Point(+0, +1), Point(-1, +0));
+		CircularArc c(Point(0, 0), r, Point(-1, +0), Point(+0, -1));
+		CircularArc d(Point(0, 0), r, Point(+0, -1), Point(+1, +0));
+
+		// test
+		double l = 1.3;
+		double eps = 0.01;
+		Point
+			q1(+l, +l),
+			q2(-l, +l),
+			q3(-l, -l),
+			q4(+l, -l);
+		a = cd::constructArc(q1, q2, Point(-1, eps).normalize());
+		b = cd::constructArc(q2, q3, Point(-eps, -1).normalize());
+		c = cd::constructArc(q3, q4, Point(+1, -eps).normalize());
+		d = cd::constructArc(q4, q1, Point(+eps, +1).normalize());
+
+		//planning::voronoiBoundary.push_back(a);
+		//planning::voronoiBoundary.push_back(b);
+		//planning::voronoiBoundary.push_back(c);
+		//planning::voronoiBoundary.push_back(d);
+
+
+		/* deprecated as it breaks voronoi near boundary*/
+		// make it smaller -> better for BVH
+		std::vector<CircularArc> temp;
+		temp.push_back(a);
+		temp.push_back(b);
+		temp.push_back(c);
+		temp.push_back(d);
+
+		int nPiece = 2;
+		for (auto& arc : temp)
+		{
+			auto par = cd::getParameterOfArc(arc);
+			double& rad0 = par.first;
+			double& rad1 = par.second;
+			double drad = rad1 - rad0;
+			for (size_t i = 0; i < nPiece; i++)
+			{
+				double start = double(i) / nPiece;
+				double end = double(i + 1) / nPiece;
+
+				start = start * drad + rad0;
+				end = end * drad + rad0;
+
+				planning::voronoiBoundary.push_back(cd::constructArc(arc, start, end));
+			}
+		}
+
+	}
+
+	ms::postProcess(ModelInfo_CurrentModel.first, ModelInfo_CurrentModel.second);
+}
+
 #pragma endregion
 
 namespace ms{
@@ -195,16 +606,8 @@ const bool override7 = true;
 std::vector<CircularArc> Model_vca[8]; // model's circularArc representation (before calling postprocessing)
 bool Model_from_arc[8];					// true: read from circular arc file // false : read from bezier				
 
-#define useApproxInSymmetryCollision true
-#define useNewerVersionOfG1conveter false
 
-#define DEBUG
 
-/************************************************************************************************************
-**																										   **
-**									Code by MgJung(Enclosed By region)									   **
-**																										   **
-*************************************************************************************************************/
 
 		
 
@@ -1155,9 +1558,9 @@ void minkowskisum(int frame, int figure2)
 
 	//dbg_out
 	{
-		std::cout << "ConvolutionArcs.size() : " << ConvolutionArcs.size() << std::endl
-			<< Models_Rotated_Approx[frame].size() << std::endl
-			<< Models_Approx[figure2].size() << std::endl;
+		std::cout << frame << " : ConvolutionArcs.size() : " << ConvolutionArcs.size() << std::endl
+			<< "  -M_R_app_size : " << Models_Rotated_Approx[frame].size() << std::endl
+			<< "  -M_app_size : " << Models_Approx[figure2].size() << std::endl;
 	}
 	// dbg_out
 	if (false)
@@ -1233,14 +1636,14 @@ void minkowskisum(int frame, int figure2)
 			}
 	}
 
-	// dbg_out
-	if (planning::keyboardflag['1'])
-	{
-		using namespace std;
-		cout << "drawing all convolution arcs" << endl;
-		Model_Result.push_back(deque<ArcSpline>(ConvolutionArcs.begin(), ConvolutionArcs.end()));
-		return;
-	}
+	//// dbg_out
+	//if (planning::keyboardflag['1'])
+	//{
+	//	using namespace std;
+	//	cout << "drawing all convolution arcs" << endl;
+	//	Model_Result.push_back(deque<ArcSpline>(ConvolutionArcs.begin(), ConvolutionArcs.end()));
+	//	return;
+	//}
 
 
 	/* 4. Local Trimming - Self Intersection */
@@ -1519,6 +1922,7 @@ void minkowskisum(int frame, int figure2)
 		if (Model_Result[i].size() < 3)
 			Model_Result.erase(Model_Result.begin() + i);
 	}
+	
 
 	// 각 Loop에서 x, y의 min / max값을 계산한 뒤, Boundary를 이루는지 Inner Loop을 이루는지를 판단
 	std::vector<std::vector<CircularArc*>> arc; // For each loops, find 4 indcies of arcs which each is xmax, xmin, ymax, ymin int that loop.
@@ -1947,7 +2351,7 @@ void minkowskisum_id(int frame, int figure2)
 
 	std::chrono::microseconds micro = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
 
-	fprintf(f, "%d\t%d\t%d\t%lf\n", ModelInfo_CurrentModel.first, ModelInfo_CurrentModel.second, ModelInfo_CurrentFrame, (micro.count() / 1000.0));
+	//fprintf(f, "%d\t%d\t%d\t%lf\n", ModelInfo_CurrentModel.first, ModelInfo_CurrentModel.second, ModelInfo_CurrentFrame, (micro.count() / 1000.0));
 }
 
 #pragma region operators & simple funcs
@@ -3317,7 +3721,7 @@ void overlapTestR(std::vector<ArcSpline> &source, ArcSpline & lhs, ArcSpline & r
 	case 5:
 	case 7:
 		// dbg_out
-		std::cout << "overlapTestR : case reached : " << overlap << std::endl;
+		//std::cout << "overlapTestR : case reached : " << overlap << std::endl;
 		// ~ dbg
 	default:
 		break;

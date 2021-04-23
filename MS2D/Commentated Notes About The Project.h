@@ -165,7 +165,10 @@ OPTIMIZATION?
 	instead of testing every arc, cluster arcs with monotone curvature. + GRID?
 	subdivCircular arc function calls can be embedded
 
-
+-------------------------- ABOUT REFACTORING CODE
+20210415
+	mink : support non-g1?
+	vor : mor precise findMaxDisk... using theta in circArc?
 
 
 

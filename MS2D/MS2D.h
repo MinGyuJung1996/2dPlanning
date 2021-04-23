@@ -29,8 +29,12 @@ namespace ms
 
 void
 	readArcModel(const char* arcIn, const char* circIn, std::vector<ms::CircularArc>& arcOut, std::vector<ms::Circle>& circOut);
+void 
+	readArcModelAndProcessIt(const char* arcIn, const char* circIn, std::vector<ms::CircularArc>& arcOut, std::vector<ms::Circle>& circOut);
 void
 	appendArcModel(std::vector<ms::CircularArc>& sceneOriginal, std::vector<ms::Circle>& sceneCircles, std::vector<ms::CircularArc>& arcs, std::vector<ms::Circle>& circs, double scale, double rotationDegree, ms::Point translation);
+void 
+	initializeRobotObstacles(int RobotIdx = 0, int ObstaclesIdx = 0);
 
 #define grid_half_size 3.25
 
@@ -268,6 +272,15 @@ namespace ms {
 		Point projection(Point &p);
 		Point localDirection(Point &p);
 		void draw();
+
+		// my func
+		inline bool operator==(Circle& rhs)
+		{
+			if (this->c == rhs.c && fabs(this->r - rhs.r) < 1e-8)
+				return true;
+			else
+				return false;
+		}
 
 	public:
 		/*! \brief 원의 중심좌표 */

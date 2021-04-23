@@ -728,7 +728,7 @@ namespace rendering3D
 			float red[4] = { 1,0,0,1 };
 			float red2[4] = { .7, .3, .7, 1.0 };
 			glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, red);
-			glMaterialfv(GL_BACK , GL_AMBIENT_AND_DIFFUSE, red2);
+			glMaterialfv(GL_BACK , GL_AMBIENT_AND_DIFFUSE, red);
 
 
 			// 2-3. draw tri;
@@ -912,15 +912,26 @@ namespace rendering3D
 			glColor3f(1, 0, 1);
 			planning::VR_IN vrin;
 			planning::_Convert_MsOut_To_VrIn(ms::Model_Result, ms::ModelInfo_Boundary, vrin);
-			//planning::_Medial_Axis_Transformation(vrin);
 
 			voronoiCalculator vc;
 			vc.initialize();
 			vc.setInput(vrin.arcs, vrin.left, vrin.color);
 			//dbg_out
 			cout << "input arcs.size() : " << vrin.arcs.size() << endl;
-			if(true)
+			
+			const int vorOption = 0;
+
+			// i. orig
+			if (vorOption == 0)
+				planning::_Medial_Axis_Transformation(vrin);
+			// ii. calcg()
+			if (vorOption == 1)
 			{
+				//voronoiCalculator vc;
+				vc.initialize();
+				vc.setInput(vrin.arcs, vrin.left, vrin.color);
+				//dbg_out
+				cout << "input arcs.size() : " << vrin.arcs.size() << endl;
 				voronoiCalculatorResultG vcg;
 				vc.setOutputG(vcg);
 				vc.calculateG();
@@ -946,21 +957,27 @@ namespace rendering3D
 				glEnd();
 				glPointSize(1.0);
 
-				// dbg
-				cout << "ALL Points : " << vcg.V().size() << endl;
-				for (auto& a : vcg.V())
-				{
-					cout << a << endl;
-				}
-				for (auto& a : vcg.E2V())
-				{
-					cout << a.first << " , " << a.second << endl;
-				}
-				// ~dbg
+				//// dbg_out
+				//cout << "ALL Points : " << vcg.V().size() << endl;
+				//for (auto& a : vcg.V())
+				//{
+				//	cout << a << endl;
+				//}
+				//for (auto& a : vcg.E2V())
+				//{
+				//	cout << a.first << " , " << a.second << endl;
+				//}
+				//// ~dbg
 			}
 
-			if (false)
+			// iii. calc()
+			if (vorOption == 2)
 			{
+				//voronoiCalculator vc;
+				vc.initialize();
+				vc.setInput(vrin.arcs, vrin.left, vrin.color);
+				//dbg_out
+				cout << "input arcs.size() : " << vrin.arcs.size() << endl;
 				vector<deque<VoronoiEdge>> v_res;
 				vc.setOutput(v_res);
 				vc.calculate();
@@ -1010,6 +1027,76 @@ namespace rendering3D
 				}
 			}
 
+			// 6. TEST input
+			if (false)
+			{
+				glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+				for (auto& as : ms::Models_Approx[1])
+				{
+					as.draw();
+				}
+			}
+
+			// 7. DEBUG : draw cycle
+			static int cycIdx = -1, cycIdx2 = -1;
+			if (planning::keyboardflag['['] != planning::keyboardflag_last['['])
+				cycIdx++;
+			if (planning::keyboardflag[']'] != planning::keyboardflag_last[']'])
+				cycIdx--;
+			if (planning::keyboardflag['{'] != planning::keyboardflag_last['{'])
+				cycIdx2++;
+			if (planning::keyboardflag['}'] != planning::keyboardflag_last['}'])
+				cycIdx2--;
+
+			//dbg_out : cycle out
+			{
+				cout << "cycIdx : " << cycIdx << endl;
+				cout << "cycIdx2 : " << cycIdx2 << endl;
+				glColor3f(0, 1, 0);
+				if (cycIdx >= 0 && cycIdx < vc.getCycles().size())
+				{
+					// alias & size output
+					auto& cyc = vc.getCycles()[cycIdx];
+					cout << "cycSize : " << cyc.size() << endl;
+
+					// do the drawing
+					double len = 0.1;
+					glBegin(GL_LINES);
+					for (int j = 0; j < cyc.size(); j++)
+					{
+						if (cycIdx2 < 0 || (cycIdx2 % cyc.size()) == j)
+						{
+							auto& arc = cyc[j];
+							auto p0 = arc.x0();
+							auto p1 = arc.x1();
+							auto p00 = p0 + len * arc.n0();
+							auto p01 = p0 - len * arc.n0();
+							auto p10 = p1 + len * arc.n1();
+							auto p11 = p1 - len * arc.n1();
+
+							glVertex2dv(p00.P);
+							glVertex2dv(p01.P);
+							glVertex2dv(p10.P);
+							glVertex2dv(p11.P);
+						}
+					}
+					glEnd();
+				}
+				// dbg_out
+				auto& cycOriginal = vc.getCyclesOri();
+				for (int i = 0; i < cycOriginal.size(); i++)
+				{
+					if (i != cycIdx)
+						continue;
+					cout << "cycOri : " << i << endl;
+					for (auto pc : cycOriginal[i])
+					{
+						cout << " pc : " << pc.first.c << ", " << pc.first.t << " --> " << pc.second.c << ", " << pc.second.t << endl;
+						cout << "   -arc : " << vrin.arcs[pc.first.c].x0() << vrin.arcs[pc.first.c].x1() << vrin.arcs[pc.first.c].ccw << " ... circ : " << vrin.arcs[pc.first.c].c.c << vrin.arcs[pc.first.c].c.r << endl;
+					}
+				}
+			}
+
 			// 97. swap
 			glScissor(0, 0, wd, ht);
 			glutSwapBuffers();
@@ -1036,6 +1123,12 @@ namespace rendering3D
 
 		int main3(int argc, char* argv[])
 		{
+			const int
+				_10_bifur = false,
+				_11_bifur_pair = false,
+				_12_vor2d = false,
+				_13_vor3d = false;
+
 			// 1. basic stuff
 			wd = 1600;
 			ht = 800;
@@ -1046,6 +1139,8 @@ namespace rendering3D
 			glutCreateWindow("CS Obstacles");
 			glEnable(GL_SCISSOR_TEST);
 			glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
+
+			//planning::_h_fmdsp_g1 = 1e-12;
 
 			// 2. make scene
 			vector<CircularArc> robot;
@@ -1068,24 +1163,30 @@ namespace rendering3D
 
 				vector<CircularArc> arcObjectSq;
 				vector<Circle>	   circObjectSq;
-				readArcModel("Objects/Square-shape2/arc.txt", "Objects/Square-shape2/circ.txt", arcObjectSq, circObjectSq);
+				readArcModel("Objects/Square-shape-g1/arc.txt", "Objects/Square-shape-g1/circ.txt", arcObjectSq, circObjectSq);
 
 				vector<CircularArc> arcObjectTri;
 				vector<Circle>     circObjectTri;
-				readArcModel("Objects/Tri-shape2/arc.txt", "Objects/Tri-shape2/circ.txt", arcObjectTri, circObjectTri);
+				readArcModel("Objects/Hex-shape-g1/arc.txt", "Objects/Hex-shape-g1/circ.txt", arcObjectTri, circObjectTri);
 
 				vector<CircularArc> arcObject8;
 				vector<Circle>     circObject8;
 				readArcModel("Objects/8/arc.txt", "Objects/8/circ.txt", arcObject8, circObject8);
 
-				appendArcModel(obs, obsC, arcObjectSq, circObjectSq, 1, 0, Point(-1.1, -1.3));
-				appendArcModel(obs, obsC, arcObjectTri, circObjectTri, 1, 0, Point(+1.1, -1.5));
+				vector<CircularArc> arcASC45;
+				vector<Circle>     circASC45;
+				readArcModelAndProcessIt("Objects/ASC20/arc.txt", "Objects/ASC20/circ.txt", arcASC45, circASC45);
+
+				appendArcModel(obs, obsC, arcObjectSq, circObjectSq, 1, 0.5, Point(-1.2, -1.3));
+				//appendArcModel(obs, obsC, arcObjectSq, circObjectSq, 1, 0.5, Point(+1.2, -1.5));
+				//appendArcModel(obs, obsC, arcObjectTri, circObjectTri, 1, -0.3, Point(+1.1, -1.5));
+				appendArcModel(obs, obsC, arcASC45, circASC45, 1, -0.3, Point(+1.1, -1.5));
 
 				//change robot to tri
-				//robot.clear();
-				//robotC.clear();
-				//appendArcModel(robot, robotC, arcObject8, circObject8, 1, 0, Point(0.1, 0.1));
-				//std::cout << "r.size " << robot.size() << std::endl;
+				robot.clear();
+				robotC.clear();
+				appendArcModel(robot, robotC, arcObject8, circObject8, 1, 0, Point(0.1, 0.1));
+				std::cout << "r.size " << robot.size() << std::endl;
 			}
 
 			// 3. use calc
@@ -1098,8 +1199,9 @@ namespace rendering3D
 			csc.calculate();
 
 			// 4. tess
+			int tessSize = 7;
 			for (auto& surf : out)
-				surf.tessellation(10,10);
+				surf.tessellation(tessSize,tessSize);
 
 			// 5. cut tris and offset it. So that theta is in some range.
 			for (auto& surf : out)
@@ -1165,6 +1267,7 @@ namespace rendering3D
 			vcs.resize(ms::numofframe);
 			bifurPts.resize(ms::numofframe);
 
+			if(_10_bifur)
 			for (int i = 0; i < ms::numofframe; i++)
 			{
 				ms::minkowskisum(i, 1);
@@ -1190,6 +1293,7 @@ namespace rendering3D
 
 			// 11. find pair between bifur pts
 			// need some way to make all the points be included in the drawingset
+			if(_11_bifur_pair)
 			{
 				std::vector<Point> smaller, bigger;
 				for (int i = 0; i < ms::numofframe; i++)
@@ -1267,8 +1371,9 @@ namespace rendering3D
 				}
 			}
 
+
 			// 12. build v-diagram with topology
-			if(true)
+			if(_12_vor2d)
 			{
 				// 12-1. resize;
 				vcs.resize(ms::numofframe);
@@ -1301,7 +1406,7 @@ namespace rendering3D
 			// 13. find drawingSet for vor-diag
 			double interSlicePointError = 1e-1; //squared val : interslice point connection further than sqrt(thisValue) is considered to be a false connection.
 			int nSamples = 10;
-			if(true)
+			if(_13_vor3d)
 			{
 				// for each vCurve endpoint p0,p1 (do bifur point first, then danglingPt => to handle case where bifur pt disappears btw slice)
 				//	project p0, p1 to slice_n+1, and find there nearest point in slice_n+1 (each q0, q1)
@@ -1581,4 +1686,371 @@ namespace rendering3D
 		}
 	}
 
+}
+
+
+/********************************************************************************************************************
+**																												   **
+**													~~Main 4~~													   **
+**																												   **
+**																												   **
+********************************************************************************************************************/
+
+/*
+Def : main3 := make 3d configuration space obstacle using there equations.
+*/
+namespace sceneEditor
+{
+	/*
+	q w : swap model original idx
+	e	: add model original's instance
+
+	a s : swap instance idx
+	d	: delete instance
+	ijkl: translate current instance
+	u o : rotate current instance
+	p ; : scale current instance
+
+	n m : modify multiplier(speed)
+
+	c v : rotate mink/vor degree
+
+	z	: output to file
+	
+	*/
+
+	int wd, ht;
+	vector<vector<CircularArc>> modelsArc;
+	vector<vector<Circle>>		modelsCir;
+	vector<string>				modelsName;
+	vector<vector<double>>		instances; // each instance : idx, scale, rotation(degree), transX, transY
+
+	int modelIdx = 0;
+	int instIdx = 0;
+
+	double speed = 1.0;
+	double robotDegree = 0.0;
+
+
+	void reshapeFunc(GLint w, GLint h)
+	{
+		// later
+	};
+	void idleFunc()
+	{
+		// later
+
+		glutPostRedisplay();
+	};
+	void mouseFunc(int button, int action, int x, int y)
+	{
+
+	};
+	void keyboardFunc(unsigned char a, int b, int c)
+	{
+		planning::keyboardflag[a] = !planning::keyboardflag[a];
+		// pressing a once will flip keybaord flag btw 0 and 1
+		// pressing it for a long time will make it oscillate 010101
+	};
+	void displayFunc()
+	{
+		// 0. Take care of inputs
+		{
+			auto press = [&](char c) ->bool
+			{
+				return planning::keyboardflag[c] != planning::keyboardflag_last[c];
+			};
+
+			if (press('w'))
+			{
+				modelIdx++;
+				if (modelIdx >= modelsArc.size())
+					modelIdx = modelsArc.size() - 1;
+			}
+			if (press('q'))
+			{
+				modelIdx--;
+				if (modelIdx < 0)
+					modelIdx = 0;
+			}
+			if (press('e'))
+			{
+				vector<double> temp({double(modelIdx), 1.0, 0.0, 0.0, 0.0});
+				instances.push_back(temp);
+				instIdx = instances.size() - 1;
+			}
+
+			if (press('s'))
+				instIdx++;
+			if (press('a'))
+				instIdx--;
+
+			if (instIdx >= 0 && instIdx < instances.size())
+			{
+				if (press('d'))
+				{
+					auto it = instances.begin() + instIdx;
+					instances.erase(it);
+				}
+
+				if (press('j'))
+				{
+					instances[instIdx][3] -= 0.1 * speed;
+				}
+				if (press('l'))
+				{
+					instances[instIdx][3] += 0.1 * speed;
+				}
+				if (press('k'))
+				{
+					instances[instIdx][4] -= 0.1 * speed;
+				}
+				if (press('i'))
+				{
+					instances[instIdx][4] += 0.1 * speed;
+				}
+
+				if (press('u'))
+				{
+					instances[instIdx][2] += 1 * speed;
+				}
+				if (press('o'))
+				{
+					instances[instIdx][2] -= 1 * speed;
+				}
+
+				if (press('p'))
+				{
+					instances[instIdx][1] += 0.1 * speed;
+				}
+				if (press(';'))
+				{
+					instances[instIdx][1] -= 0.1 * speed;
+				}
+			}
+
+			if (press('n'))
+			{
+				speed *= 2.0;
+			}
+			if (press('m'))
+			{
+				speed *= 0.5;
+			}
+
+			if (press('c'))
+			{
+				robotDegree += 1.0;
+				if (int(robotDegree) >= ms::numofframe)
+					robotDegree = ms::numofframe - 1;
+			}
+			if (press('v'))
+			{
+				robotDegree -= 1.0;
+				if (robotDegree < 0)
+					robotDegree = 0;
+			}
+
+			if (press('z'))
+			{
+				char str[100];
+				sprintf_s(str, 100, "scene %d.txt", time(NULL));
+				ofstream fout(str);
+				for (auto& t : instances)
+				{
+					fout << modelsName[int(t[0])] << " " << t[1] << " " << t[2] << " " << t[3] << " " << t[4] << endl;
+				}
+			}
+
+			cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl;
+			cout << "Model : " << modelIdx << " :  " << modelsName[modelIdx] << endl;
+			cout << "Inst  : " << instIdx <<  endl;
+			cout << "Robot andgle : " << robotDegree << endl;
+		}
+
+		// 1. clear
+		glClearColor(0.0, 1.0, 1.0, 1.0);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glColor3f(0.0f, 0.0f, 0.0f);
+
+		glDisable(GL_LIGHTING);
+		glMatrixMode(GL_PROJECTION);
+		glLoadIdentity();
+		glMatrixMode(GL_MODELVIEW);
+		static double viewLength = 1.5;
+		glLoadIdentity();
+		gluOrtho2D(-viewLength, viewLength, -viewLength, viewLength);
+
+		// 2. VIEWPORT 0
+		glViewport(0, 0, wd / 2, ht);
+		glScissor(0, 0, wd / 2, ht);
+
+		cout << "instancse size : " << instances.size() << endl;
+
+		// 2-1. build model ready for mink
+		{
+			int obsIdx = 7;
+			ms::Model_from_arc[obsIdx] = true;
+			auto& sceneOriginal		= ms::Model_vca[obsIdx];
+			auto& sceneProcessed	= ms::Models_Approx[obsIdx];
+			auto& sceneCircles		= ms::InteriorDisks_Imported[obsIdx];
+
+			sceneOriginal.resize(0);
+			sceneCircles.resize(0);
+			sceneProcessed.resize(0);
+
+			// do appending
+			for (auto& inst : instances)
+			{
+				appendArcModel(sceneOriginal, sceneCircles, modelsArc[int(inst[0])], modelsCir[int(inst[0])], inst[1], inst[2], Point(inst[3], inst[4]));
+			}
+
+			planning::_Convert_VectorCircularArc_To_MsInput(sceneOriginal, sceneProcessed);
+		}
+
+		// 2-2. do drawing
+		for (int i = 0; i < instances.size(); i++)
+		{
+			auto& inst = instances[i];
+			if (i == instIdx)
+				glColor3f(0, 0, 1);
+			else
+				glColor3f(0, 0, 0);
+
+			vector<CircularArc> temp;
+			vector<Circle> temp2;
+			appendArcModel(temp, temp2, modelsArc[int(inst[0])], modelsCir[int(inst[0])], inst[1], inst[2], Point(inst[3], inst[4]));
+
+			for (auto& arc : temp)
+				arc.draw2();
+		}
+
+		// 2-3. draw bound
+		glColor3f(0, 0, 0);
+		for (auto& arc : planning::voronoiBoundary)
+			arc.draw2();
+		// 2-4. draw circ
+		if (planning::keyboardflag['3'])
+		{
+			glColor3f(0, 0, 0);
+			for (auto& circ : ms::InteriorDisks_Imported[7])
+				circ.draw();
+		}
+
+		// 3. VIEWPORT 1
+		glViewport(wd / 2, 0, wd / 2, ht);
+		glScissor(wd / 2, 0, wd / 2, ht);
+		glClearColor(0.5, 1.0, 1.0, 1.0);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		glLineWidth(2.5);
+
+		if(planning::keyboardflag['1'])
+		{
+			// draw mink
+			ms::ModelInfo_CurrentModel = std::make_pair(1, 7);
+			ms::postProcess(ms::ModelInfo_CurrentModel.first, ms::ModelInfo_CurrentModel.second);
+			ms::t2 = int(robotDegree);
+			ms::minkowskisum(ms::t2, 7);
+			glColor3f(0, 0, 0);
+			for (auto& loop : ms::Model_Result)
+				for(auto& as : loop)
+					as.draw();
+			cout << "Mink res size :" <<  ms::Model_Result.size() << " " << ms::ModelInfo_Boundary.size() << endl;
+
+			// draw Vor
+			glColor3f(1, 0, 1);
+			if (planning::keyboardflag['2'])
+			{
+				planning::VR_IN vrin;
+				planning::_Convert_MsOut_To_VrIn(ms::Model_Result, ms::ModelInfo_Boundary, vrin);
+				voronoiCalculator vc;
+				vector<deque<VoronoiEdge>> v_res;
+				vc.initialize();
+				vc.setInput(vrin.arcs, vrin.left, vrin.color);
+				vc.setOutput(v_res);
+				vc.calculate();
+
+				glBegin(GL_LINES);
+				for (auto& a : v_res)
+					for (auto& b : a)
+					{
+						glVertex2dv(b.v0.P);
+						glVertex2dv(b.v1.P);
+					}
+				glEnd();
+			}
+		}
+
+		// 2-3. draw bound
+		glColor3f(0, 0, 0);
+		for (auto& arc : planning::voronoiBoundary)
+			arc.draw2();
+		
+		// 97. swap
+		glScissor(0, 0, wd, ht);
+		glutSwapBuffers();
+
+		// 99. set keyboardFlagOld
+		for (int i = 0; i < 256; i++)
+			planning::keyboardflag_last[i] = planning::keyboardflag[i];
+	};
+
+	int main(int argc, char* argv[])
+	{
+		
+
+		// 1. basic stuff
+		wd = 1600;
+		ht = 800;
+		glutInit(&argc, argv);
+		glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
+		glutInitWindowSize(wd, ht);
+		glutCreateWindow("SceneEditor");
+		glEnable(GL_SCISSOR_TEST);
+
+		// 2. read Models
+		initializeRobotObstacles(0, 1);// Just to set the robots; model_approx[0] and model_approx[1]
+		
+		int i = 0;
+		modelsArc.resize(0);
+		modelsCir.resize(0);
+		auto fillModels = [&](const char* file) -> void
+		{
+			string name = file;
+			modelsName.push_back(name);
+			modelsArc.push_back({});
+			modelsCir.push_back({});
+			auto& arcs = modelsArc[i];
+			auto& cirs = modelsCir[i];
+			readArcModelAndProcessIt(("Objects/" + name + "/arc.txt").c_str(), ("Objects/" + name + "/circ.txt").c_str(), arcs, cirs);
+			i++;
+		};
+		{
+			fillModels("Tri-shape-g1");
+			fillModels("Square-shape-g1");
+			fillModels("pent-shape-g1");
+			fillModels("hex-shape-g1");
+			fillModels("L-shape");
+			fillModels("L-shape3");
+			fillModels("ASC30");
+			fillModels("ASC10");
+			fillModels("ASC3");
+			fillModels("ASC1");
+		}
+
+
+		// 99. register Func and start loop
+		glutReshapeFunc(reshapeFunc);
+		glutDisplayFunc(displayFunc);
+		glutMouseFunc(mouseFunc);
+		glutKeyboardFunc(keyboardFunc);
+		glutIdleFunc(idleFunc);
+
+		glEnable(GL_DEPTH_TEST);
+
+		glutMainLoop();
+
+		return 0;
+	}
 }

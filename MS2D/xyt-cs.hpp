@@ -215,7 +215,9 @@ public:
 	/* Constructor/Destructor */
 	csSurf() = default;
 	csSurf(CircularArc& robot, CircularArc& obs, Point& robotCenter);
+	csSurf(CircularArc& robot, CircularArc& obs, Point& robotCenter, bool reverse);
 	~csSurf() = default;
+	void buildEquation(CircularArc& robot, CircularArc& obs, Point& robotCenter);
 
 	/* functions to get some geometry */
 	void 
@@ -255,6 +257,8 @@ private:
 		* arcO;
 	Point
 		robotCenter;
+	int
+		isReverse;
 private:
 	//void setEquation
 

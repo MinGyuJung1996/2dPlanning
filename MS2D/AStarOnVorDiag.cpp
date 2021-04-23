@@ -102,7 +102,7 @@ void connect_slices(const vector<Vertex>&  vecVertices,
 		if (minDist < 0.1)
 		{
 			vecEdges.push_back({ prevSliceIter, minCurrSliceIdx });
-			vecWeights.push_back(minDist);
+			vecWeights.push_back(minDist + 0.01);
 		}
 	}
 }
