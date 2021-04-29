@@ -29,6 +29,86 @@ double EPS = 0.00001;
 
 
 //-----------------------------------------------------------------------------
+bool Vertex::operator ==(const Vertex& other) const
+{
+	VertexLessFn cmp;
+	return !cmp(*this, other) && !cmp(other, *this);
+}
+
+Vertex Vertex::operator +(const Vertex& other) const
+{
+	return Vertex(x + other.x, y + other.y, z + other.z);
+}
+
+Vertex Vertex::operator -(const Vertex& other) const
+{
+	return *this + (other*(-1));
+}
+
+Vertex Vertex::operator *(double w) const
+{
+	return Vertex(x * w, y * w, z * w);
+}
+
+double Vertex::dot(const Vertex& other) const
+{
+	return x * other.x + y * other.y + z * other.z;
+}
+
+Vertex Vertex::cross(const Vertex& other) const
+{
+	double s1 = y * other.z - z * other.y;
+	double s2 = z * other.x - x * other.z;
+	double s3 = x * other.y - y * other.x;
+	return Vertex(s1, s2, s3);
+}
+
+double Vertex::norm() const
+{
+	return ::sqrt(x * x + y * y + z * z);
+}
+
+void Vertex::normalize()
+{
+	double nrm = norm();
+	if (nrm < EPS)
+		return;
+	nrm = 1. / nrm;
+	x = x * nrm;
+	y = y * nrm;
+	z = z * nrm;
+}
+
+double Vertex::get_angle_between(const Vertex& other) const
+{
+	//assumption: vectors are normalized
+	double cos_gamma = ::min(this->dot(other), 1.);
+	double gamma = acos(cos_gamma);
+	return gamma;
+}
+
+Vertex Vertex::geodesic_avg(const Vertex& other, double w) const
+{
+	//assumption: v1, v2 normalized
+	if (w < EPS)
+		return Vertex(*this);
+	else if (EPS > (1. - w))
+		return Vertex(other);
+
+	double gamma = get_angle_between(other);
+	gamma *= (1. - w);
+
+	Vertex nr = cross(other);
+	nr.normalize();
+	double cos_gamma = cos(gamma);
+	double sin_gamma = sin(gamma);
+	Vertex res_vec = *this * cos_gamma
+		+ nr.cross(*this) * sin_gamma
+		+ nr * (1. - cos_gamma) * nr.dot(*this);
+	res_vec.normalize();
+	return res_vec;
+}
+
 ostream& operator << (ostream& os, const Vertex& obj)
 {
 	os << "(" << obj.x << ", " << obj.y << ", " << obj.z << ")";
