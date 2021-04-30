@@ -14,7 +14,9 @@
 #include <unordered_map> 
 #include <math.h>    // for sqrt
 #include <algorithm>    // std::min
+#include "voronoi.hpp"
 
+using namespace planning;
 using namespace std;
 using namespace boost;
 
@@ -33,7 +35,8 @@ extern double EPS;
 // auxiliary types
 struct Vertex
 {
-	Vertex(double x, double y, double z = 0.) :x(x), y(y), z(z) {}
+	Vertex(double x = 0., double y = 0., double z = 0.) :x(x), y(y), z(z) {}
+	Vertex(const Vertex& other) :x(other.x), y(other.y), z(other.z) {}
 	Cost dist(const Vertex& other) const
 	{
 		Cost dx = x - other.x;
@@ -42,6 +45,18 @@ struct Vertex
 		return ::sqrt(dx * dx + dy * dy /*+ dz * dz*/);
 
 	}
+
+	bool operator ==(const Vertex& other) const;
+	Vertex operator +(const Vertex& other) const;
+	Vertex operator -(const Vertex& other) const;
+	Vertex operator *(double w) const;
+	double dot(const Vertex& other) const;
+	Vertex cross(const Vertex& other) const;
+	double norm() const;
+	void normalize();
+	double get_angle_between(const Vertex& other) const;
+	Vertex geodesic_avg(const Vertex& other, double w) const;
+
 	double x, y, z;
 	friend ostream& operator << (ostream& os, const Vertex& obj);
 };
