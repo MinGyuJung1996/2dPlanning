@@ -216,6 +216,9 @@ int main(int argc, char *argv[]) {
 namespace graphSearch
 {
 	using v_edge = planning::output_to_file::v_edge;
+	std::vector<cd::lineSegmentCollisionTester> testers;
+	std::vector<cd::pointCollisionTester> testers2;
+
 
 	/*
 	Def:
@@ -224,8 +227,8 @@ namespace graphSearch
 	*/
 	int main2(int argc, char* argv[])
 	{
-		int robotType = 1;
-		int obsType = 1;
+		int robotType = 0;
+		int obsType = 0;
 
 		// 1. build v_edges
 		planning::_h_fmdsp_g1 = 1e-8;
@@ -240,6 +243,7 @@ namespace graphSearch
 		planning::drawVoronoiSingleBranch = false; //disable drawing for now.
 		std::vector<decltype(ms::Model_Result)> MRs(ms::numofframe);		// data collected for checking
 		std::vector<decltype(ms::ModelInfo_Boundary)> MIBs(ms::numofframe); // data collected for checking
+		std::vector<decltype(ms::InteriorDisks_Convolution)> IDC(ms::numofframe); // save conv/disk
 		std::vector<planning::VR_IN> VRINs(ms::numofframe);
 		auto mvStartTime = clock();
 		for (size_t i = 0, length = ms::numofframe /* = 360*/; i < length; i++)
@@ -249,6 +253,7 @@ namespace graphSearch
 			// save data for checking
 			MRs[i] = ms::Model_Result;
 			MIBs[i] = ms::ModelInfo_Boundary;
+			IDC[i] = ms::InteriorDisks_Convolution;
 
 			planning::VR_IN& vrin = VRINs[i];
 			planning::_Convert_MsOut_To_VrIn(ms::Model_Result, ms::ModelInfo_Boundary, vrin);
@@ -278,10 +283,23 @@ namespace graphSearch
 		
 		//// 1-2. build collisionTesters 
 		auto cdInitStartTime = clock();
-		std::vector<cd::lineSegmentCollisionTester> testers(ms::numofframe);
+		testers.resize(ms::numofframe);
 		for (size_t i = 0; i < ms::numofframe; i++)
 		{
 			testers[i].initialize(VRINs[i]);
+		}
+
+		testers2.resize(ms::numofframe);
+		for (size_t i = 0; i < ms::numofframe; i++)
+		{
+			vector<bool> convexityList(VRINs[i].arcs.size());
+			for (int j = 0; j < convexityList.size(); j++)
+			{
+				convexityList[j] = !VRINs[i].arcs[j].ccw;
+			}
+
+
+			testers2[i].initialize(VRINs[i], convexityList, IDC[i]);
 		}
 		auto cdInitEndTime = clock();
 		cout << "collision tester init time : " 

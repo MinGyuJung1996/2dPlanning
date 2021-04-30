@@ -1339,6 +1339,13 @@ namespace planning
 		}
 	}
 
+	bool isNoramlBetweenArc(CircularArc& arc, Point& n)
+	{
+		// due to some prob with funciton name overloading?
+		return isNormalBetween(arc, n);
+	}
+
+
 	/*
 	Def : 
 		assume that a circular arc is parameterized, find that parameter of nt (btw [0,1])

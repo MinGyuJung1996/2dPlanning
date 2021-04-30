@@ -585,7 +585,46 @@ appendArcModel(sceneOriginal,sceneCircles, arcObjectA3, circObjectA3, 0.75	,0		 
 
 	ms::postProcess(ModelInfo_CurrentModel.first, ModelInfo_CurrentModel.second);
 }
+namespace ms
+{
+	/*
+	Def: find idx of point
+	*/
+	std::vector<int> Grid::find(const Point& p1)
+	{
+		std::vector<int> reval;
 
+		double x0 = p1.P[0];
+		double y0 = p1.P[1];
+
+		if (x0 < x[0])
+			return {};
+		if (x0 > x[grid])
+			return {};
+		if (y0 < y[0])
+			return {};
+		if (y0 > y[grid])
+			return {};
+
+
+
+		// 2. find min,max containing grid idx
+		for (int i = 0; i < grid; i++) {
+			if (x0 <= x[i + 1]) {
+				reval.push_back(i);
+				break;
+			}
+		}
+		for (int i = 0; i < grid; i++) {
+			if (y0 <= y[i + 1]) {
+				reval.push_back(i);
+				break;
+			}
+		}
+
+		return reval;
+	}
+};
 #pragma endregion
 
 namespace ms{

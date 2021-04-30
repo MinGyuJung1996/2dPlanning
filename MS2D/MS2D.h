@@ -46,7 +46,7 @@ namespace ms {
 	extern int dbgcnt;
 	extern std::vector<CircularArc> Model_vca[8];
 	extern bool Model_from_arc[8];
-
+	extern Point clickedPoint;
 
 	// Error Bound
 	static const double EPSILON = 1e-5;
@@ -725,6 +725,9 @@ namespace ms {
 
 		/* covercheck: internally used variable */ // Seems like unused?
 		bool covercheck;
+
+		/* Code by MG Jung*/
+		std::vector<int> find(const Point& p1);
 	};
 
 }

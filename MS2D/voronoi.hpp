@@ -206,7 +206,8 @@ namespace planning
 	void _Medial_Axis_Transformation(VR_IN& INPUT in);
 	Point getTouchingDiskCenter(Point p, Point q, Point v);
 
-	bool isNormalBetween(Point n0, Point n1, Point n);
+	bool isNormalBetween(Point n0, Point n1, Point n); 
+	bool isNoramlBetweenArc(CircularArc& arc, Point& n);
 
 }
 

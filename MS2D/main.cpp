@@ -7,6 +7,10 @@
 
 planning::coneVoronoi coneVor;
 
+namespace graphSearch
+{
+	extern std::vector<cd::pointCollisionTester> testers2;
+}
 
 namespace ms {
 
@@ -634,6 +638,7 @@ namespace ms {
 	{
 	}
 
+	Point clickedPoint;
 	void mouse_callback(int button, int action, int x, int y)
 	{
 
@@ -653,6 +658,8 @@ namespace ms {
 				<< "***************************************************************" << endl
 				<< "clicked point : " << fx << ", " << fy << "   ( zoom = " << zoom << " ) " << endl
 				<< "***************************************************************" << endl;
+			clickedPoint.x() = fx;
+			clickedPoint.y() = fy;
 		}
 
 		static int grb = 0;
@@ -1304,6 +1311,58 @@ namespace ms {
 			glColor3f(0, 0, 0);
 			for (auto& arc : boundary)
 				arc.draw();
+
+			// 4. draw clicked point
+			static bool clicked = false;
+			if (!clicked)
+			{
+				if (ms::clickedPoint.x() != 0 || ms::clickedPoint.y() != 0)
+					clicked = true;
+			}
+			else
+			{
+				
+				Point cp;
+				bool t0, t1;
+				t0 = graphSearch::testers2[sliceIdx].test(ms::clickedPoint);
+				t1 = graphSearch::testers2[sliceIdx].testPrecise(ms::clickedPoint, cp);
+
+				// result of t0
+				glPointSize(5.5);
+				if (t0)
+					glColor3f(1, 0, 0);
+				else
+					glColor3f(0, 0, 1);
+				glBegin(GL_POINTS);
+				glVertex2dv(ms::clickedPoint.P);
+				glEnd();
+				glPointSize(1.0);
+
+
+				// result of t1
+				if(t1)
+					glColor3f(1, 0, 0);
+				else
+					glColor3f(0, 0, 1);
+				glBegin(GL_LINES);
+				glVertex2dv(ms::clickedPoint.P);
+				glVertex2dv(cp.P);
+				glEnd();
+
+				double rad = sqrt((ms::clickedPoint - cp).length2());
+				CircularArc arc = cd::constructArc(ms::clickedPoint, rad, 0, PI2 - 1e-4);
+				arc.draw2();
+
+			}
+
+			// 5. draw disk
+			if (planning::keyboardflag['j'])
+			{
+				glColor3f(0, 0, 0);
+				auto& disks = graphSearch::testers2[sliceIdx].getConvDisk();
+				for (auto& disk : disks)
+					disk.draw();
+			}
 
 			glutSwapBuffers();
 		};

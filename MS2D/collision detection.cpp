@@ -2919,6 +2919,366 @@ namespace cd
 	//*/
 	//bool vornoiCollisionTest(Point& p, Point& q, lineSegmentCollisionTester& tester, vector<v_edge>)
 
+	/*
+	Def : pointCollisionTeseter's init
+		simply save data.
+	*/
+	void pointCollisionTester::initialize(VR_IN& vrin, vector<bool>& convex, vector<Circle>& convDisk)
+	{
+		_data = vrin.arcs;
+		_convex = convex;
+
+		// left/right
+		_left = vrin.left;
+		_right.resize(_left.size(), -1);
+		for (int i = 0; i < _left.size(); i++)
+		{
+			_right[_left[i]] = i;
+		}
+
+		// GRID
+		_convDisk = convDisk;
+		for (auto& cir : _convDisk)
+			_grid.insert(&cir);
+	}
+
+	/*
+	Def: tests whether 'p' is in the inside-region & find closest point in boundary
+		Returns true iff p is in the inside-region (= collision)
+		The closest point to 'p' will be saved in "closest"
+	*/
+	bool pointCollisionTester::testPrecise(Point& p, Point& closest)
+	{
+		// 1. find closest point in boundary
+		LOOP int closestArcIdx = -1;
+		LOOP double minDist = 1e8;
+		LOOP int cpAtEnd; // 0 : not at endpoint // 1 : at x0 // 2 : at x1
+		{
+			// for (all arcs) update minDist
+			for (int i = 0; i < _data.size(); i++)
+			{
+				// 1-1.Alias
+				auto& arc = _data[i];
+				auto& cen = arc.c.c;
+				auto& rad = arc.c.r;
+
+				// 1-2. Check best case := point on arc with normal = (p-cen).normalize();
+				// minDist is bounded by : |dist(p, cen) - r| <= minDist <= |dist(p, cen) + r|
+				auto direction = p - cen;
+				double centerDist = sqrt(direction.length2());
+				direction = direction / centerDist;
+				double bestDist = fabs(centerDist - rad);
+
+				// 1-2-2. guard clause
+				if (bestDist > minDist)
+					continue;
+
+				bool bestCasePossible =	planning::isNoramlBetweenArc(arc, direction);
+
+				// 1-3. if (bestCasePossible) {check dist btw bestCase} else arc's endpoint is better than any other point
+				if (bestCasePossible)
+				{
+					if (bestDist < minDist)
+					{
+						minDist = bestDist;
+						closestArcIdx = i;
+						closest = cen + rad * direction;
+						cpAtEnd = false;
+					}
+				}
+				else
+				{
+					// dist btw p and two end points
+					auto
+						d0 = sqrt((p - arc.x0()).length2()),
+						d1 = sqrt((p - arc.x1()).length2());
+
+					if (d0 < d1)
+					{
+						if (d0 < minDist)
+						{
+							minDist = d0;
+							closestArcIdx = i;
+							closest = arc.x0();
+							cpAtEnd = 1;
+						}
+					}
+					else
+					{
+						if (d1 < minDist)
+						{
+							minDist = d1;
+							closestArcIdx = i;
+							closest = arc.x1();
+							cpAtEnd = 2;
+						}
+					}
+				}
+
+			}
+		}
+
+		if (closestArcIdx == -1)
+			return false;
+
+		// 2. find whether inside/outside
+		// at this point "closestArc", "minDist", and "closest" is built.
+		{
+			if (!cpAtEnd)
+			{
+				// 2-1. if cp(closest point) is not on the endPoint, simply checking its closestArc's convex/concave is okay
+				auto& arc = _data[closestArcIdx];
+				bool pOnConvexSideOfArc = (p - arc.c.c).length2() < arc.cr() * arc.cr();
+				return pOnConvexSideOfArc == _convex[closestArcIdx]; 
+				// returns true iff (p is on conv/conc side of closest arc && the inside-region is on conv/conc side of that arc)
+			}
+			else
+			{
+				// 2-2. The case when the closest point is a cusp => two arc's end point meets
+				// two tangets at the cusp divides circle (center == cusp) into two parts.
+				// one part will be the inside-region, while the other will be the outside-region
+
+				// 2-2-1. find tan first
+				Point tan0, tan1;
+				{
+					// note that +- direction of tan is not the one which corresponds to the parameterization of the arc.
+					// the +- of the direction of tan is := emitting from cusp (from cusp to outside dir)
+
+					// if(cusp is at t = 0 of arc) ... else(cusp at t = 1)
+					if (cpAtEnd == 1)
+					{
+						if (_left[closestArcIdx] < 0)
+						{
+							cerr << "!!! ERROR in pointCollisionTeseter::test(): Model may not be g0-cont !!!" << endl;
+							return false;
+						}
+
+						auto& arc0 = _data[closestArcIdx];
+						auto& arc1 = _data[_left[closestArcIdx]];
+
+						// note : dir not actual tan dir of parameterization ( emitting from cusp ) ... (just flip the tan which goes into cusp)
+						//	in this case tan1 goes into cusp
+						if(arc0.ccw)
+							tan0 = arc0.n0().rotate();
+						else
+							tan0 = -arc0.n0().rotate();
+
+						if(arc1.ccw)
+							tan1 = -arc1.n1().rotate();
+						else
+							tan1 = arc1.n1().rotate();
+
+					
+					}
+					else // cpAtEnd == 2 case
+					{
+						if (_right[closestArcIdx] < 0)
+						{
+							cerr << "!!! ERROR in pointCollisionTeseter::test(): Model may not be g0-cont !!!" << endl;
+							return false;
+						}
+
+						auto& arc0 = _data[closestArcIdx];
+						auto& arc1 = _data[_right[closestArcIdx]];
+
+						// for cpAtEnd == 2 case, arc0.n1 should be flipped (to make it emit from cusp)
+						if (arc0.ccw)
+							tan0 = -arc0.n1().rotate();
+						else
+							tan0 = arc0.n1().rotate();
+
+						if (arc1.ccw)
+							tan1 = arc1.n0().rotate();
+						else
+							tan1 = -arc1.n0().rotate();
+					}
+				}
+
+				// 2-2-2. change to theta domain
+				// A direction will fall into only one of this two intervals [theta0 , theta1] or [theta1, theta0 +2pi]
+				//	and each interval will represent inside/outside
+				// Actually at this point, we know that p will fall into the larger domain.
+				//	This is because: let's say the larger Domain is [A,B].
+				//		If p falls into sth like [A, A+pi/2], then there will be a point in the arc0 which is closer than the cusp
+				//		Similary for B. THerefore p will actually lie in [A+pi/2 ,B-pi/2]
+				Point dir0 = p - closest; // dir0 := direction from cusp to "p"
+				Point dir1; // dir
+				{
+
+				}
+				double
+					theta0 = atan2(tan0.y(), tan0.x()),
+					theta1 = atan2(tan1.y(), tan1.x()),
+					thetax = atan2(dir0.y(), dir0.x());
+
+				// wind theta domain ccw;
+				while (theta1 < theta0)
+					theta1 += PI2;
+				while (thetax < theta0)
+					thetax += PI2;
 
 
+				// 2-2-3. find which of the two intervals is the inside-region.
+				/*
+				is theta0 + eps in inside-region?
+				endP  ccw cvx OUTside
+					0	0	0	x
+					0	0	1	o
+					0	1	0	o
+					0	1	1	x
+					1	0	0	o
+					1	0	1	x
+					1	1	0	x
+					1	1	1	o
+				can us ^ instead
+				*/
+				int firstRegionInside = (cpAtEnd) + int(_data[closestArcIdx].ccw) + int(_convex[closestArcIdx]);
+				firstRegionInside %= 2; // 1 iff 1st interval [theta0, theta1] represents inside-region;
+
+				bool pInFirstRegion;
+				// we can compare the size of the interval, but this is done as below to take care of the case when the cusp point is actually g1-cont
+				if (thetax < theta1)
+					pInFirstRegion = true;
+				else
+					pInFirstRegion = false;
+
+				//dbg_out
+				if(false)
+				{
+					cout << "testPrecise info: theta0/1, flag3 : " << (theta0 * 360 / PI2) << " " << (theta1 * 360 / PI2) << " "
+						<< (cpAtEnd - 1) << int(_data[closestArcIdx].ccw) << int(_convex[closestArcIdx]) << endl;
+
+					if (cpAtEnd == 1)
+					{
+						auto& arc0 = _data[closestArcIdx];
+						auto& arc1 = _data[_left[closestArcIdx]];
+						cout << arc0 << endl;
+						cout << arc1 << endl;
+					}
+					else
+					{
+						auto& arc0 = _data[closestArcIdx];
+						auto& arc1 = _data[_left[closestArcIdx]];
+						cout << arc0 << endl;
+						cout << arc1 << endl;
+					}
+				}
+
+				return firstRegionInside == pInFirstRegion; // !(xor(a,b))
+			}
+		}
+	}
+
+	/*
+	Def : test collision with disks.
+	Return :
+		True : The point is in the inside-region
+		False : The point is probably in the outside-region (not always, as disks approximate the inside region with some errors)
+	*/
+	bool pointCollisionTester::test(Point& p)
+	{
+		// find grid-coord
+		auto vec = _grid.find(p);
+		if (vec.size() != 2)
+			return false;
+
+		auto x = vec[0];
+		auto y = vec[1];
+
+		// if covered 
+		if (_grid.cover[x][y])
+			return true;
+
+		// check circles
+		auto circList = _grid.gCircles[x][y];
+		for (auto cpt : circList)
+		{
+			// if (inside this circ)
+			if ((p - cpt->c).length2() < cpt->r * cpt->r)
+				return true;
+		}
+
+		return false;
+
+	}
+
+	/*
+	Def : similar to testPrecise(), but uses disk to check containment(less precise)
+	*/
+	bool pointCollisionTester::test(Point& p, Point& closest)
+	{
+		// 1. find closest point in boundary
+		LOOP int closestArcIdx = -1;
+		LOOP double minDist = 1e8;
+		LOOP int cpAtEnd; // 0 : not at endpoint // 1 : at x0 // 2 : at x1
+		{
+			// for (all arcs) update minDist
+			for (int i = 0; i < _data.size(); i++)
+			{
+				// 1-1.Alias
+				auto& arc = _data[i];
+				auto& cen = arc.c.c;
+				auto& rad = arc.c.r;
+
+				// 1-2. Check best case := point on arc with normal = (p-cen).normalize();
+				// minDist is bounded by : |dist(p, cen) - r| <= minDist <= |dist(p, cen) + r|
+				auto direction = p - cen;
+				double centerDist = sqrt(direction.length2());
+				direction = direction / centerDist;
+				double bestDist = fabs(centerDist - rad);
+
+				// 1-2-2. guard clause
+				if (bestDist > minDist)
+					continue;
+
+				bool bestCasePossible = planning::isNoramlBetweenArc(arc, direction);
+
+				// 1-3. if (bestCasePossible) {check dist btw bestCase} else arc's endpoint is better than any other point
+				if (bestCasePossible)
+				{
+					if (bestDist < minDist)
+					{
+						minDist = bestDist;
+						closestArcIdx = i;
+						closest = cen + rad * direction;
+						cpAtEnd = false;
+					}
+				}
+				else
+				{
+					// dist btw p and two end points
+					auto
+						d0 = sqrt((p - arc.x0()).length2()),
+						d1 = sqrt((p - arc.x1()).length2());
+
+					if (d0 < d1)
+					{
+						if (d0 < minDist)
+						{
+							minDist = d0;
+							closestArcIdx = i;
+							closest = arc.x0();
+							cpAtEnd = 1;
+						}
+					}
+					else
+					{
+						if (d1 < minDist)
+						{
+							minDist = d1;
+							closestArcIdx = i;
+							closest = arc.x1();
+							cpAtEnd = 2;
+						}
+					}
+				}
+
+			}
+		}
+
+		if (closestArcIdx == -1)
+			return false;
+
+		return test(p);
+	}
 } //end of namespace cd.

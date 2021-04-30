@@ -174,7 +174,9 @@ namespace cd
 			idx = -1; //leaf node : contains idx of primitive(arc)
 	};
 
-	
+	/*
+	Def: class to test lineSeg against arcs(boundary)
+	*/
 	class lineSegmentCollisionTester
 	{
 		// alias
@@ -222,6 +224,42 @@ namespace cd
 			recursivelyBuildBVH(aabb& currentNode, vector<int>& arcIndices);
 		bool 
 			recursivelyTestBVH_lineSegment(aabb& currentNode, lineSegment& ls);
+	};
+
+	/*
+	Def: class to test a point containment
+	Assume:
+		arcs form loop (so inside/outside is distinguished)
+		_left, _right is given
+	*/
+	class pointCollisionTester
+	{
+		using VR_IN = planning::VR_IN;
+	public:
+		pointCollisionTester() = default;
+		~pointCollisionTester() = default;
+
+		void initialize(VR_IN& vrin, vector<bool>& convex, vector<Circle>& convDisk);
+
+		bool testPrecise(Point& p, Point& closest);
+		bool test(Point& p, Point& closest);
+		bool test(Point& p);
+		
+		//Point findClosestPoint(Point& p);
+		//void test(Point& p, bool& inside, CircularArc& closest, double& t);
+
+
+	private:
+		vector<CircularArc> _data;
+		vector<bool>	_convex;
+		vector<int>		_left;
+		vector<int>		_right;
+
+		vector<Circle>	_convDisk;
+		ms::Grid		_grid;
+
+	public:
+		inline decltype(_convDisk)& getConvDisk() { return _convDisk; }
 	};
 };
 
