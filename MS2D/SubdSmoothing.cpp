@@ -83,7 +83,9 @@ void PntTng::setTangents(const PntTng& prev_pt, const PntTng& next_pt)
     Vector3D v_next = next_pt.pt - pt;
     v_next.normalize();
     Vector3D bnorm = v_prev.cross(v_next);
+    bnorm.normalize();
     this->right_tg = this->nr.cross(bnorm);
+    right_tg.normalize();
     this->left_tg = this->right_tg * (-1);
 }
 
@@ -96,56 +98,104 @@ void PntTng::setNaiveNorm(const PntTng& prev_pt, const PntTng& next_pt)
     double next_len = v_next.norm();
     v_next.normalize();
     Vector3D bnorm = v_prev.cross(v_next);
+    bnorm.normalize();
     Vector3D prev_perp = v_prev.cross(bnorm);
+    prev_perp.normalize();
     Vector3D next_perp = bnorm.cross(v_next);
+    next_perp.normalize();
     double w = prev_len / (prev_len + next_len);
     this->nr = prev_perp.geodesic_avg(next_perp, w);
+}
+
+void PntTng::setEndpointNormAndTang(const PntTng& other, bool b_other_is_next)
+{
+    const Vector3D& other_der = b_other_is_next ? other.left_tg : other.right_tg;
+    Vector3D segm = pt - other.pt;
+    Vector3D bnorm = other_der.cross(segm);
+    nr = bnorm.cross(segm * (-1));
+    nr.normalize();
+    if (b_other_is_next)
+    {
+        right_tg = bnorm.cross(nr);
+        right_tg.normalize();
+    }
+    else
+    {
+        left_tg = nr.cross(bnorm);
+        left_tg.normalize();
+    }
 }
 
 //-----------------------------------------------------------------------------
 void init_norms_and_tangents(vector<PntTng>& pnts, bool b_open)
 {
-    //@@TODO: only closed polgons are supported now
     size_t N = pnts.size();
-    for (size_t i = 0; i < N; ++i)
+    size_t idxStart = 0;
+    size_t idxEnd = N - 1;
+    if (b_open)
+    {
+        ++idxStart;
+        --idxEnd;
+    }
+    for (size_t i = idxStart; i <= idxEnd; ++i)
     {
         pnts[i].setNaiveNorm(pnts[(i - 1 + N) % N], pnts[(i + 1) % N]);
         pnts[i].setTangents(pnts[(i - 1 + N) % N], pnts[(i + 1) % N]);
     }
+    if (b_open)
+    {
+        pnts[0].setEndpointNormAndTang(pnts[1], true);
+        pnts[N-1].setEndpointNormAndTang(pnts[N-2], false);
+    }
+    if (2 == N)
+    {
+        //exotic case: we have just one segment, i.e. 2 vertices 
+        // to define data for.
+        Vector3D xaxis(1., 0., 0.);
+        Vector3D seg = pnts[1].pt - pnts[0].pt;
+        seg.normalize();
+        Vector3D bnorm = xaxis.cross(seg);
+        Vector3D norm = bnorm.cross(seg);
+        pnts[0].nr = norm;
+        pnts[0].right_tg = bnorm;
+        pnts[1].nr = norm;
+        pnts[1].left_tg = bnorm * (-1);
+    }
+
 }
 
 //-----------------------------------------------------------------------------
-Vertex test_collision_and_correct(const Vertex& p)
-{
-    return p;
-}
-
-//-----------------------------------------------------------------------------
-PntTng bqa_3D(double t0, const PntTng& p0, const PntTng& p1)
+PntTng bqa_3D(double t0, const PntTng& p0, const PntTng& p1,
+              vector<cd::pointCollisionTester>& collisionTesters)
 {
     BezierCurve3D bez_crv = BezierCurve3D(p0.pt, p0.nr, p0.right_tg, p1.pt, p1.nr, p1.left_tg);
     Vertex res_pos = bez_crv.eval(t0);
-    Vertex free_pos = test_collision_and_correct(res_pos);
+    cd::Point res_ptn_2D(res_pos.x, res_pos.y);
+    cd::Point free_ptn_2D;
+    bool b_collides = collisionTesters[res_pos.z].testPrecise(res_ptn_2D, free_ptn_2D);
+    if (b_collides)
+    {
+        res_pos.x = free_ptn_2D.x();
+        res_pos.y = free_ptn_2D.y();
+    }
     Vector3D res_norm = bez_crv.norm(t0);
     PntTng res_obj(res_pos, res_norm);
-    if (!(free_pos == res_pos))
-        res_obj.setNaiveNorm(p0, p1);
     res_obj.setTangents(p0, p1);
     return res_obj;
 }
 
 //----------------------------------------------------------------------------
 vector<PntTng> 
-double_polygon_bqa(const vector<PntTng>& pnts, bool b_preserve, bool b_open)
+double_polygon_bqa(const vector<PntTng>& pnts, bool b_preserve, bool b_open,
+                   vector<cd::pointCollisionTester>& collisionTesters)
 {
-    //@@TODO: only closed polgons are supported now
     size_t N = pnts.size();
     size_t NN = b_open ? (N - 1) : N;
-    vector<PntTng> res(NN*(b_preserve?2:1));
+    vector<PntTng> res;// (NN * (b_preserve ? 2 : 1));
 
     for (size_t i = 0; i < NN; ++i)
     {
-        PntTng r = bqa_3D(0.5, pnts[i], pnts[(i + 1) % N]);
+        PntTng r = bqa_3D(0.5, pnts[i], pnts[(i + 1) % N], collisionTesters);
 
         if (b_preserve)
             res.push_back(pnts[i]);
@@ -161,8 +211,8 @@ double_polygon_bqa(const vector<PntTng>& pnts, bool b_preserve, bool b_open)
 vector<PntTng> pts_to_pnp(const vector<Vertex>& vecVertices)
 {
     vector<PntTng> res(vecVertices.size());
-    for (auto& v : vecVertices)
-        res.push_back(PntTng(v));
+    for(int i = 0; i < vecVertices.size(); ++i)
+        res[i] = PntTng(vecVertices[i]);
     return res;
 }
 
@@ -170,22 +220,23 @@ vector<PntTng> pts_to_pnp(const vector<Vertex>& vecVertices)
 vector<Vertex> pnp_to_pts(const vector<PntTng>& vecPNPs)
 {
     vector<Vertex> res(vecPNPs.size());
-    for (auto& v : vecPNPs)
-        res.push_back(Vertex(v.pt));
+    for (int i = 0; i < vecPNPs.size(); ++i)
+        res[i] = Vertex(vecPNPs[i].pt);
     return res;
 }
 
 //-----------------------------------------------------------------------------
 vector<Vertex>
 subd_smoothing(const vector<Vertex>& vecVertices, 
-               int n_of_iterations = 1, 
-               bool b_open = false)
+               vector<cd::pointCollisionTester>& collisionTesters,
+               int n_of_iterations, 
+               bool b_open)
 {
     vector<PntTng> pnts = pts_to_pnp(vecVertices);
     init_norms_and_tangents(pnts, b_open);
 
     for (int i = 0; i < n_of_iterations; ++i)
-        pnts = double_polygon_bqa(pnts, true, b_open);
+        pnts = double_polygon_bqa(pnts, true, b_open, collisionTesters);
 
     return pnp_to_pts(pnts);
 }

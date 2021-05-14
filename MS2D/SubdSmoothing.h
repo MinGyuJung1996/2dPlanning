@@ -2,6 +2,7 @@
 
 #include "AStarOnVorDiag.h"
 typedef Vertex Vector3D;
+#include "collision detection.hpp"
 
 //----------------------------------------------------------------------------
 class BezierCurve3D
@@ -54,6 +55,7 @@ public:
     double getDistanceTo(const PntTng& other)  const { return pt.dist(other.pt); }
     void setTangents(const PntTng& prev_pt, const PntTng& next_pt);
     void setNaiveNorm(const PntTng& prev_pt, const PntTng& next_pt);
+    void setEndpointNormAndTang(const PntTng& other, bool b_other_is_next);
 
 public:
     Vertex pt;
@@ -63,5 +65,11 @@ public:
 };
 
 //----------------------------------------------------------------------------
-
+using namespace cd;
+class cd::pointCollisionTester;
+vector<Vertex>
+subd_smoothing(const vector<Vertex>& vecVertices,
+               vector<cd::pointCollisionTester>& collisionTesters,
+               int n_of_iterations = 1,
+               bool b_open = false);
 //============================ END OF FILE ===================================

@@ -2,7 +2,8 @@
 #include <fstream>
 #include "voronoi.hpp"
 #include "AStarOnVorDiag.h"
-#include "collision detection.hpp"
+//#include "collision detection.hpp"
+#include "SubdSmoothing.h"
 
 using namespace std;
 
@@ -218,6 +219,7 @@ namespace graphSearch
 	using v_edge = planning::output_to_file::v_edge;
 	std::vector<cd::lineSegmentCollisionTester> testers;
 	std::vector<cd::pointCollisionTester> testers2;
+	void testCollisionDetectionAndSmoothing(const vector<cd::pointCollisionTester>& detectors);
 
 
 	/*
@@ -334,6 +336,9 @@ namespace graphSearch
 			//if (0 == (i % 10)) // filter out intermediate layers
 				v_edges_sparced.push_back(*iterEdgesLayer);
 
+		//comment out the next call
+		//testCollisionDetectionAndSmoothing(testers2);
+
 		vector<Vertex> vecVertices;
 		map<Vertex, int, VertexLessFn> mapLookup;
 		Graph theGr = create_VorGraph(v_edges_sparced, vecVertices, mapLookup);
@@ -377,6 +382,7 @@ namespace graphSearch
 		}
 
 		std::vector<Vertex> path = invoke_AStar(theGr, vecVertices, mapLookup, ptnSrc, ptnDst);
+		path = subd_smoothing(path, testers2, 5, true);
 
 		//std::cout << path.size() << std::endl;
 
@@ -398,7 +404,7 @@ namespace graphSearch
 		{
 			// just a fake path to check program pipeline.
 			//for (int i = 0; i < 100; i++)
-			for(auto v : path)
+			for(auto& v : path)
 			{
 				//double x = -0.7 + 1.4 / 100.0 * i; // x-coord of Robot center
 				//double y = -0.5 + (i / 100.0) * (i / 100.0); // y-coord of Robot center
@@ -414,7 +420,15 @@ namespace graphSearch
 		return 0;
 	}
 
-	
+	void testCollisionDetectionAndSmoothing(const vector<cd::pointCollisionTester>& detectors)
+	{
+		Vertex ptnSrc(-0.9, -0.1, 0.0);
+		Vertex ptnMid(-0.7, 0.2, 56.0);
+		Vertex ptnDst(+0.5, +0.4, 160.0);
+		vector<Vertex> path = { ptnSrc, ptnMid, ptnDst };
+		path = subd_smoothing(path, testers2, 1, true);
+	}
+
 
 	void searchTest()
 	{
@@ -455,7 +469,7 @@ namespace graphSearch
 		}
 		else
 		{
-			for (auto v : path)
+			for (auto& v : path)
 			{
 				cout << v << endl;
 			}

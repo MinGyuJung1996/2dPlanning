@@ -39,6 +39,12 @@
     <ClInclude Include="xyt-cs.hpp">
       <Filter>헤더 파일</Filter>
     </ClInclude>
+    <ClInclude Include="AStarOnVorDiag.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="SubdSmoothing.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MS2D.cpp">
@@ -71,6 +77,9 @@
     <ClCompile Include="main2.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="SubdSmoothing.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Text Include="debug_notes.txt">
@@ -79,6 +88,8 @@
     <Text Include="Major Changes.txt">
       <Filter>헤더 파일</Filter>
     </Text>
-    <Text Include="temp.txt" />
+    <Text Include="temp.txt">
+      <Filter>헤더 파일</Filter>
+    </Text>
   </ItemGroup>
 </Project>

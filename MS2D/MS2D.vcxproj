@@ -47,7 +47,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -74,12 +74,14 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
+    <IncludePath>C:\boost_1_71_0;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
+    <IncludePath>C:\boost_1_71_0;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -153,12 +155,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="AStarOnVorDiag.h" />
     <ClInclude Include="collision detection.hpp" />
     <ClInclude Include="Commentated Notes About The Project.h" />
     <ClInclude Include="MS2D.h" />
     <ClInclude Include="stb.h" />
     <ClInclude Include="stb_image.h" />
     <ClInclude Include="stb_image_write.h" />
+    <ClInclude Include="SubdSmoothing.h" />
     <ClInclude Include="voronoi.hpp" />
     <ClInclude Include="xyt-cs.hpp" />
   </ItemGroup>
@@ -171,6 +175,7 @@
     <ClCompile Include="Bernstein.cpp" />
     <ClCompile Include="realMain.cpp" />
     <ClCompile Include="stb.cpp" />
+    <ClCompile Include="SubdSmoothing.cpp" />
     <ClCompile Include="voronoi.cpp" />
     <ClCompile Include="xyt-cs.cpp" />
   </ItemGroup>
