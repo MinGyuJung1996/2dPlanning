@@ -165,14 +165,17 @@ void init_norms_and_tangents(vector<PntTng>& pnts, bool b_open)
 }
 
 //-----------------------------------------------------------------------------
-PntTng bqa_3D(double t0, const PntTng& p0, const PntTng& p1,
-              vector<cd::pointCollisionTester>& collisionTesters)
+PntTng 
+BezierQuasiAverage::operator()(double t0, const PntTng& p0, const PntTng& p1) const
 {
-    BezierCurve3D bez_crv = BezierCurve3D(p0.pt, p0.nr, p0.right_tg, p1.pt, p1.nr, p1.left_tg);
+    BezierCurve3D bez_crv = BezierCurve3D(p0.pt, p0.nr, p0.right_tg, 
+                                          p1.pt, p1.nr, p1.left_tg);
     Vertex res_pos = bez_crv.eval(t0);
     cd::Point res_ptn_2D(res_pos.x, res_pos.y);
     cd::Point free_ptn_2D;
-    bool b_collides = collisionTesters[res_pos.z].testPrecise(res_ptn_2D, free_ptn_2D);
+    bool b_collides = 
+        this->collisionTesters_[res_pos.z].testPrecise(res_ptn_2D, 
+                                                       free_ptn_2D);
     if (b_collides)
     {
         res_pos.x = free_ptn_2D.x();
@@ -182,29 +185,6 @@ PntTng bqa_3D(double t0, const PntTng& p0, const PntTng& p1,
     PntTng res_obj(res_pos, res_norm);
     res_obj.setTangents(p0, p1);
     return res_obj;
-}
-
-//----------------------------------------------------------------------------
-vector<PntTng> 
-double_polygon_bqa(const vector<PntTng>& pnts, bool b_preserve, bool b_open,
-                   vector<cd::pointCollisionTester>& collisionTesters)
-{
-    size_t N = pnts.size();
-    size_t NN = b_open ? (N - 1) : N;
-    vector<PntTng> res;// (NN * (b_preserve ? 2 : 1));
-
-    for (size_t i = 0; i < NN; ++i)
-    {
-        PntTng r = bqa_3D(0.5, pnts[i], pnts[(i + 1) % N], collisionTesters);
-
-        if (b_preserve)
-            res.push_back(pnts[i]);
-        res.push_back(r);
-    }
-    if (b_preserve && b_open)
-        res.push_back(*pnts.rbegin());
-
-    return res;
 }
 
 //-----------------------------------------------------------------------------
@@ -227,16 +207,19 @@ vector<Vertex> pnp_to_pts(const vector<PntTng>& vecPNPs)
 
 //-----------------------------------------------------------------------------
 vector<Vertex>
-subd_smoothing(const vector<Vertex>& vecVertices, 
-               vector<cd::pointCollisionTester>& collisionTesters,
-               int n_of_iterations, 
-               bool b_open)
+subd_smoothing( const vector<Vertex>& vecVertices,
+                vector<cd::pointCollisionTester>& collisionTesters,
+                bool b_open,
+                int n_iterations,
+                int n_smoothing_inner_steps)
 {
     vector<PntTng> pnts = pts_to_pnp(vecVertices);
     init_norms_and_tangents(pnts, b_open);
+    BezierQuasiAverage fnBQA(collisionTesters);
 
-    for (int i = 0; i < n_of_iterations; ++i)
-        pnts = double_polygon_bqa(pnts, true, b_open, collisionTesters);
+    for (int i = 0; i < n_iterations; ++i)
+        pnts = perform_Lane_Riesenfeld_algorithm<PntTng, BezierQuasiAverage>(
+                  pnts, b_open, n_iterations, n_smoothing_inner_steps, fnBQA);
 
     return pnp_to_pts(pnts);
 }

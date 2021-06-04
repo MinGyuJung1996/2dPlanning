@@ -143,7 +143,7 @@ void read_slice(vector<v_edge>&     vecVorEdges,
 	set<int>&                       setCurrSliceIdx)
 {
 
-	for (auto vorEdge : vecVorEdges)
+	for (auto& vorEdge : vecVorEdges)
 	{
 		Vertex vrtxP(vorEdge.v0.x(), vorEdge.v0.y(), zSlice);
 		Vertex vrtxQ(vorEdge.v1.x(), vorEdge.v1.y(), zSlice);
@@ -187,7 +187,21 @@ void connect_slices(const vector<Vertex>&  vecVertices,
 	}
 }
 //-----------------------------------------------------------------------------
+// Compute dimensions of the scene to define the range of Theta.
+double getThetaHeight(vector<v_edge>& slice)
+{
+	double minx = 1000.0, miny = 1000.0, maxx = -1000.0, maxy = -1000.0;
+	for (auto& vorEdge : slice)
+	{
+		minx = ::min({ vorEdge.v0.x(), vorEdge.v1.x(), minx });
+		miny = ::min({ vorEdge.v0.y(), vorEdge.v1.y(), miny });
+		maxx = ::max({ vorEdge.v0.x(), vorEdge.v1.x(), maxx });
+		maxy = ::max({ vorEdge.v0.y(), vorEdge.v1.y(), maxy });
+	}
+	return (::max(maxx, maxy) - ::min(minx, miny));
+}
 
+//-----------------------------------------------------------------------------
 Graph create_VorGraph(	vector<vector<v_edge>>& vorGr, 
 						vector<Vertex>& vecVertices,
 						map<Vertex, int, VertexLessFn>& mapLookup)
@@ -195,7 +209,11 @@ Graph create_VorGraph(	vector<vector<v_edge>>& vorGr,
 	vector<Edge> vecEdges; // edge is a pair of indexes in vecVertices 
 	vector<Cost> vecWeights; // weight of an edge is its length
 
-	double zStep = 360./vorGr.size(); 
+	//double zStep = getThetaHeight(vorGr[0]) / vorGr.size();
+	//double zStep = 360. / vorGr.size();
+	double zStep = 0.;
+	cout << "*** zStep = " << zStep << endl;
+
 	double currZ = 0.;
 	set<int> setPrevSliceIdx;
 	set<int> setCurrSliceIdx;

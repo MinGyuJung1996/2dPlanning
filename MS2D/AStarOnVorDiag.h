@@ -42,8 +42,7 @@ struct Vertex
 		Cost dx = x - other.x;
 		Cost dy = y - other.y;
 		Cost dz = z - other.z;
-		return ::sqrt(dx * dx + dy * dy /*+ dz * dz*/);
-
+		return ::sqrt(dx * dx + dy * dy + dz * dz); 
 	}
 
 	bool operator ==(const Vertex& other) const;

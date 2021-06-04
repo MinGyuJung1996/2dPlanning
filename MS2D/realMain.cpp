@@ -383,7 +383,7 @@ namespace graphSearch
 
 		std::vector<Vertex> path = invoke_AStar(theGr, vecVertices, mapLookup, ptnSrc, ptnDst);
 		int num_of_smoothing_iterations = 1;
-		path = subd_smoothing(path, testers2, num_of_smoothing_iterations, true);
+		//path = subd_smoothing(path, testers2, true, num_of_smoothing_iterations);
 
 		//std::cout << path.size() << std::endl;
 
